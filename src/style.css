@@ -1,0 +1,129 @@
+/* ── Reset & variabler ─────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #0f1117;
+  --card:    #1a1d27;
+  --border:  #2d3348;
+  --text:    #e2e8f0;
+  --muted:   #8892a4;
+  --accent1: #4f8ef7;  /* blå — Felipe */
+  --accent2: #a78bfa;  /* lila — Ulrika */
+  --green:   #6ee7b7;
+  --orange:  #f59e0b;
+  --red:     #f87171;
+  --purple:  #a78bfa;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.5;
+}
+
+body { min-height: 100vh; }
+
+/* ── Layout ──────────────────────────────────────────────────────────────────── */
+.page { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
+
+/* ── Navigation ──────────────────────────────────────────────────────────────── */
+nav.topnav {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 32px; padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+nav.topnav a {
+  text-decoration: none; color: var(--muted);
+  font-size: .85rem; padding: 5px 14px;
+  border: 1px solid var(--border); border-radius: 8px;
+  transition: color .15s, border-color .15s;
+}
+nav.topnav a:hover, nav.topnav a.active {
+  color: var(--accent1); border-color: var(--accent1);
+}
+
+/* ── Typografi ───────────────────────────────────────────────────────────────── */
+h1 { font-size: 1.9rem; font-weight: 700; margin-bottom: 6px; }
+h2 { font-size: 1.2rem; font-weight: 600; margin: 32px 0 14px; color: var(--text); }
+.subtitle { color: var(--muted); font-size: .9rem; margin-bottom: 28px; }
+
+/* ── Kort ────────────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px;
+}
+.card + .card { margin-top: 16px; }
+.card-title {
+  font-size: .7rem; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--accent1); margin-bottom: 16px;
+}
+
+/* ── KPI-bar ─────────────────────────────────────────────────────────────────── */
+.kpi-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
+.kpi { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+.kpi-label { font-size: .72rem; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .06em; }
+.kpi-value { font-size: 1.5rem; font-weight: 700; color: var(--accent1); }
+.kpi-value.green  { color: var(--green); }
+.kpi-value.orange { color: var(--orange); }
+.kpi-value.purple { color: var(--accent2); }
+
+/* ── Slider-panel ────────────────────────────────────────────────────────────── */
+.ctrl-panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.ctrl-group { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.ctrl-group label { font-size: .75rem; color: var(--muted); display: block; margin-bottom: 4px; }
+.ctrl-val { font-size: 1.3rem; font-weight: 700; color: var(--orange); display: block; margin-bottom: 6px; }
+.ctrl-group input[type=range] { width: 100%; accent-color: var(--accent1); cursor: pointer; }
+
+/* ── Formulärfält ────────────────────────────────────────────────────────────── */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.form-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.form-row:last-child { border-bottom: none; }
+.form-row label { color: var(--muted); font-size: .88rem; }
+.form-row input[type=number] {
+  width: 130px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-size: .9rem;
+  padding: 5px 10px; text-align: right;
+}
+.form-row input[type=number]:focus { outline: 1px solid var(--accent1); }
+
+/* ── Pensionstabell ──────────────────────────────────────────────────────────── */
+.pension-table { width: 100%; border-collapse: collapse; }
+.pension-table th { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+.pension-table th.num, .pension-table td.num { text-align: right; }
+.pension-table td { padding: 8px 8px; border-bottom: 1px solid var(--border); font-size: .88rem; }
+.pension-table td input[type=number] {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-size: .88rem;
+  padding: 4px 8px; text-align: right;
+}
+.pension-table tr.livsvarig td:nth-child(3) { color: var(--green); font-size: .78rem; text-align: center; }
+
+/* ── Faser-tabell ────────────────────────────────────────────────────────────── */
+.fase-table { width: 100%; border-collapse: collapse; }
+.fase-table th { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+.fase-table td { padding: 8px 8px; border-bottom: 1px solid var(--border); font-size: .85rem; }
+
+/* ── Badge ───────────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-block; border-radius: 5px;
+  padding: 2px 8px; font-size: .72rem; font-weight: 600;
+  margin: 2px; white-space: nowrap;
+}
+
+/* ── Resultat-ruta (uttag) ───────────────────────────────────────────────────── */
+.verdict {
+  padding: 12px 16px; border-radius: 8px; font-weight: 600;
+  margin-bottom: 16px; border: 1px solid;
+}
+.verdict.ok   { background: #6ee7b718; border-color: var(--green); color: var(--green); }
+.verdict.warn { background: #f59e0b18; border-color: var(--orange); color: var(--orange); }
+.verdict.bad  { background: #f8717118; border-color: var(--red);    color: var(--red); }
+
+/* ── Utility ─────────────────────────────────────────────────────────────────── */
+.text-muted   { color: var(--muted); }
+.text-green   { color: var(--green); }
+.text-orange  { color: var(--orange); }
+.text-red     { color: var(--red); }
+.text-felipe  { color: var(--accent1); }
+.text-ulrika  { color: var(--accent2); }
+.fw-bold      { font-weight: 700; }
+hr            { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+footer        { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: .8rem; }

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Verdu Ekonomi</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🏠</text></svg>">
+</head>
+<body>
+<div class="page">
+  <nav class="topnav" id="topnav"></nav>
+
+  <h1>Verdu Ekonomi</h1>
+  <p class="subtitle">Din FIRE-plan i ett ögonkast.</p>
+
+  <div class="kpi-bar">
+    <div class="kpi"><div class="kpi-label">FIRE-år</div><div class="kpi-value orange" id="kpi-year">—</div></div>
+    <div class="kpi"><div class="kpi-label">FIRE %</div><div class="kpi-value green" id="kpi-pct">—</div></div>
+    <div class="kpi"><div class="kpi-label">Fritt kapital vid FIRE</div><div class="kpi-value" id="kpi-kapital">—</div></div>
+    <div class="kpi"><div class="kpi-label">Total förmögenhet</div><div class="kpi-value purple" id="kpi-total">—</div></div>
+    <div class="kpi"><div class="kpi-label">Levnadskostnad</div><div class="kpi-value" id="kpi-levnad">—</div></div>
+  </div>
+
+  <h2>Nästa pensionshändelse</h2>
+  <div class="card" id="next-event-card">
+    <span class="text-muted">Öppna FIRE-simulatorn för att beräkna.</span>
+  </div>
+
+  <h2>Pensionsströmmar</h2>
+  <div class="card" style="overflow-x:auto">
+    <table class="pension-table" style="min-width:480px">
+      <thead><tr>
+        <th>Källa</th><th>Från</th><th>T.o.m.</th><th class="num">kr/mån</th>
+      </tr></thead>
+      <tbody id="pension-summary"></tbody>
+    </table>
+  </div>
+
+  <footer>Verdu Ekonomi · Data sparas lokalt i webbläsaren</footer>
+</div>
+<script type="module" src="/src/pages/index.ts"></script>
+</body>
+</html>
