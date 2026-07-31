@@ -1,4 +1,5 @@
 import '../style.css';
+import { initAuth } from '../auth';
 import {
   Chart,
   LineController,
@@ -12,6 +13,8 @@ import {
 import { historikStore, ekStore } from '../store';
 import type { Snapshot, EkonomiData } from '../types';
 import { NAV_LINKS } from '../constants';
+
+await initAuth();
 
 Chart.register(LineController, CategoryScale, LinearScale, PointElement, LineElement, Legend, Tooltip);
 

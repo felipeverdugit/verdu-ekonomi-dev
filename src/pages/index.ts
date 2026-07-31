@@ -1,7 +1,10 @@
 import '../../src/style.css';
+import { initAuth } from '../auth';
 import { computeFire } from '../calculations';
 import { ekStore, fireStore } from '../store';
 import { NAV_LINKS } from '../constants';
+
+await initAuth();
 
 // ── Navigation ─────────────────────────────────────────────────────────────────
 document.getElementById('topnav')!.innerHTML = NAV_LINKS.map(l =>

@@ -1,7 +1,10 @@
 import '../../src/style.css';
+import { initAuth } from '../auth';
 import { ekStore, resultStore } from '../store';
 import { NAV_LINKS, PEOPLE, AP_TAK, AP_IBB, KREDITKORT } from '../constants';
 import type { EkonomiData } from '../types';
+
+await initAuth();
 
 // ── Navigation ─────────────────────────────────────────────────────────────────
 document.getElementById('topnav')!.innerHTML = NAV_LINKS.map(l =>

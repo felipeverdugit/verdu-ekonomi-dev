@@ -1,9 +1,12 @@
 import '../../src/style.css';
+import { initAuth } from '../auth';
 import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler } from 'chart.js';
 import { simulateUttag } from '../calculations';
 import { resultStore } from '../store';
 import { NAV_LINKS } from '../constants';
 import type { PensionStream } from '../types';
+
+await initAuth();
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler);
 

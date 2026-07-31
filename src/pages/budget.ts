@@ -1,7 +1,10 @@
 import '../../src/style.css';
+import { initAuth } from '../auth';
 import { budgetStore, ekStore } from '../store';
 import { NAV_LINKS } from '../constants';
 import type { BudgetData } from '../types';
+
+await initAuth();
 
 document.getElementById('topnav')!.innerHTML = NAV_LINKS.map(l =>
   `<a href="${l.href}"${l.href === 'budget.html' ? ' class="active"' : ''}>${l.icon} ${l.label}</a>`

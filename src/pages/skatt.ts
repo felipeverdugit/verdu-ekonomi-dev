@@ -1,8 +1,11 @@
 import '../../src/style.css';
+import { initAuth } from '../auth';
 import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend } from 'chart.js';
 import { computeFire } from '../calculations';
 import { ekStore, fireStore } from '../store';
 import { NAV_LINKS } from '../constants';
+
+await initAuth();
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend);
 
