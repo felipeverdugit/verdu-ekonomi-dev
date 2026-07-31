@@ -13,6 +13,8 @@ export default defineConfig({
         uttag:   resolve(__dirname, 'uttag.html'),
         hinkar:  resolve(__dirname, 'hinkar.html'),
         historik: resolve(__dirname, 'historik.html'),
+        skatt:    resolve(__dirname, 'skatt.html'),
+        budget:   resolve(__dirname, 'budget.html'),
       },
     },
   },

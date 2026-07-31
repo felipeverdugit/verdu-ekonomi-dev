@@ -38,19 +38,25 @@ interface HinkarResult {
   lekExcess:  number;
   buffMin:    number;
   buffMax:    number;
-  h1_kredit:  number;
-  fireNum:    number;
-  maalPct:    number;
-  sparMon:    number;
+  h1_kredit:     number;
+  h2_villa:      number;
+  h2_lagenhet:   number;
+  h2_amor:       number;
+  fireNum:       number;
+  maalPct:       number;
+  sparMon:       number;
 }
 
 function computeHinkar(ek: EkonomiData): HinkarResult {
   const h1_borgo   = ek.sparkonto_pv;
   const hink1      = h1_borgo;
 
-  const h2_ip      = ek.ap_f + ek.ap_u;
-  const h2_nav     = (ek.nav_f_nok + ek.nav_u_nok) * (ek.nok_sek || 0.97);
-  const hink2      = h2_ip + h2_nav;
+  const h2_ip       = ek.ap_f + ek.ap_u;
+  const h2_nav      = (ek.nav_f_nok + ek.nav_u_nok) * (ek.nok_sek || 0.97);
+  const h2_villa    = Math.max(0, (ek.villa_varde ?? 0) - (ek.villa_lan ?? 0));
+  const h2_lagenhet = Math.max(0, (ek.lagenhet_varde ?? 0) - (ek.lagenhet_lan ?? 0));
+  const h2_amor     = (ek.villa_amor ?? 0) + (ek.lagenhet_amor ?? 0);
+  const hink2       = h2_ip + h2_nav + h2_villa + h2_lagenhet;
 
   const h3_lysa    = ek.lysa_f_pv + ek.lysa_u_pv;
   const h3_buffert = ek.buffert_u_pv;
@@ -77,7 +83,7 @@ function computeHinkar(ek: EkonomiData): HinkarResult {
 
   return {
     hink1, hink2, hink3, hink4,
-    h1_borgo, h2_ip, h2_nav,
+    h1_borgo, h2_ip, h2_nav, h2_villa, h2_lagenhet, h2_amor,
     h3_lysa, h3_buffert, h3_tjpSve, h3_tjpNor, h3_pp,
     h4_norco, h4_oncop,
     totalFin, totalAll, lekMax, lekPct, lekExcess,
@@ -309,9 +315,12 @@ function render(): void {
   el('h1-likviditet-man').textContent = `${manader} månaders utgifter inkl. kredit`;
 
   // Hink 2
-  el('h2-ip').textContent    = fmtK(h.h2_ip);
-  el('h2-nav').textContent   = fmtK(h.h2_nav);
-  el('h2-total').textContent = '~' + fmtK(h.hink2);
+  el('h2-ip').textContent       = fmtK(h.h2_ip);
+  el('h2-nav').textContent      = fmtK(h.h2_nav);
+  el('h2-villa').textContent    = fmtK(h.h2_villa);
+  el('h2-lagenhet').textContent = fmtK(h.h2_lagenhet);
+  el('h2-amor').textContent     = `+${fmt(h.h2_amor)}/mån`;
+  el('h2-total').textContent    = '~' + fmtK(h.hink2);
 
   // Hink 3
   el('h3-lysa').textContent    = fmtK(h.h3_lysa);
@@ -352,7 +361,7 @@ function render(): void {
   el('pct-h2').textContent = pct(p2);
   el('pct-h3').textContent = pct(p3);
   el('pct-h4').textContent = pct(p4);
-  el('stapel-note').textContent = `Totalt ~${fmtM(h.totalAll)} (finansiellt + pension) · Fastigheter ej inkluderade`;
+  el('stapel-note').textContent = `Totalt ~${fmtM(h.totalAll)} · Hink 2 inkluderar IP + NAV + fastigheter (villa + lägenhet equity)`;
 
   // Ombalansering — dynamiska värden
   el('ob-buff-mon').textContent  = `${fmt(h.buffMin)}–${fmt(h.buffMax)}`;

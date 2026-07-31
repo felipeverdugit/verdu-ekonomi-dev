@@ -128,8 +128,10 @@ export const KREDITKORT = [
 export const NAV_LINKS = [
   { href: 'index.html',   label: 'Dashboard',  icon: '🏠' },
   { href: 'ekonomi.html', label: 'Ekonomi',    icon: '💰' },
-  { href: 'fire.html',    label: 'FIRE',        icon: '🔥' },
+  { href: 'fire.html',    label: 'Brygga',      icon: '🌉' },
   { href: 'uttag.html',   label: 'Uttag',       icon: '📊' },
   { href: 'hinkar.html',   label: 'Hinkar',      icon: '🪣' },
   { href: 'historik.html', label: 'Historik',    icon: '📈' },
+  { href: 'skatt.html',   label: 'Skatt',        icon: '🧾' },
+  { href: 'budget.html',  label: 'Budget',       icon: '📋' },
 ] as const;

@@ -49,8 +49,9 @@ function updateKPIs(r: FireResult, levnad: number): void {
   const yr    = r.fireYear;
   const today = new Date().getFullYear();
   document.getElementById('kpi-year')!.textContent    = `${yr} (om ${yr - today} år)`;
-  document.getElementById('kpi-number')!.textContent  = fmtM(r.fireNumber);
-  document.getElementById('kpi-pct')!.textContent     = `${r.firePct.toFixed(1)} %`;
+  document.getElementById('kpi-brygga')!.textContent  = fmtM(r.bryggaKapital);
+  document.getElementById('kpi-pct')!.textContent     = `${r.bryggaTackning.toFixed(1)} %`;
+  document.getElementById('kpi-pct')!.style.color     = r.bryggaTackning >= 100 ? 'var(--green)' : r.bryggaTackning >= 75 ? 'var(--orange)' : 'var(--red)';
   document.getElementById('kpi-kapital')!.textContent = fmtM(r.kapital);
   document.getElementById('kpi-total')!.textContent   = fmtM(r.totaltFV);
   document.getElementById('fire-subtitle')!.textContent =

@@ -18,7 +18,9 @@ function render(): void {
   const r  = computeFire(ek, s);
 
   document.getElementById('kpi-year')!.textContent    = String(r.fireYear);
-  document.getElementById('kpi-pct')!.textContent     = `${r.firePct.toFixed(1)} %`;
+  const pctEl = document.getElementById('kpi-pct')!;
+  pctEl.textContent = `${r.bryggaTackning.toFixed(1)} %`;
+  pctEl.style.color = r.bryggaTackning >= 100 ? 'var(--green)' : r.bryggaTackning >= 75 ? 'var(--orange)' : 'var(--red)';
   document.getElementById('kpi-kapital')!.textContent = fmtM(r.kapital);
   document.getElementById('kpi-total')!.textContent   = fmtM(r.totaltFV);
   document.getElementById('kpi-levnad')!.textContent  = fmt(ek.levnadskostnad);

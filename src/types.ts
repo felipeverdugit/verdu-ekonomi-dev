@@ -31,8 +31,8 @@ export interface EkonomiData {
   // Tjänstepension Norge (OTP)
   norge_f_pv:      number;  // TjP Norge — Felipe
   dnb_f_pv:        number;  // DNB Felipe
-  sb_f_pv:         number;  // Storebrand Felipe
-  sb_u_pv:         number;  // Storebrand Ulrika
+  sb_f_pv:         number;  // DNB Norge Felipe (fd. Storebrand)
+  sb_u_pv:         number;  // DNB Norge Ulrika (fd. Storebrand)
   dnb_u_pv:        number;  // DNB Ulrika
 
   // Sparkonto / borgensavi
@@ -66,12 +66,50 @@ export interface EkonomiData {
   norsk_f:         number;  // NAV inntektspension Felipe kr/mån
   norsk_u:         number;
 
+  // Fastigheter (Hink 2 — Bevara värde)
+  villa_varde:     number;  // Marknadsvärde villa
+  villa_lan:       number;  // Bolån villa (totalt)
+  villa_amor:      number;  // Amortering villa (kr/mån)
+  lagenhet_varde:  number;  // Marknadsvärde lägenhet
+  lagenhet_lan:    number;  // Bolån lägenhet
+  lagenhet_amor:   number;  // Amortering lägenhet (kr/mån)
+
   // Utgifter
   levnadskostnad:  number;  // kr/mån, period 1
   levnadskostnad2: number;  // kr/mån, period 2
   exp_switch_ar:   number;  // Efter hur många år byter vi till period 2
   exp_f:           number;  // Individuell kostnad Felipe
   exp_u:           number;  // Individuell kostnad Ulrika
+}
+
+// ── Budget (månadsöversikt) ───────────────────────────────────────────────────
+export interface BudgetData {
+  // Inkomster
+  brutto_f: number; netto_f: number;
+  brutto_u: number; netto_u: number;
+  vardnadsbidrag: number; barnbidrag: number; hyra_lag_ink: number;
+  // Boende
+  lan_villa: number; amor_villa: number;
+  lan_lag: number;   amor_lag: number;
+  vatten: number; el: number; energi: number; avfall: number;
+  // Transport
+  kia_leasing: number; kia_el: number;
+  // Telefoni
+  streaming: number; bredband_fiber: number; mobil: number;
+  bredband_5g: number; telia_cloud: number;
+  // Försäkringar
+  hemforsakring: number; tryghansa: number; skandia_liv: number;
+  if_skadef: number; sv_lararnas: number;
+  // Fack & övrigt
+  ledarna: number; ledarnas_akas: number; lararnas_akas: number;
+  csn: number; hjarnfonden: number; friskis: number;
+  // Sparande
+  lysa_f_mon: number; lysa_u_mon: number; lysa_buffert_mon: number;
+  lysa_n_mon: number; borgo_bank_mon: number; resor_mon: number;
+  // Övriga utgifter
+  mc_felipe: number; mc_ulrika: number;
+  // Prenumerationer (via MC Felipe)
+  nextory: number; anthropic: number; spotify: number; misc_prenums: number;
 }
 
 // ── FIRE-inställningar (sliders) ─────────────────────────────────────────────
@@ -112,9 +150,11 @@ export interface PensionStream {
 // Returneras av calculations.ts — ren data, inga DOM-sidoeffekter
 export interface FireResult {
   fireYear:      number;
-  fireNumber:    number;   // FIRE-talet (levnadskostnad × 12 / 4 %)
-  firePct:       number;   // % av FIRE-talet uppnått
-  kapital:       number;   // Fritt kapital vid FIRE (fonder + sparkonto + aktier)
+  fireNumber:      number;   // FIRE-talet (levnadskostnad × 12 / 4 %)
+  firePct:         number;   // % av FIRE-talet uppnått (klassisk 4%-regel)
+  bryggaKapital:   number;   // PV av gap (levnadskostnad − pension) tills pensioner täcker allt
+  bryggaTackning:  number;   // fritt kapital / bryggaKapital × 100
+  kapital:         number;   // Fritt kapital vid FIRE (fonder + sparkonto + aktier)
   totaltFV:      number;   // Total förmögenhet vid FIRE inkl. pensionskapital
   uttakAvkPct:   number;   // Vidarebefordras till uttag-sidan
   skattFaktor:   number;
@@ -159,7 +199,7 @@ export interface Snapshot {
   date:    string;
   fonder:  number;  // Lysa F+U + Buffert + Sparkonto
   tjp:     number;  // TjP Sverige + Löneväxling
-  norge:   number;  // TjP Norge + DNB + Storebrand
+  norge:   number;  // TjP Norge + DNB spara + DNB Norge
   allman:  number;  // IP + PP + NAV (SEK)
   aktier:  number;  // NORCO + Oncopeptides
   totalt:  number;

@@ -6,7 +6,7 @@
  * på ett ställe.
  */
 
-import type { EkonomiData, FireSettings, Snapshot } from './types';
+import type { EkonomiData, FireSettings, Snapshot, BudgetData } from './types';
 import { SLIDER_DEFAULTS, ALLMAN_DEFAULTS } from './constants';
 
 // ── Nyckelprefix ──────────────────────────────────────────────────────────────
@@ -16,6 +16,9 @@ const K = {
 
   // FIRE-inställningar (sliders i fire.html)
   fire: (field: keyof FireSettings) => `vek_fire_${field}`,
+
+  // Budget (månadsöversikt)
+  bgt: (field: keyof BudgetData) => `vek_bgt_${field}`,
 
   // Beräknade resultat som uttag.html läser (skrivs av fire.html)
   result: (field: string) => `vek_res_${field}`,
@@ -68,6 +71,8 @@ const EK_DEFAULTS: EkonomiData = {
   levnadskostnad: 65_000, levnadskostnad2: 50_000,
   exp_switch_ar: 10,
   exp_f: 0, exp_u: 0,
+  villa_varde: 5_300_000, villa_lan: 3_569_946, villa_amor: 4_650,
+  lagenhet_varde: 1_850_000, lagenhet_lan: 1_249_574, lagenhet_amor: 0,
 };
 
 export const ekStore = {
@@ -178,5 +183,42 @@ export const historikStore = {
       this.save(merged);
       return toAdd.length;
     } catch { return 0; }
+  },
+};
+
+// ── BudgetData ─────────────────────────────────────────────────────────────────
+const BUDGET_DEFAULTS: BudgetData = {
+  brutto_f: 67_300, netto_f: 44_500,
+  brutto_u: 35_500, netto_u: 28_090,
+  vardnadsbidrag: 4_317, barnbidrag: 1_250, hyra_lag_ink: 3_800,
+  lan_villa: 10_150, amor_villa: 3_400,
+  lan_lag:    3_800, amor_lag:   1_250,
+  vatten: 916, el: 0, energi: 588, avfall: 750,
+  kia_leasing: 4_231, kia_el: 3_978,
+  streaming: 499, bredband_fiber: 449, mobil: 1_194,
+  bredband_5g: 299, telia_cloud: 200,
+  hemforsakring: 411, tryghansa: 993, skandia_liv: 12,
+  if_skadef: 200, sv_lararnas: 907,
+  ledarna: 428, ledarnas_akas: 150, lararnas_akas: 150,
+  csn: 1_741, hjarnfonden: 600, friskis: 550,
+  lysa_f_mon: 5_000, lysa_u_mon: 8_500, lysa_buffert_mon: 9_000,
+  lysa_n_mon: 750, borgo_bank_mon: 2_000, resor_mon: 1_000,
+  mc_felipe: 11_750, mc_ulrika: 10_000,
+  nextory: 269, anthropic: 253, spotify: 219, misc_prenums: 0,
+};
+
+export const budgetStore = {
+  get(): BudgetData {
+    const d = { ...BUDGET_DEFAULTS };
+    (Object.keys(d) as (keyof BudgetData)[]).forEach(field => {
+      d[field] = getNum(K.bgt(field), d[field]);
+    });
+    return d;
+  },
+  setField(field: keyof BudgetData, val: number): void {
+    setNum(K.bgt(field), val);
+  },
+  getField(field: keyof BudgetData): number {
+    return getNum(K.bgt(field), BUDGET_DEFAULTS[field]);
   },
 };

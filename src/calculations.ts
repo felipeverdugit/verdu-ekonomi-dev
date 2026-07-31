@@ -237,7 +237,7 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
     nr: '1', year: fireYear,
     ageF: fireYear - felipe.born,
     ageU: fireYear - ulrika.born,
-    labels: ['FIRE-dag — privata fonder täcker gapet',
+    labels: ['Brygga-start — privata fonder täcker gapet',
       ...events.filter(e => e.year <= fireYear).map(e => e.label + ' (redan aktiv)')],
     incomeF: incomeF(fireYear),
     incomeU: incomeU(fireYear),
@@ -258,12 +258,26 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   });
 
   // ── FIRE-nummer & procent ──────────────────────────────────────────────────
-  const levnad    = ek.levnadskostnad;
+  const levnad     = ek.levnadskostnad;
   const fireNumber = levnad * 12 / 0.04;
-  const firePct   = fireNumber > 0 ? (kapital / fireNumber) * 100 : 0;
+
+  // Brygga-kapital = PV av gapet (levnadskostnad − pension) tills pensioner täcker allt
+  const r = (s.uttakAvkPct ?? 5) / 100;
+  let bryggaKapital = 0;
+  for (let yr = fireYear; yr <= fireYear + 60; yr++) {
+    const pensionMon = pensions
+      .filter(p => p.fromYear <= yr && yr <= p.toYear)
+      .reduce((sum, p) => sum + p.monthly, 0);
+    const gapAnnual = Math.max(0, levnad - pensionMon) * 12;
+    if (gapAnnual <= 0) break;
+    bryggaKapital += gapAnnual / Math.pow(1 + r, yr - fireYear);
+  }
+
+  const firePct      = fireNumber > 0 ? (kapital / fireNumber) * 100 : 0;
+  const bryggaTackning = bryggaKapital > 0 ? (kapital / bryggaKapital) * 100 : 0;
 
   return {
-    fireYear, fireNumber, firePct, kapital, totaltFV,
+    fireYear, fireNumber, firePct, bryggaKapital, bryggaTackning, kapital, totaltFV,
     uttakAvkPct: s.uttakAvkPct, skattFaktor,
     fonder_fv, sparkonto_fv, tjp_fv: tjp_fv_tot,
     norge_fv, pp_fv, ap_fv,

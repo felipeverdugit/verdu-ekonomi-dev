@@ -3,24 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FIRE-simulator — Verdu Ekonomi</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🔥</text></svg>">
+  <title>Brygga-simulator — Verdu Ekonomi</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🌉</text></svg>">
 </head>
 <body>
 <div class="page">
   <nav class="topnav" id="topnav"></nav>
   <div id="sync-bar"></div>
 
-  <h1>🔥 FIRE-simulator</h1>
+  <h1>🌉 Brygga-simulator</h1>
   <p class="subtitle" id="fire-subtitle">Laddar…</p>
 
   <!-- KPI -->
   <div class="kpi-bar">
-    <div class="kpi"><div class="kpi-label">FIRE-år</div><div class="kpi-value orange" id="kpi-year">—</div></div>
-    <div class="kpi"><div class="kpi-label">FIRE-tal</div><div class="kpi-value" id="kpi-number">—</div></div>
-    <div class="kpi"><div class="kpi-label">FIRE %</div><div class="kpi-value green" id="kpi-pct">—</div></div>
-    <div class="kpi"><div class="kpi-label">Fritt kapital vid FIRE</div><div class="kpi-value" id="kpi-kapital">—</div></div>
-    <div class="kpi"><div class="kpi-label">Total förmögenhet vid FIRE</div><div class="kpi-value purple" id="kpi-total">—</div></div>
+    <div class="kpi"><div class="kpi-label">Brygga-startår</div><div class="kpi-value orange" id="kpi-year">—</div></div>
+    <div class="kpi"><div class="kpi-label">Brygga-kapital</div><div class="kpi-value" id="kpi-brygga">—</div><div class="kpi-sub" style="font-size:.7rem;color:var(--muted)">PV av gap tills pension täcker allt</div></div>
+    <div class="kpi"><div class="kpi-label">Brygga-täckning</div><div class="kpi-value green" id="kpi-pct">—</div><div class="kpi-sub" style="font-size:.7rem;color:var(--muted)">Fritt kapital / brygga-kapital</div></div>
+    <div class="kpi"><div class="kpi-label">Fritt kapital vid start</div><div class="kpi-value" id="kpi-kapital">—</div></div>
+    <div class="kpi"><div class="kpi-label">Total förmögenhet vid start</div><div class="kpi-value purple" id="kpi-total">—</div></div>
   </div>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">

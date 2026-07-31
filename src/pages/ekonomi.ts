@@ -20,6 +20,7 @@ const FIELDS: (keyof EkonomiData)[] = [
   'pp_f','pp_u',
   'norco_antal','norco_kurs','oncop_antal','oncop_kurs',
   'brutto_f','brutto_u',
+  'villa_varde','villa_lan','villa_amor','lagenhet_varde','lagenhet_lan','lagenhet_amor',
   'levnadskostnad','levnadskostnad2','exp_switch_ar',
 ];
 
