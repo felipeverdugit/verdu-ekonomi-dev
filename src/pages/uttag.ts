@@ -73,17 +73,24 @@ function render(): void {
   // Simulering
   const sim = simulateUttag(kapital, avkPct, startYear, uttag, pensions);
 
-  // Verdict
+  // Verdict — bryggeperspektiv, inte SWR
   const verdictEl = document.getElementById('verdict')!;
-  if (sim.depletedYear) {
+  if (sim.depletedYear && (!sim.pensionFullYear || sim.depletedYear < sim.pensionFullYear)) {
+    // Kapitalet tar slut innan pensionen täcker allt
+    const gap = sim.pensionFullYear
+      ? ` (pensionerna täcker 100 % först ${sim.pensionFullYear})`
+      : '';
     verdictEl.className = 'verdict bad';
-    verdictEl.textContent = `⚠ Kapitalet tar slut ${sim.depletedYear} — minska uttag eller öka avkastning.`;
-  } else if (sim.swr > 4) {
-    verdictEl.className = 'verdict warn';
-    verdictEl.textContent = `~ SWR ${sim.swr.toFixed(1)} % är högt — kapitalet kan ta slut vid låg avkastning.`;
-  } else {
+    verdictEl.textContent = `⚠ Bryggan räcker inte — kapitalet tar slut ${sim.depletedYear}${gap}.`;
+  } else if (sim.pensionFullYear) {
+    const bridgeYears = sim.pensionFullYear - startYear;
+    const capLeft     = fmtM(sim.capitalAtBridge);
     verdictEl.className = 'verdict ok';
-    verdictEl.textContent = `✓ Kapitalet räcker till 2080+ med SWR ${sim.swr.toFixed(1)} %.`;
+    verdictEl.textContent = `✓ Pensionerna täcker 100 % av levnadskostnaden ${sim.pensionFullYear} (om ${bridgeYears} år) — kapital kvar: ${capLeft}.`;
+  } else {
+    // Pensionerna täcker aldrig 100 % — visa hur länge kapitalet räcker
+    verdictEl.className = 'verdict warn';
+    verdictEl.textContent = `~ Pensionerna täcker inte 100 % av levnadskostnaden — kapitalet behövs hela vägen.`;
   }
 
   // Diagram

@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fyra Hinkar — Verdu Ekonomi</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🪣</text></svg>">
+</head>
+<body>
+<div class="page">
+  <nav class="topnav" id="topnav"></nav>
+
+  <h1>🪣 Fyra Hinkar</h1>
+  <p class="subtitle">Nuläge per hink · Synkas automatiskt från Ekonomi-sidan.</p>
+
+  <!-- KPI-rad -->
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:32px">
+    <div class="kpi-card">
+      <div class="kpi-label">Totalt finansiellt</div>
+      <div class="kpi-value" id="kpi-total" style="color:var(--accent2)">—</div>
+      <div class="kpi-sub">fonder + TjP + aktier</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Levnadskostnad</div>
+      <div class="kpi-value" id="kpi-levnad" style="color:var(--accent1)">—</div>
+      <div class="kpi-sub">kr/mån</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Buffert behov</div>
+      <div class="kpi-value" id="kpi-buff-need" style="color:var(--orange)">—</div>
+      <div class="kpi-sub">3–6 månaders kostnader</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Lek-andel</div>
+      <div class="kpi-value" id="kpi-lek-pct" style="color:var(--red)">—</div>
+      <div class="kpi-sub">av hink 3 (max 10 %)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Månadsparande</div>
+      <div class="kpi-value" id="kpi-spar" style="color:var(--accent1)">—</div>
+      <div class="kpi-sub">privata fonder + sparkonto</div>
+    </div>
+  </div>
+
+  <!-- Måluppfyllnad -->
+  <div class="card" style="margin-bottom:24px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+      <div>
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Måluppfyllnad (hink 1–4 vs FIRE-tal)</div>
+        <div style="font-size:1.6rem;font-weight:800;font-variant-numeric:tabular-nums" id="gap-pct">—</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">FIRE-tal (4%-regeln)</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--muted)" id="gap-firetal">—</div>
+      </div>
+    </div>
+
+    <!-- Progressbar -->
+    <div style="background:var(--border);border-radius:6px;height:10px;margin-bottom:16px;overflow:hidden">
+      <div id="gap-bar" style="height:100%;border-radius:6px;transition:width .4s;background:var(--accent1)"></div>
+    </div>
+
+    <!-- Gap-info -->
+    <div id="gap-info-ok" style="display:none;font-size:.85rem;color:var(--green)">✓ Måluppfyllnad ≥ 80 % uppnådd.</div>
+    <div id="gap-info-missing" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:.85rem">
+        <div style="background:var(--accent1)10;border:1px solid var(--accent1)30;border-radius:8px;padding:12px">
+          <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px">Alternativ 1 — öka portföljen</div>
+          <div style="font-weight:700;color:var(--accent1)" id="gap-portf">—</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:2px">saknas i valfri hink</div>
+        </div>
+        <div style="background:var(--green)10;border:1px solid var(--green)30;border-radius:8px;padding:12px">
+          <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px">Alternativ 2 — sänk levnadskostnad</div>
+          <div style="font-weight:700;color:var(--green)" id="gap-levnad">—</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:2px">kr/mån ger 80 % med nuv. portfölj</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hinkar -->
+  <h2>Fördelning per hink</h2>
+
+  <!-- Hink 1 -->
+  <div class="card" style="border-left:4px solid var(--accent1)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:1.4rem">💧</span>
+      <div>
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Hink 1</div>
+        <div style="font-weight:700;font-size:1rem;color:var(--accent1)">Buffert</div>
+      </div>
+      <span id="h1-badge" class="badge" style="margin-left:auto"></span>
+    </div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">Kortsiktig trygghet — snabb tillgång, inga svängningar.</p>
+    <div class="form-row"><label>Borgo Bank / sparkonto</label><span id="h1-borgo" class="num">—</span></div>
+    <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">
+      <div class="form-row"><label style="font-weight:700">Totalt hink 1</label><span id="h1-total" class="num fw-bold" style="color:var(--accent1)">—</span></div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:4px" id="h1-note">Mål: —</div>
+    </div>
+
+    <!-- Sekundär buffert: kreditkort -->
+    <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">
+      <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px">Sekundär buffert — Kreditkort</div>
+      <div id="h1-kredit-rows"></div>
+      <div class="form-row" style="margin-top:6px">
+        <label style="font-weight:600">Totalt kredit</label>
+        <span id="h1-kredit-total" class="num" style="color:var(--muted);font-weight:600">—</span>
+      </div>
+    </div>
+    <div style="background:color-mix(in srgb,var(--accent1) 6%,transparent);border:1px solid color-mix(in srgb,var(--accent1) 20%,transparent);border-radius:8px;padding:12px;margin-top:10px">
+      <div style="font-size:.7rem;color:var(--muted);margin-bottom:4px">Total likviditet (primär + kredit)</div>
+      <div id="h1-likviditet" style="font-size:1.25rem;font-weight:800;color:var(--accent1)">—</div>
+      <div id="h1-likviditet-man" style="font-size:.78rem;font-weight:600;color:var(--accent1);margin-top:2px">—</div>
+    </div>
+  </div>
+
+  <!-- Hink 2 -->
+  <div class="card" style="border-left:4px solid var(--green)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:1.4rem">🏛</span>
+      <div>
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Hink 2</div>
+        <div style="font-weight:700;font-size:1rem;color:var(--green)">Bevara värdet</div>
+      </div>
+      <span class="badge" style="margin-left:auto;background:var(--green)18;color:var(--green);border:1px solid var(--green)40">✓ Välförsedd</span>
+    </div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">Inflationsskydd, låg risk. Livslånga pensioner + eventuella fastigheter.</p>
+    <div class="form-row"><label>Inkomstpension F + U</label><span id="h2-ip" class="num" style="color:var(--green)">—</span></div>
+    <div class="form-row"><label>NAV Norge F + U (NOK→SEK)</label><span id="h2-nav" class="num" style="color:var(--green)">—</span></div>
+    <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">
+      <div class="form-row"><label style="font-weight:700">Totalt hink 2</label><span id="h2-total" class="num fw-bold" style="color:var(--green)">—</span></div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Livslånga pensioner täcker grundbehov · Fastigheter ej inkluderade</div>
+    </div>
+  </div>
+
+  <!-- Hink 3 -->
+  <div class="card" style="border-left:4px solid var(--accent2)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:1.4rem">📈</span>
+      <div>
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Hink 3</div>
+        <div style="font-weight:700;font-size:1rem;color:var(--accent2)">Tillväxt</div>
+      </div>
+      <span class="badge" style="margin-left:auto;background:var(--accent2)18;color:var(--accent2);border:1px solid var(--accent2)40">✓ Stark</span>
+    </div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">Långsiktig förmögenhetsuppbyggnad — indexfonder och pensionskapital.</p>
+    <div class="form-row"><label>Lysa Felipe + Ulrika</label><span id="h3-lysa" class="num" style="color:var(--accent2)">—</span></div>
+    <div class="form-row"><label>Buffert Lysa (Ulrika)</label><span id="h3-buffert" class="num" style="color:var(--accent2)">—</span></div>
+    <div class="form-row"><label>TjP Sverige (F + U + VXL + Kåpan)</label><span id="h3-tjp-sve" class="num" style="color:var(--accent2)">—</span></div>
+    <div class="form-row"><label>TjP Norge + DNB + Storebrand</label><span id="h3-tjp-nor" class="num" style="color:var(--accent2)">—</span></div>
+    <div class="form-row"><label>Premiepension AP7 (F + U)</label><span id="h3-pp" class="num" style="color:var(--accent2)">—</span></div>
+    <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">
+      <div class="form-row"><label style="font-weight:700">Totalt hink 3</label><span id="h3-total" class="num fw-bold" style="color:var(--accent2)">—</span></div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Lek-tak 10 % = <span id="h3-lek-max">—</span></div>
+    </div>
+  </div>
+
+  <!-- Hink 4 -->
+  <div class="card" style="border-left:4px solid var(--orange)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:1.4rem">🎲</span>
+      <div>
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Hink 4</div>
+        <div style="font-weight:700;font-size:1rem;color:var(--orange)">Lek</div>
+      </div>
+      <span id="h4-badge" class="badge" style="margin-left:auto"></span>
+    </div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">Spekulativt sparande — max 10 % av tillväxthinken.</p>
+    <div class="form-row"><label>Norconsult (NOAB)</label><span id="h4-norco" class="num" style="color:var(--orange)">—</span></div>
+    <div class="form-row"><label>Oncopeptides</label><span id="h4-oncop" class="num" style="color:var(--orange)">—</span></div>
+    <div class="form-row"><label style="color:var(--muted)">Max tillåtet (10 %)</label><span id="h4-max" class="num" style="color:var(--muted)">—</span></div>
+    <div class="form-row" id="h4-excess-row"><label style="color:var(--red)">Överskott</label><span id="h4-excess" class="num" style="color:var(--red)">—</span></div>
+    <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">
+      <div class="form-row"><label style="font-weight:700">Totalt hink 4</label><span id="h4-total" class="num fw-bold" style="color:var(--orange)">—</span></div>
+    </div>
+  </div>
+
+  <!-- Hink-stapel -->
+  <h2>Hink-fördelning</h2>
+  <div class="card">
+    <div style="display:flex;height:24px;border-radius:6px;overflow:hidden;margin-bottom:12px">
+      <div id="bar-h1" style="background:var(--accent1);transition:width .4s" title="Buffert"></div>
+      <div id="bar-h2" style="background:var(--green);transition:width .4s"   title="Bevara"></div>
+      <div id="bar-h3" style="background:var(--accent2);transition:width .4s"  title="Tillväxt"></div>
+      <div id="bar-h4" style="background:var(--orange);transition:width .4s"  title="Lek"></div>
+    </div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;font-size:.8rem">
+      <span style="color:var(--accent1)">💧 Buffert <span id="pct-h1">—</span></span>
+      <span style="color:var(--green)">🏛 Bevara <span id="pct-h2">—</span></span>
+      <span style="color:var(--accent2)">📈 Tillväxt <span id="pct-h3">—</span></span>
+      <span style="color:var(--orange)">🎲 Lek <span id="pct-h4">—</span></span>
+    </div>
+    <div style="font-size:.75rem;color:var(--muted);margin-top:10px" id="stapel-note">—</div>
+  </div>
+
+  <!-- Rikedomstrappan -->
+  <h2>Rikedomstrappan</h2>
+  <div id="rtrappa" style="display:flex;flex-direction:column;gap:8px"></div>
+  <div id="rt-summary" class="card" style="margin-top:8px;font-size:.85rem;color:var(--muted);line-height:1.6"></div>
+
+  <!-- Ombalansering -->
+  <h2>Ombalansering — när och hur</h2>
+  <div class="card" style="font-size:.85rem">
+    <p style="color:var(--muted);margin-bottom:16px">Innan FIRE behöver ni <strong style="color:var(--text)">inte</strong> aktivt flytta från hink 3 → hink 2 — det sker automatiskt:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+      <div style="display:flex;gap:10px"><span style="color:var(--green);font-weight:700">→</span><span><strong>TjP-insättningar</strong> <span style="color:var(--muted)">växer i hink 3 och konverteras automatiskt till pension (hink 2) vid uttag</span></span></div>
+      <div style="display:flex;gap:10px"><span style="color:var(--green);font-weight:700">→</span><span><strong>Inkomstpensionen</strong> <span style="color:var(--muted)">växer via intjänade pensionsrätter varje år utan aktiva beslut</span></span></div>
+      <div style="display:flex;gap:10px"><span style="color:var(--green);font-weight:700">→</span><span><strong>NAV (Norge)</strong> <span style="color:var(--muted)">indexregleras automatiskt</span></span></div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:16px">
+      <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px">Tre regler</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="background:var(--green)20;color:var(--green);border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:700;white-space:nowrap;flex-shrink:0">Regel 1</div>
+          <div><strong>"5 år före"-regeln</strong><div style="color:var(--muted);margin-top:2px;font-size:.8rem">Börja sänka risken i hink 3 ca 5 år innan FIRE. Flytta delar av Lysa till räntefonder. Skyddar mot börskrasch precis när ni ska sluta jobba.</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="background:var(--accent2)20;color:var(--accent2);border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:700;white-space:nowrap;flex-shrink:0">Regel 2</div>
+          <div><strong>Årsregeln (under FIRE)</strong><div style="color:var(--muted);margin-top:2px;font-size:.8rem">En gång per år efter ett bra börsjår — sälj ur hink 3 det ni behöver för 1–2 år och flytta till hink 1. Under dåliga år: lev på hink 1, sälj ingenting.</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="background:var(--accent1)20;color:var(--accent1);border-radius:8px;padding:4px 10px;font-size:.75rem;font-weight:700;white-space:nowrap;flex-shrink:0">Regel 3</div>
+          <div><strong>Sälj aldrig i nedgång</strong><div style="color:var(--muted);margin-top:2px;font-size:.8rem">Hela poängen med hinkarna. Hink 1 ska räcka <span id="ob-buff-mon">3–6</span> månader så ni kan sitta still medan hink 3 återhämtar sig.</div></div>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px">
+      <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Tidslinje</div>
+      <table class="data-table">
+        <tr><th>Tidpunkt</th><th>Handling</th></tr>
+        <tr><td style="color:var(--green);font-weight:600">Nu</td><td style="color:var(--muted)">Bygg bufferten. Låt TjP + IP sköta hink 2 automatiskt.</td></tr>
+        <tr><td style="color:var(--accent1);font-weight:600">~5 år före FIRE</td><td style="color:var(--muted)">Sänk aktieandelen i Lysa stegvis (100% → 80% → 60%).</td></tr>
+        <tr><td style="color:var(--orange);font-weight:600">Vid FIRE</td><td style="color:var(--muted)">Bygg Borgo till <span id="ob-fire-buff">1–2 års</span> levnadskostnader innan ni slutar jobba.</td></tr>
+        <tr><td style="color:var(--accent2);font-weight:600">Under FIRE</td><td style="color:var(--muted)">Sälj ur Lysa/hink 3 varje höst om börsen är upp. Lev på hink 1 under dåliga år.</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Allmän pension intjäning -->
+  <h2>Inkomstpension — årets intjäning</h2>
+  <div class="card">
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:16px;line-height:1.6">
+      18,5 % av PGI avsätts: <strong style="color:var(--text)">16 %</strong> till inkomstpension · <strong style="color:var(--text)">2,5 %</strong> till premiepension (AP7).
+      Inkomsttak: 7,5 × IBB = <strong style="color:var(--text)">580 500 kr/år</strong>.
+    </p>
+    <table class="data-table" style="margin-bottom:20px">
+      <thead><tr><th></th><th class="num">Felipe</th><th class="num">Ulrika</th><th class="num">Totalt/år</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--muted)">Bruttolön/mån</td><td class="num" id="ap-brutto-f">—</td><td class="num" id="ap-brutto-u">—</td><td></td></tr>
+        <tr><td style="color:var(--muted)">PGI/år (capped vid tak)</td><td class="num" id="ap-pgi-f">—</td><td class="num" id="ap-pgi-u">—</td><td></td></tr>
+        <tr><td style="color:var(--muted)">Inkomstpension 16 %</td><td class="num" style="color:var(--green)" id="ap-ip-f">—</td><td class="num" style="color:var(--green)" id="ap-ip-u">—</td><td class="num fw-bold" style="color:var(--green)" id="ap-ip-tot">—</td></tr>
+        <tr><td style="color:var(--muted)">Premiepension 2,5 %</td><td class="num" style="color:var(--accent1)" id="ap-pp-f">—</td><td class="num" style="color:var(--accent1)" id="ap-pp-u">—</td><td class="num fw-bold" style="color:var(--accent1)" id="ap-pp-tot">—</td></tr>
+      </tbody>
+    </table>
+    <div style="border-top:1px solid var(--border);padding-top:16px">
+      <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;margin-bottom:14px;font-size:.8rem;color:var(--muted)">
+        <span style="font-weight:700;text-transform:uppercase;letter-spacing:.06em">Projektion</span>
+        <label style="display:flex;align-items:center;gap:6px">
+          IP-tillväxt (index) <input id="ap-ip-rate" type="number" value="3" min="0" max="10" step="0.5"
+            style="width:52px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:3px 6px;font-size:.78rem"> %
+        </label>
+        <label style="display:flex;align-items:center;gap:6px">
+          PP-tillväxt (AP7) <input id="ap-pp-rate" type="number" value="8" min="0" max="15" step="0.5"
+            style="width:52px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:3px 6px;font-size:.78rem"> %
+        </label>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Milstolpe</th><th class="num">Inkomstpension</th><th class="num">Premiepension</th><th class="num">Totalt kapital</th><th class="num">Est. /mån *</th></tr></thead>
+        <tbody id="ap-proj-body"></tbody>
+      </table>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:8px">* Månadsbelopp med delningstal 200 mån (≈ 16,7 år vid riktåldern 68). Avsättningar slutar vid FIRE.</div>
+    </div>
+  </div>
+
+  <!-- Reflektionsfrågor -->
+  <h2>Reflektionsfrågor</h2>
+  <div class="card" style="font-size:.85rem;color:var(--muted);line-height:1.8">
+    <div><span style="color:var(--accent1);font-weight:700">1.</span> Hur känns det att ha gjort sammanställningen? Något som överraskade dig?</div>
+    <div><span style="color:var(--accent1);font-weight:700">2.</span> Vad stack ut när du tittar på fördelningen?</div>
+    <div><span style="color:var(--accent1);font-weight:700">3.</span> Vad är du stolt över och vill ge dig och din partner en klapp på axeln för?</div>
+    <div><span style="color:var(--accent1);font-weight:700">4.</span> Finns det någon förändring du skulle önska göra?</div>
+    <div><span style="color:var(--accent1);font-weight:700">5.</span> Resonera utifrån storleken — är hinkarna rimliga utifrån era mål?</div>
+    <div><span style="color:var(--accent1);font-weight:700">6.</span> Tar ni låg, medel eller hög risk om man tittar på fördelningen bankkonto/räntor/aktier?</div>
+    <div><span style="color:var(--accent1);font-weight:700">7.</span> Om ni tittar på nyckeltalen vid pension — ser det ut som att ni kan leva det liv ni önskar?</div>
+    <div><span style="color:var(--accent1);font-weight:700">8.</span> Vad kan ni fira utifrån ovan?</div>
+  </div>
+
+  <footer style="font-size:.75rem;color:var(--muted);border-top:1px solid var(--border);padding-top:20px;margin-top:32px">
+    Källa: <a href="https://rikatillsammans.se/spara-och-investera/fyra-hinkar-modellen/" target="_blank" style="color:var(--muted)">Rika Tillsammans — Fyra Hinkar-modellen</a>
+    · Analysen är informativ, inte finansiell rådgivning.
+  </footer>
+</div>
+<script type="module" src="/src/pages/hinkar.ts"></script>
+</body>
+</html>

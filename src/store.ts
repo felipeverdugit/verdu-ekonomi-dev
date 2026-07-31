@@ -6,7 +6,7 @@
  * på ett ställe.
  */
 
-import type { EkonomiData, FireSettings } from './types';
+import type { EkonomiData, FireSettings, Snapshot } from './types';
 import { SLIDER_DEFAULTS, ALLMAN_DEFAULTS } from './constants';
 
 // ── Nyckelprefix ──────────────────────────────────────────────────────────────
@@ -19,6 +19,9 @@ const K = {
 
   // Beräknade resultat som uttag.html läser (skrivs av fire.html)
   result: (field: string) => `vek_res_${field}`,
+
+  // Historik
+  historik: 'vek_historik',
 } as const;
 
 // ── Hjälpfunktioner ────────────────────────────────────────────────────────────
@@ -141,4 +144,39 @@ export const resultStore = {
   },
   // Nyckeln uttag.html lyssnar på för att veta att data uppdaterats
   TRIGGER_KEY: K.result('updated_at'),
+};
+
+// ── Historik ──────────────────────────────────────────────────────────────────
+export const historikStore = {
+  load(): Snapshot[] {
+    try { return JSON.parse(localStorage.getItem(K.historik) || '[]'); } catch { return []; }
+  },
+  save(snaps: Snapshot[]): void {
+    localStorage.setItem(K.historik, JSON.stringify(snaps));
+  },
+  add(snap: Snapshot): void {
+    const snaps = this.load();
+    snaps.push(snap);
+    snaps.sort((a, b) => a.date.localeCompare(b.date));
+    this.save(snaps);
+  },
+  remove(index: number): void {
+    const snaps = this.load();
+    snaps.splice(index, 1);
+    this.save(snaps);
+  },
+  importFromOld(): number {
+    try {
+      const raw = localStorage.getItem('ek_historik');
+      if (!raw) return 0;
+      const old: Snapshot[] = JSON.parse(raw);
+      const existing = this.load();
+      const existingDates = new Set(existing.map(s => s.date));
+      const toAdd = old.filter(s => !existingDates.has(s.date));
+      const merged = [...existing, ...toAdd];
+      merged.sort((a, b) => a.date.localeCompare(b.date));
+      this.save(merged);
+      return toAdd.length;
+    } catch { return 0; }
+  },
 };

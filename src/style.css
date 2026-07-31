@@ -127,3 +127,41 @@ h2 { font-size: 1.2rem; font-weight: 600; margin: 32px 0 14px; color: var(--text
 .fw-bold      { font-weight: 700; }
 hr            { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
 footer        { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: .8rem; }
+
+/* ── Knappar ─────────────────────────────────────────────────────────────────── */
+.btn { border: none; border-radius: 8px; padding: 9px 20px; font-size: .9rem; font-weight: 600; cursor: pointer; transition: opacity .15s; }
+.btn:hover { opacity: .85; }
+.btn-primary   { background: var(--green);  color: #0f1117; }
+.btn-secondary { background: var(--card);   color: var(--text); border: 1px solid var(--border); }
+.btn-del { background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 5px; padding: 2px 7px; font-size: .75rem; cursor: pointer; }
+.btn-del:hover { border-color: var(--red); color: var(--red); }
+
+/* ── Åtgärdsrad (historik) ───────────────────────────────────────────────────── */
+.action-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.save-msg { color: var(--green); font-size: .85rem; }
+
+/* ── Historik-tabell ─────────────────────────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; }
+.tbl-wrap table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.tbl-wrap thead th { background: var(--card); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-size: .7rem; padding: 10px 12px; text-align: right; border-bottom: 2px solid var(--border); white-space: nowrap; }
+.tbl-wrap thead th:first-child { text-align: left; }
+.tbl-wrap tbody tr { border-bottom: 1px solid var(--border); }
+.tbl-wrap tbody tr:hover { background: var(--card); }
+.tbl-wrap tbody td { padding: 9px 12px; text-align: right; white-space: nowrap; }
+.tbl-wrap tbody td:first-child { text-align: left; }
+.col-fonder { color: #4f8ef7; }
+.col-tjp    { color: var(--green); }
+.col-norge  { color: var(--red); }
+.col-allman { color: #22d3ee; }
+.col-aktier { color: var(--orange); }
+.col-totalt { color: var(--accent2); font-weight: 800; }
+.col-delta  { }
+.empty { color: var(--muted); font-style: italic; padding: 32px 0; text-align: center; }
+.prognos-meta { display: flex; gap: 24px; flex-wrap: wrap; font-size: .8rem; color: var(--muted); margin-top: 10px; }
+.prognos-meta strong { color: var(--text); }
+
+/* ── Sync-bar ─────────────────────────────────────────────────────────────────── */
+.sync-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 0 18px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+.sync-user { font-size: .8rem; color: var(--muted); }
+.sync-btn { font-size: .8rem; padding: 6px 12px; }
+.sync-msg { font-size: .8rem; margin-left: 4px; }

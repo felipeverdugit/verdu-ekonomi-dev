@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historik — Verdu Ekonomi</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>📈</text></svg>">
+</head>
+<body>
+<div class="page">
+  <nav class="topnav" id="topnav"></nav>
+
+  <h1>Historik</h1>
+  <p class="subtitle">Spara en snapshot av dina värden — se hur förmögenheten utvecklas över tid.</p>
+
+  <div class="action-bar">
+    <button class="btn btn-primary" id="btn-save-snap">+ Spara snapshot idag</button>
+    <button class="btn btn-secondary" id="btn-import-old">⬇ Importera från gamla systemet</button>
+    <button class="btn btn-secondary" id="btn-export-json">📄 Exportera JSON</button>
+    <span class="save-msg" id="save-msg"></span>
+  </div>
+
+  <section>
+    <h2>Utveckling över tid</h2>
+    <div class="card chart-card">
+      <canvas id="lineChart"></canvas>
+    </div>
+  </section>
+
+  <section>
+    <h2>Prognos mot FIRE (7 %/år)</h2>
+    <div class="card chart-card">
+      <canvas id="prognosChart"></canvas>
+    </div>
+    <div class="prognos-meta">
+      <span>Utgångspunkt: <strong id="prognos-start">—</strong></span>
+      <span>Sparande/år: <strong id="prognos-spar-ar">—</strong></span>
+      <span>FIRE-mål: <strong class="text-orange" id="prognos-fire-num">—</strong></span>
+      <span class="text-muted">Grön = fortsätter nuvarande insättningar &nbsp;·&nbsp; Blå = enbart avkastning &nbsp;·&nbsp; ● 2035 &amp; ● 2037 = FIRE-scenarier</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Logg</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th class="col-fonder">Privata fonder</th>
+            <th class="col-tjp">TjP &amp; LöneVXL</th>
+            <th class="col-norge">TjP Norge</th>
+            <th class="col-allman">Allmänpension</th>
+            <th class="col-aktier">Aktier</th>
+            <th class="col-totalt">Totalt</th>
+            <th class="col-delta">Δ Totalt</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tbl-body">
+          <tr><td colspan="9" class="empty">Inga snapshots sparade än.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>Historik · Data sparas lokalt i webbläsaren (localStorage)</footer>
+</div>
+<script type="module" src="/src/pages/historik.ts"></script>
+</body>
+</html>

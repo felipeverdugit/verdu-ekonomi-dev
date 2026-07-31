@@ -11,6 +11,8 @@ export default defineConfig({
         ekonomi: resolve(__dirname, 'ekonomi.html'),
         fire:    resolve(__dirname, 'fire.html'),
         uttag:   resolve(__dirname, 'uttag.html'),
+        hinkar:  resolve(__dirname, 'hinkar.html'),
+        historik: resolve(__dirname, 'historik.html'),
       },
     },
   },

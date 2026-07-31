@@ -154,6 +154,17 @@ export interface TimelineEvent {
   label: string;
 }
 
+// ── Historik-snapshot ────────────────────────────────────────────────────────
+export interface Snapshot {
+  date:    string;
+  fonder:  number;  // Lysa F+U + Buffert + Sparkonto
+  tjp:     number;  // TjP Sverige + Löneväxling
+  norge:   number;  // TjP Norge + DNB + Storebrand
+  allman:  number;  // IP + PP + NAV (SEK)
+  aktier:  number;  // NORCO + Oncopeptides
+  totalt:  number;
+}
+
 // ── Uttags-simulering ─────────────────────────────────────────────────────────
 export interface UttakRow {
   year:       number;
@@ -165,7 +176,8 @@ export interface UttakRow {
 }
 
 export interface UttakResult {
-  rows:          UttakRow[];
-  depletedYear:  number | null;
-  swr:           number;         // Safe withdrawal rate %
+  rows:             UttakRow[];
+  depletedYear:     number | null;
+  pensionFullYear:  number | null;  // Första år pension >= levnadskostnad
+  capitalAtBridge:  number;         // Kapital kvar när pensionen täcker 100 %
 }

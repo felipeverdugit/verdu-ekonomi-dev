@@ -33,19 +33,45 @@ function accountFV(
   pmtVal: number,
   freq: 'monthly' | 'quarterly',
   avkPctAr: number,
-  yearsActive: number,  // år med insättningar
-  yearsTotal: number,   // totalt antal år att beräkna
+  yearsActive: number,
+  yearsTotal: number,
 ): number {
-  const rMonth   = Math.pow(1 + avkPctAr / 100, 1 / 12) - 1;
-  const rQuarter = Math.pow(1 + avkPctAr / 100, 1 / 4) - 1;
-
-  const r     = freq === 'quarterly' ? rQuarter : rMonth;
-  const nAkt  = freq === 'quarterly' ? yearsActive * 4 : yearsActive * 12;
-  const nRest = freq === 'quarterly' ? (yearsTotal - yearsActive) * 4 : (yearsTotal - yearsActive) * 12;
-
+  const periods  = freq === 'quarterly' ? 4 : 12;
+  const r        = Math.pow(1 + avkPctAr / 100, 1 / periods) - 1;
+  const nAkt     = yearsActive * periods;
+  const nRest    = (yearsTotal - yearsActive) * periods;
   const pvAtFire = fv(r, nAkt, -pmtVal, -pv);
   if (nRest <= 0) return pvAtFire;
   return fv(r, nRest, 0, -pvAtFire);
+}
+
+/**
+ * FV för ett konto där insättningen växer med growthPctAr per år (lönehöjning).
+ * Använder formel för växande annuitet: PMT₁·[(1+r)ⁿ − (1+g)ⁿ]/(r−g)
+ */
+function accountFVGrowing(
+  pv: number,
+  pmt: number,
+  freq: 'monthly' | 'quarterly',
+  avkPctAr: number,
+  growthPctAr: number,
+  yearsActive: number,
+  yearsTotal: number,
+): number {
+  if (growthPctAr === 0) return accountFV(pv, pmt, freq, avkPctAr, yearsActive, yearsTotal);
+  const periods = freq === 'quarterly' ? 4 : 12;
+  const r       = Math.pow(1 + avkPctAr    / 100, 1 / periods) - 1;
+  const g       = Math.pow(1 + growthPctAr / 100, 1 / periods) - 1;
+  const n       = yearsActive * periods;
+
+  const fvPV      = pv * Math.pow(1 + r, n);
+  const fvAnnuity = Math.abs(r - g) < 1e-12
+    ? pmt * n * Math.pow(1 + r, n - 1)
+    : pmt * (Math.pow(1 + r, n) - Math.pow(1 + g, n)) / (r - g);
+
+  const pvAtFire = fvPV + fvAnnuity;
+  const nRest    = (yearsTotal - yearsActive) * periods;
+  return nRest > 0 ? pvAtFire * Math.pow(1 + r, nRest) : pvAtFire;
 }
 
 // ── Huvud-beräkningsfunktion ───────────────────────────────────────────────────
@@ -66,12 +92,12 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const lysa_u_fv    = accountFV(ek.lysa_u_pv,    ek.lysa_u_pmt,    'monthly',   avkPct, antalAr, antalAr);
   const buffert_u_fv = accountFV(ek.buffert_u_pv,  ek.buffert_u_pmt, 'monthly',   avkPct, antalAr, antalAr);
 
-  // Tjänstepension Sverige (insättningar slutar vid FIRE)
-  const tjp_f_fv     = accountFV(ek.tjp_f_pv,    ek.tjp_f_pmt_q,   'quarterly', avkPct, antalAr, antalAr);
-  const lonevxl_fv   = accountFV(ek.lonevxl_pv,  ek.lonevxl_pmt,   'monthly',   avkPct, antalAr, antalAr);
-  const tidigare_fv  = accountFV(ek.tidigare_pv,  0,                 'monthly',   avkPct, antalAr, antalAr);
-  const kapan_fv     = accountFV(ek.kapan_pv,     0,                 'monthly',   avkPct, antalAr, antalAr);
-  const tjp_u_fv     = accountFV(ek.tjp_u_pv,    ek.tjp_u_pmt_q,   'quarterly', avkPct, antalAr, antalAr);
+  // Tjänstepension Sverige (insättningar slutar vid FIRE, växer med lönehöjning)
+  const tjp_f_fv     = accountFVGrowing(ek.tjp_f_pv,   ek.tjp_f_pmt_q,  'quarterly', avkPct, s.lonehojF, antalAr, antalAr);
+  const lonevxl_fv   = accountFVGrowing(ek.lonevxl_pv, ek.lonevxl_pmt,  'monthly',   avkPct, s.lonehojF, antalAr, antalAr);
+  const tidigare_fv  = accountFV(ek.tidigare_pv,  0,                     'monthly',   avkPct, antalAr, antalAr);
+  const kapan_fv     = accountFV(ek.kapan_pv,     0,                     'monthly',   avkPct, antalAr, antalAr);
+  const tjp_u_fv     = accountFVGrowing(ek.tjp_u_pv,   ek.tjp_u_pmt_q,  'quarterly', avkPct, s.lonehojU, antalAr, antalAr);
 
   // TjP Norge (ingen pmt — kapitalbaserat)
   const norge_f_fv   = accountFV(ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv, 0, 'monthly', avkPct, antalAr, antalAr);
@@ -85,12 +111,22 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   // Premiepension (AP7, ingen insättning — växer med avkPct)
   const pp_fv = (ek.pp_f + ek.pp_u) * Math.pow(1 + avkPct / 100, antalAr);
 
-  // Inkomstpension — projiceras med AP_INDEX_RATE + nya avsättningar
-  const ap_brutto_f  = Math.min(ek.brutto_f * 12, AP_TAK);
-  const ap_brutto_u  = Math.min(ek.brutto_u * 12, AP_TAK);
-  const ap_annual    = (ap_brutto_f + ap_brutto_u) * 0.16;
-  const ap_fv = (ek.ap_f + ek.ap_u) * Math.pow(1 + AP_INDEX_RATE, antalAr)
-    + ap_annual * (Math.pow(1 + AP_INDEX_RATE, antalAr) - 1) / AP_INDEX_RATE;
+  // Inkomstpension — kapital indexeras med AP_INDEX_RATE, avsättningar växer med lön
+  const ap_brutto_f   = Math.min(ek.brutto_f * 12, AP_TAK);
+  const ap_brutto_u   = Math.min(ek.brutto_u * 12, AP_TAK);
+  const ap_annual_f   = ap_brutto_f * 0.16;
+  const ap_annual_u   = ap_brutto_u * 0.16;
+  const apIndexR      = AP_INDEX_RATE;
+
+  function apGrowingContrib(annualPmt: number, salaryGrowth: number): number {
+    const g = salaryGrowth / 100;
+    if (Math.abs(apIndexR - g) < 1e-12) return annualPmt * antalAr * Math.pow(1 + apIndexR, antalAr - 1);
+    return annualPmt * (Math.pow(1 + apIndexR, antalAr) - Math.pow(1 + g, antalAr)) / (apIndexR - g);
+  }
+
+  const ap_fv = (ek.ap_f + ek.ap_u) * Math.pow(1 + apIndexR, antalAr)
+    + apGrowingContrib(ap_annual_f, s.lonehojF)
+    + apGrowingContrib(ap_annual_u, s.lonehojU);
 
   // NAV (norsk statspension) — nuv. kapital i SEK
   const nav_sek = (ek.nav_f_nok + ek.nav_u_nok) * ek.nok_sek;
@@ -145,12 +181,14 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const f_norsk_mon   = Math.round(pmt(uttakAvkMon, NORSK_TJP_PERIOD * 12, f_norsk_cap));
 
   // PMT för svensk TjP: kapitalet växer från FIRE till startår, sedan tjpAr-PMT
-  const u_tjp_extra = Math.max(0, u_tjp_start - fireYear);
-  const f_tjp_extra = Math.max(0, f_tjp_start - fireYear);
-  const u_tjp_cap   = grp_tjp_u * Math.pow(1 + avkPct / 100, u_tjp_extra);
-  const f_tjp_cap   = (grp_tjp_f + grp_lonevxl) * Math.pow(1 + avkPct / 100, f_tjp_extra);
-  const u_tjp_mon   = Math.round(pmt(uttakAvkMon, s.tjpAr * 12, u_tjp_cap));
-  const f_tjp_mon   = Math.round(pmt(uttakAvkMon, s.tjpAr * 12, f_tjp_cap));
+  const u_tjp_extra    = Math.max(0, u_tjp_start - fireYear);
+  const f_tjp_extra    = Math.max(0, f_tjp_start - fireYear);
+  const u_tjp_cap      = grp_tjp_u   * Math.pow(1 + avkPct / 100, u_tjp_extra);
+  const f_tjp_cap      = grp_tjp_f   * Math.pow(1 + avkPct / 100, f_tjp_extra);
+  const f_lonevxl_cap  = grp_lonevxl * Math.pow(1 + avkPct / 100, f_tjp_extra);
+  const u_tjp_mon      = Math.round(pmt(uttakAvkMon, s.tjpAr * 12, u_tjp_cap));
+  const f_tjp_mon      = Math.round(pmt(uttakAvkMon, s.tjpAr * 12, f_tjp_cap));
+  const f_lonevxl_mon  = Math.round(pmt(uttakAvkMon, s.tjpAr * 12, f_lonevxl_cap));
 
   // Allmänpension (statlig + norsk NAV inntektspension)
   const u_allman_mon = Math.round((ek.allman_se_u + ek.norsk_u) * skattFaktor);
@@ -161,7 +199,8 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
     { id: 2, label: 'Svensk TjP — Ulrika',            who: 'u', fromYear: u_tjp_start,    toYear: u_tjp_end,   monthly: Math.round(u_tjp_mon  * skattFaktor), livsvarig: false },
     { id: 3, label: 'Norsk TjP — Felipe',             who: 'f', fromYear: YR_F_NORSK_TJP, toYear: f_norsk_end, monthly: Math.round(f_norsk_mon * skattFaktor), livsvarig: false },
     { id: 4, label: 'Allmänpension Ulrika (SE+NAV)',  who: 'u', fromYear: YR_U_ALLMAN,    toYear: 9999,        monthly: u_allman_mon,                          livsvarig: true  },
-    { id: 5, label: 'Svensk TjP — Felipe',            who: 'f', fromYear: f_tjp_start,    toYear: f_tjp_end,   monthly: Math.round(f_tjp_mon  * skattFaktor), livsvarig: false },
+    { id: 5, label: 'Svensk TjP — Felipe',            who: 'f', fromYear: f_tjp_start,    toYear: f_tjp_end,   monthly: Math.round(f_tjp_mon      * skattFaktor), livsvarig: false },
+    { id: 8, label: 'Löneväxling — Felipe',           who: 'f', fromYear: f_tjp_start,    toYear: f_tjp_end,   monthly: Math.round(f_lonevxl_mon  * skattFaktor), livsvarig: false },
     { id: 6, label: 'Fast TjP Felipe (Alecta/KPA)',  who: 'f', fromYear: YR_F_FAST_TJP,  toYear: 9999,        monthly: Math.round(FAST_TJP_FELIPE * skattFaktor), livsvarig: true  },
     { id: 7, label: 'Allmänpension Felipe (SE+NAV)', who: 'f', fromYear: YR_F_ALLMAN,    toYear: 9999,        monthly: f_allman_mon,                          livsvarig: true  },
   ];
@@ -242,23 +281,30 @@ export function simulateUttag(
 ): UttakResult {
   const rows: UttakRow[] = [];
   let cap = kapital;
-  let depletedYear: number | null = null;
+  let depletedYear:    number | null = null;
+  let pensionFullYear: number | null = null;
+  let capitalAtBridge = 0;
   const avkPctDecimal = avkPct / 100;
 
   for (let yr = startYear; yr <= 2080; yr++) {
     const pensionMon = pensions
       .filter(p => p.fromYear <= yr && yr <= p.toYear)
       .reduce((s, p) => s + p.monthly, 0);
-    const netUttag   = Math.max(0, monthlyUttag - pensionMon);
-    const returns    = cap * avkPctDecimal;
-    const delta      = returns - netUttag * 12;
+    const netUttag = Math.max(0, monthlyUttag - pensionMon);
+    const returns  = cap * avkPctDecimal;
+    const delta    = returns - netUttag * 12;
 
     rows.push({ year: yr, capital: Math.max(0, cap), returns, pensionMon, netUttag, delta });
 
     if (cap <= 0 && depletedYear === null) depletedYear = yr;
+
+    if (pensionFullYear === null && pensionMon >= monthlyUttag) {
+      pensionFullYear = yr;
+      capitalAtBridge = Math.max(0, cap);
+    }
+
     cap = Math.max(0, cap + delta);
   }
 
-  const swr = kapital > 0 ? (monthlyUttag * 12) / kapital * 100 : 0;
-  return { rows, depletedYear, swr };
+  return { rows, depletedYear, pensionFullYear, capitalAtBridge };
 }

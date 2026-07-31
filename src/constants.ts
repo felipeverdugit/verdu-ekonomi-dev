@@ -69,10 +69,67 @@ export const SLIDER_RANGES = {
   uAllmanAge:    { min: 62, max: 70, step: 1   },
 } as const;
 
+// ── Google Sheets sync ───────────────────────────────────────────────────────
+export const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxtwNDdYA5r412iinnItbLoPO87AQZ3D8Fmjg7oHsQE76C9-1tilYORjbbgR4OtnY2Pjw/exec';
+
+// Mapping: Sheets-nyckel → EkonomiData-fält
+// PMT-värden som saknas i Sheets är hämtade från Excel via Python (senast kända)
+export const SHEETS_MAP: Record<string, string> = {
+  ek_bal_lysaf:       'lysa_f_pv',
+  ek_spar_lysaf:      'lysa_f_pmt',
+  ek_bal_lysau:       'lysa_u_pv',
+  ek_spar_lysau:      'lysa_u_pmt',
+  ek_bal_buffert:     'buffert_u_pv',
+  ek_spar_buffert:    'buffert_u_pmt',
+  ek_bal_tjpf:        'tjp_f_pv',
+  ek_bal_lonevxl:     'lonevxl_pv',
+  ek_bal_tidligare:   'tidigare_pv',
+  ek_bal_kapan:       'kapan_pv',
+  ek_bal_tjpu:        'tjp_u_pv',
+  ek_bal_norgef:      'norge_f_pv',
+  ek_bal_dnbf:        'dnb_f_pv',
+  ek_bal_sbf:         'sb_f_pv',
+  ek_bal_sbu:         'sb_u_pv',
+  ek_bal_dnbu:        'dnb_u_pv',
+  ek_bal_sparkonto:   'sparkonto_pv',
+  ek_spar_borgo:      'sparkonto_pmt',
+  ek_bal_ap_f:        'ap_f',
+  ek_bal_ap_u:        'ap_u',
+  ek_bal_nav_f:       'nav_f_nok',
+  ek_bal_nav_u:       'nav_u_nok',
+  ek_bal_nok_sek:     'nok_sek',
+  ek_bal_pp_f:        'pp_f',
+  ek_bal_pp_u:        'pp_u',
+  ek_bal_norco_antal: 'norco_antal',
+  ek_bal_norco_kurs:  'norco_kurs',
+  ek_bal_oncop_antal: 'oncop_antal',
+  ek_bal_oncop_kurs:  'oncop_kurs',
+  ek_brutto_f:        'brutto_f',
+  ek_brutto_u:        'brutto_u',
+  ek_levnadskostnad:  'levnadskostnad',
+};
+
+// PMT-värden som saknas i Sheets (från Excel-källa)
+export const EXCEL_PMTS = {
+  tjp_f_pmt_q:  25000,  // TjP Kommun Felipe, kr/kvartal
+  lonevxl_pmt:  11638,  // Löneväxling, kr/månad
+  tjp_u_pmt_q:  6500,   // TjP UV Kommun Ulrika, kr/kvartal
+};
+
+// ── Kreditkort (sekundär buffert) ─────────────────────────────────────────────
+export const KREDITKORT = [
+  { label: 'MC — LF (#1)',     limit: 70_000 },
+  { label: 'MC — DNB',        limit: 150_000 },
+  { label: 'MC — LF (#2)',    limit: 30_000 },
+  { label: 'VISA — Norwegian', limit: 150_000 },
+] as const;
+
 // ── Sidonavigation ────────────────────────────────────────────────────────────
 export const NAV_LINKS = [
   { href: 'index.html',   label: 'Dashboard',  icon: '🏠' },
   { href: 'ekonomi.html', label: 'Ekonomi',    icon: '💰' },
   { href: 'fire.html',    label: 'FIRE',        icon: '🔥' },
   { href: 'uttag.html',   label: 'Uttag',       icon: '📊' },
+  { href: 'hinkar.html',   label: 'Hinkar',      icon: '🪣' },
+  { href: 'historik.html', label: 'Historik',    icon: '📈' },
 ] as const;

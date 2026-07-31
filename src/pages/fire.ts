@@ -4,6 +4,7 @@ import { computeFire, simulateUttag } from '../calculations';
 import { ekStore, fireStore, resultStore } from '../store';
 import { NAV_LINKS, SLIDER_RANGES } from '../constants';
 import type { FireResult, FireSettings } from '../types';
+import { initSyncWidget } from '../syncWidget';
 
 Chart.register(ArcElement, DoughnutController, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler);
 
@@ -215,6 +216,7 @@ function initSliders(): void {
 // ── Starta ─────────────────────────────────────────────────────────────────────
 initSliders();
 render();
+initSyncWidget(() => { initSliders(); render(); });
 
 // Lyssna om ekonomi.html uppdaterar data i annan flik
 window.addEventListener('storage', (e) => {
