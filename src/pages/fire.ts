@@ -75,18 +75,11 @@ function updateFaseTable(r: FireResult, ek: { levnadskostnad: number }): void {
 
   tbody.innerHTML = r.phases.map((ph, i) => {
     const tot      = ph.incomeF + ph.incomeU;
-    const prev     = i > 0 ? r.phases[i - 1].incomeF + r.phases[i - 1].incomeU : tot;
-    const delta    = tot - prev;
     const gap      = ek.levnadskostnad - tot;
     const color    = FASE_COLORS[i] ?? '#8892a4';
-    const deltaHtml = i === 0
-      ? '<span class="text-muted">—</span>'
-      : delta > 0
-        ? `<span class="text-green fw-bold">+${fmt(delta)}</span>`
-        : `<span class="text-red fw-bold">${fmt(delta)}</span>`;
     const gapHtml = gap > 0
       ? `<span class="text-red fw-bold">-${fmt(Math.round(gap))}</span>`
-      : `<span class="text-green fw-bold">✓</span>`;
+      : `<span class="text-green fw-bold">+${fmt(Math.round(-gap))}</span>`;
     const badges = ph.labels.map(l => {
       const ev = r.events.find(e => e.label === l.replace(' (redan aktiv)', ''));
       return badge(l, ev?.who ?? 'f');
@@ -100,7 +93,7 @@ function updateFaseTable(r: FireResult, ek: { levnadskostnad: number }): void {
       <td class="num text-felipe fw-bold">${fmt(ph.incomeF)}</td>
       <td class="num text-ulrika fw-bold">${fmt(ph.incomeU)}</td>
       <td class="num fw-bold">${fmt(tot)}</td>
-      <td class="num">${i === 0 ? gapHtml : deltaHtml}</td>
+      <td class="num">${gapHtml}</td>
     </tr>`;
   }).join('');
 }

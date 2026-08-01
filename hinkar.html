@@ -239,42 +239,6 @@
     </div>
   </div>
 
-  <!-- Allmän pension intjäning -->
-  <h2>Inkomstpension — årets intjäning</h2>
-  <div class="card">
-    <p style="font-size:.78rem;color:var(--muted);margin-bottom:16px;line-height:1.6">
-      18,5 % av PGI avsätts: <strong style="color:var(--text)">16 %</strong> till inkomstpension · <strong style="color:var(--text)">2,5 %</strong> till premiepension (AP7).
-      Inkomsttak: 7,5 × IBB = <strong style="color:var(--text)">580 500 kr/år</strong>.
-    </p>
-    <table class="data-table" style="margin-bottom:20px">
-      <thead><tr><th></th><th class="num">Felipe</th><th class="num">Ulrika</th><th class="num">Totalt/år</th></tr></thead>
-      <tbody>
-        <tr><td style="color:var(--muted)">Bruttolön/mån</td><td class="num" id="ap-brutto-f">—</td><td class="num" id="ap-brutto-u">—</td><td></td></tr>
-        <tr><td style="color:var(--muted)">PGI/år (capped vid tak)</td><td class="num" id="ap-pgi-f">—</td><td class="num" id="ap-pgi-u">—</td><td></td></tr>
-        <tr><td style="color:var(--muted)">Inkomstpension 16 %</td><td class="num" style="color:var(--green)" id="ap-ip-f">—</td><td class="num" style="color:var(--green)" id="ap-ip-u">—</td><td class="num fw-bold" style="color:var(--green)" id="ap-ip-tot">—</td></tr>
-        <tr><td style="color:var(--muted)">Premiepension 2,5 %</td><td class="num" style="color:var(--accent1)" id="ap-pp-f">—</td><td class="num" style="color:var(--accent1)" id="ap-pp-u">—</td><td class="num fw-bold" style="color:var(--accent1)" id="ap-pp-tot">—</td></tr>
-      </tbody>
-    </table>
-    <div style="border-top:1px solid var(--border);padding-top:16px">
-      <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;margin-bottom:14px;font-size:.8rem;color:var(--muted)">
-        <span style="font-weight:700;text-transform:uppercase;letter-spacing:.06em">Projektion</span>
-        <label style="display:flex;align-items:center;gap:6px">
-          IP-tillväxt (index) <input id="ap-ip-rate" type="number" value="3" min="0" max="10" step="0.5"
-            style="width:52px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:3px 6px;font-size:.78rem"> %
-        </label>
-        <label style="display:flex;align-items:center;gap:6px">
-          PP-tillväxt (AP7) <input id="ap-pp-rate" type="number" value="8" min="0" max="15" step="0.5"
-            style="width:52px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:3px 6px;font-size:.78rem"> %
-        </label>
-      </div>
-      <table class="data-table">
-        <thead><tr><th>Milstolpe</th><th class="num">Inkomstpension</th><th class="num">Premiepension</th><th class="num">Totalt kapital</th><th class="num">Est. /mån *</th></tr></thead>
-        <tbody id="ap-proj-body"></tbody>
-      </table>
-      <div style="font-size:.72rem;color:var(--muted);margin-top:8px">* Månadsbelopp med delningstal 200 mån (≈ 16,7 år vid riktåldern 68). Avsättningar slutar vid FIRE.</div>
-    </div>
-  </div>
-
   <!-- Reflektionsfrågor -->
   <h2>Reflektionsfrågor</h2>
   <div class="card" style="font-size:.85rem;color:var(--muted);line-height:1.8">

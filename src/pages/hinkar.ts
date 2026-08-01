@@ -1,7 +1,7 @@
 import '../../src/style.css';
 import { initAuth } from '../auth';
-import { ekStore, resultStore } from '../store';
-import { NAV_LINKS, PEOPLE, AP_TAK, AP_IBB, KREDITKORT } from '../constants';
+import { ekStore } from '../store';
+import { NAV_LINKS, KREDITKORT } from '../constants';
 import type { EkonomiData } from '../types';
 
 await initAuth();
@@ -197,75 +197,6 @@ function renderRikedomstrappan(h: HinkarResult, ek: EkonomiData): void {
   void ek; // suppress unused warning
 }
 
-// ── AP-projektion ──────────────────────────────────────────────────────────────
-function renderAPProjektion(ek: EkonomiData): void {
-  const { felipe, ulrika } = PEOPLE;
-  const THIS_YR   = new Date().getFullYear();
-  const fireYear  = resultStore.getNum('fireYear', THIS_YR + 10);
-  const fireOff   = Math.max(0, fireYear - THIS_YR);
-
-  const bruttoF   = ek.brutto_f * 12;
-  const bruttoU   = ek.brutto_u * 12;
-  const pgiF      = Math.min(bruttoF, AP_TAK);
-  const pgiU      = Math.min(bruttoU, AP_TAK);
-  const ipF_ann   = pgiF * 0.16;
-  const ipU_ann   = pgiU * 0.16;
-  const ppF_ann   = pgiF * 0.025;
-  const ppU_ann   = pgiU * 0.025;
-
-  el('ap-brutto-f').textContent = fmt(ek.brutto_f);
-  el('ap-brutto-u').textContent = fmt(ek.brutto_u);
-  el('ap-pgi-f').textContent    = fmt(pgiF) + (bruttoF > AP_TAK ? ' (tak)' : '');
-  el('ap-pgi-u').textContent    = fmt(pgiU);
-  el('ap-ip-f').textContent     = fmt(ipF_ann);
-  el('ap-ip-u').textContent     = fmt(ipU_ann);
-  el('ap-ip-tot').textContent   = fmt(ipF_ann + ipU_ann);
-  el('ap-pp-f').textContent     = fmt(ppF_ann);
-  el('ap-pp-u').textContent     = fmt(ppU_ann);
-  el('ap-pp-tot').textContent   = fmt(ppF_ann + ppU_ann);
-
-  const ipRate = (parseFloat((el('ap-ip-rate') as HTMLInputElement).value) || 3) / 100;
-  const ppRate = (parseFloat((el('ap-pp-rate') as HTMLInputElement).value) || 8) / 100;
-  const DELNINGSTAL = 200;
-
-  function projBal(bal0: number, annNew: number, rate: number, totalYrs: number): number {
-    const ph1 = Math.min(totalYrs, fireOff);
-    const b1  = ph1 > 0
-      ? bal0 * Math.pow(1 + rate, ph1) + annNew * (Math.pow(1 + rate, ph1) - 1) / rate
-      : bal0;
-    if (totalYrs <= fireOff) return b1;
-    return b1 * Math.pow(1 + rate, totalYrs - ph1);
-  }
-
-  const milstolpar: { yr: number; lbl: string; ipF0: number; ipU0: number; ppF0: number; ppU0: number; isRikt: boolean; label?: string }[] = [
-    { yr: THIS_YR + 5, lbl: `${THIS_YR + 5}`, ipF0: ek.ap_f, ipU0: ek.ap_u, ppF0: ek.pp_f, ppU0: ek.pp_u, isRikt: false },
-    { yr: fireYear,    lbl: `FIRE ${fireYear} — Felipe ${fireYear - felipe.born} / Ulrika ${fireYear - ulrika.born}`, ipF0: ek.ap_f, ipU0: ek.ap_u, ppF0: ek.pp_f, ppU0: ek.pp_u, isRikt: false },
-    { yr: ulrika.born + 68, lbl: `Ulrika 68 — riktålder`, ipF0: ek.ap_f, ipU0: ek.ap_u, ppF0: ek.pp_f, ppU0: ek.pp_u, isRikt: true },
-    { yr: felipe.born + 68, lbl: `Felipe 68 — riktålder`, ipF0: ek.ap_f, ipU0: ek.ap_u, ppF0: ek.pp_f, ppU0: ek.pp_u, isRikt: true },
-  ];
-
-  const tbody = el('ap-proj-body');
-  tbody.innerHTML = milstolpar.map(m => {
-    const ny      = m.yr - THIS_YR;
-    if (ny <= 0) return '';
-    const ipBal   = Math.round(projBal(m.ipF0, ipF_ann, ipRate, ny) + projBal(m.ipU0, ipU_ann, ipRate, ny));
-    const ppBal   = Math.round(projBal(m.ppF0, ppF_ann, ppRate, ny) + projBal(m.ppU0, ppU_ann, ppRate, ny));
-    const tot     = ipBal + ppBal;
-    const manEst  = m.isRikt ? fmt(Math.round(tot / DELNINGSTAL)) : '—';
-    const rowStyle = m.isRikt ? 'background:color-mix(in srgb,var(--green) 6%,transparent)' : '';
-    const yearColor = m.isRikt ? 'var(--green)' : 'var(--muted)';
-    return `<tr style="${rowStyle}">
-      <td style="color:${yearColor};font-weight:${m.isRikt ? 600 : 400}">${m.lbl}</td>
-      <td class="num" style="color:var(--green)">${fmt(ipBal)}</td>
-      <td class="num" style="color:var(--accent1)">${fmt(ppBal)}</td>
-      <td class="num fw-bold">${fmt(tot)}</td>
-      <td class="num" style="color:var(--orange);font-weight:${m.isRikt ? 700 : 400}">${manEst}</td>
-    </tr>`;
-  }).join('');
-
-  void AP_IBB; // used indirectly via AP_TAK
-}
-
 // ── Huvud-render ───────────────────────────────────────────────────────────────
 function render(): void {
   const ek = ekStore.get();
@@ -371,15 +302,10 @@ function render(): void {
   el('ob-fire-buff').textContent = `${fmt(ek.levnadskostnad * 12)}–${fmt(ek.levnadskostnad * 24)}`;
 
   renderRikedomstrappan(h, ek);
-  renderAPProjektion(ek);
 }
 
 // ── Starta ─────────────────────────────────────────────────────────────────────
 render();
-
-['ap-ip-rate', 'ap-pp-rate'].forEach(id => {
-  (el(id) as HTMLInputElement).addEventListener('change', render);
-});
 
 window.addEventListener('storage', e => {
   if (e.key?.startsWith('vek_ek_') || e.key?.startsWith('vek_res_')) render();
