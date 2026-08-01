@@ -127,7 +127,7 @@ function renderRikedomstrappan(h: HinkarResult, ek: EkonomiData): void {
       n: 3, icon: '📈', namn: 'Ekonomisk frihet',
       desc: 'Passiv inkomst täcker grundbehov. Kan ta risker med jobbet.',
       check: [
-        { lbl: 'Hink 2 > 3 MSEK (pension)',  ok: h.hink2 > 3_000_000 },
+        { lbl: 'Hink 2 > 3 MSEK (pension + fastigheter)',  ok: h.hink2 > 3_000_000 },
         { lbl: 'Hink 3 > 5 MSEK (tillväxt)', ok: h.hink3 > 5_000_000 },
       ],
     },
