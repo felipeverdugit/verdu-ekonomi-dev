@@ -15,6 +15,7 @@ export default defineConfig({
         historik: resolve(__dirname, 'historik.html'),
         skatt:    resolve(__dirname, 'skatt.html'),
         budget:   resolve(__dirname, 'budget.html'),
+        kvartal:  resolve(__dirname, 'kvartal.html'),
       },
     },
   },

@@ -2,7 +2,7 @@ import '../../src/style.css';
 import { initAuth } from '../auth';
 import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler } from 'chart.js';
 import { simulateUttag } from '../calculations';
-import { resultStore } from '../store';
+import { resultStore, ekStore, fireStore } from '../store';
 import { NAV_LINKS } from '../constants';
 import type { PensionStream } from '../types';
 
@@ -21,6 +21,29 @@ let chart: Chart | null = null;
 
 function fmt(n: number) { return Math.round(n).toLocaleString('sv-SE') + ' kr'; }
 function fmtM(n: number) { return (n / 1e6).toFixed(2) + ' MSEK'; }
+
+// ── Skattekalkyl ───────────────────────────────────────────────────────────────
+const KOMMUNAL      = 0.31;
+const STATLIG_GRANS = 615_300;
+const STATLIG_RATE  = 0.20;
+const STATLIG_MON   = STATLIG_GRANS / 12; // ≈ 51 275 kr/mån
+
+function fga65(annual: number): number {
+  if (annual <= 134_600) return annual;
+  if (annual <= 220_000) return 134_600;
+  if (annual <= 450_000) return 134_600 + 0.08 * (annual - 220_000);
+  if (annual <= 615_300) return Math.max(85_000, 152_000 - 0.08 * (annual - 450_000));
+  return Math.max(75_000, 140_000 - 0.08 * (annual - 450_000));
+}
+function ga(annual: number): number {
+  return annual <= 134_600 ? annual : 13_900;
+}
+function incomeTax(annualGross: number, isPensioner: boolean): number {
+  if (annualGross <= 0) return 0;
+  const avdrag  = isPensioner ? fga65(annualGross) : ga(annualGross);
+  const taxable = Math.max(0, annualGross - avdrag);
+  return Math.round(taxable * KOMMUNAL + Math.max(0, annualGross - STATLIG_GRANS) * STATLIG_RATE);
+}
 
 // ── Läs pensionsströmmar från resultStore ─────────────────────────────────────
 function loadPensions(): PensionStream[] {
@@ -72,6 +95,7 @@ function render(): void {
   document.getElementById('disp-uttag')!.textContent   = fmt(uttag);
 
   renderPensionTable(pensions);
+  renderTaxStrategy(pensions);
 
   // Simulering
   const sim = simulateUttag(kapital, avkPct, startYear, uttag, pensions);
@@ -136,8 +160,95 @@ function render(): void {
   }).join('');
 }
 
-// ── Slider ─────────────────────────────────────────────────────────────────────
+// ── Skattestrategitabell ───────────────────────────────────────────────────────
+function renderTaxStrategy(pensions: PensionStream[]): void {
+  const startYear   = resultStore.getNum('fireYear', new Date().getFullYear() + 10);
+  const skattPct    = fireStore.get().skattPct;
+  const skattFaktor = 1 - skattPct / 100;
+  const FELIPE      = 1975;
+  const ULRIKA      = 1970;
+
+  type OptRow = { year: number; fGross: number; uGross: number; taxCur: number; taxOpt: number; saving: number };
+  const rows: OptRow[] = [];
+
+  for (let yr = startYear; yr <= startYear + 35; yr++) {
+    const fNet = pensions.filter(p => p.who === 'f' && yr >= p.fromYear && yr <= p.toYear).reduce((s, p) => s + p.monthly, 0);
+    const uNet = pensions.filter(p => p.who === 'u' && yr >= p.fromYear && yr <= p.toYear).reduce((s, p) => s + p.monthly, 0);
+    if (fNet === 0 && uNet === 0) continue;
+
+    const fGross = skattFaktor > 0 ? fNet / skattFaktor : 0;
+    const uGross = skattFaktor > 0 ? uNet / skattFaktor : 0;
+    const fAge   = yr - FELIPE;
+    const uAge   = yr - ULRIKA;
+
+    const fTaxCur = incomeTax(fGross * 12, fAge >= 65) / 12;
+    const uTaxCur = incomeTax(uGross * 12, uAge >= 65) / 12;
+    const fTaxOpt = incomeTax(Math.min(fGross, STATLIG_MON) * 12, fAge >= 65) / 12;
+    const uTaxOpt = incomeTax(Math.min(uGross, STATLIG_MON) * 12, uAge >= 65) / 12;
+
+    rows.push({ year: yr, fGross, uGross, taxCur: fTaxCur + uTaxCur, taxOpt: fTaxOpt + uTaxOpt, saving: (fTaxCur + uTaxCur) - (fTaxOpt + uTaxOpt) });
+  }
+
+  // Rekommendationsruta
+  const rec      = document.getElementById('rec-box')!;
+  const firstYr  = rows.length > 0 ? rows[0].year : startYear;
+  const totalSav = rows.reduce((s, r) => s + r.saving * 12, 0);
+  const fOver    = rows.filter(r => r.fGross > STATLIG_MON);
+  const uOver    = rows.filter(r => r.uGross > STATLIG_MON);
+
+  const bullets: string[] = [];
+
+  if (firstYr > startYear) {
+    bullets.push(`<span style="color:var(--green)">✓</span> <strong>${startYear}–${firstYr - 1} (bryggafas):</strong> Inga pensioner aktiva — ta enbart ur ISK/Lysa. Noll inkomstskatt på uttagen (ISK schablonbeskattas ~0.9 %/år på portföljvärdet oavsett uttag).`);
+  }
+
+  if (fOver.length > 0) {
+    const g      = Math.round(fOver[0].fGross);
+    const excess = Math.round(fOver[0].fGross - STATLIG_MON);
+    bullets.push(`<span style="color:var(--orange)">⚠</span> <strong>Felipe ${fOver[0].year}+:</strong> Pensionsinkomst ${fmt(g)}/mån brutto (>${fmt(Math.round(STATLIG_MON))}/mån) → statlig skatt 20 % på ${fmt(excess)}/mån överskott.`);
+  }
+
+  if (uOver.length > 0) {
+    const g = Math.round(uOver[0].uGross);
+    bullets.push(`<span style="color:var(--orange)">⚠</span> <strong>Ulrika ${uOver[0].year}+:</strong> Pensionsinkomst ${fmt(g)}/mån brutto → statlig skatt aktiveras.`);
+  }
+
+  if (fOver.length === 0 && uOver.length === 0) {
+    bullets.push(`<span style="color:var(--green)">✓</span> Ingen av er når statlig skattegräns — progressiv skatt är lägre än schablon ${skattPct} %.`);
+  }
+
+  if (totalSav > 1_000) {
+    bullets.push(`<span style="color:#4f8ef7">💡</span> Hypotetisk total besparing om pensionsinkomsten per person hålls under 51 275 kr/mån: <strong style="color:var(--green)">${fmtM(totalSav)}</strong>. Kräver att TjP senareläggs eller periodiseras om — ISK-uttag kan täcka mellanskillnaden skattefritt.`);
+  } else if (totalSav > 0) {
+    bullets.push(`<span style="color:#4f8ef7">💡</span> Progressiv skatt sparar <strong style="color:var(--green)">${fmtM(totalSav)}</strong> totalt vs schablon ${skattPct} % — ingen optimering krävs.`);
+  }
+
+  rec.innerHTML = bullets.map(b => `<p style="margin:8px 0;font-size:.9rem">${b}</p>`).join('');
+
+  // Jämförelsetabell
+  const tbody = document.getElementById('skatt-opt-tbody')!;
+  tbody.innerHTML = rows.map(row => {
+    const isOver = row.fGross > STATLIG_MON || row.uGross > STATLIG_MON;
+    const fFlag  = row.fGross > STATLIG_MON ? ' <span style="color:var(--orange);font-size:.72rem">▲</span>' : '';
+    const uFlag  = row.uGross > STATLIG_MON ? ' <span style="color:var(--orange);font-size:.72rem">▲</span>' : '';
+    const savCol = row.saving > 100
+      ? `<span style="color:var(--green)">+${fmt(Math.round(row.saving * 12))}</span>`
+      : `<span style="color:var(--muted)">—</span>`;
+    return `<tr style="${isOver ? 'background:rgba(248,113,113,.05)' : ''}">
+      <td style="padding:5px 8px;color:var(--muted)">${row.year}</td>
+      <td style="text-align:right;padding:5px 6px">${row.fGross > 0 ? fmt(Math.round(row.fGross)) + fFlag : '—'}</td>
+      <td style="text-align:right;padding:5px 6px">${row.uGross > 0 ? fmt(Math.round(row.uGross)) + uFlag : '—'}</td>
+      <td style="text-align:right;padding:5px 6px;color:var(--red)">${fmt(Math.round(row.taxCur))}/mån</td>
+      <td style="text-align:right;padding:5px 6px;color:var(--orange)">${fmt(Math.round(row.taxOpt))}/mån</td>
+      <td style="text-align:right;padding:5px 6px">${savCol}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Slider — initialisera från levnadskostnad i Ekonomi ────────────────────────
 const slUttag = document.getElementById('sl-uttag') as HTMLInputElement;
+const levnad = ekStore.getField('levnadskostnad');
+if (levnad > 0) slUttag.value = String(levnad);
 slUttag.addEventListener('input', () => render());
 
 // ── Init & synk ────────────────────────────────────────────────────────────────

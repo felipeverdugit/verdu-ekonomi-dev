@@ -73,6 +73,30 @@
     </table>
   </div>
 
+  <!-- Skattestrategi -->
+  <h2>Skattestrategi</h2>
+  <div class="card" id="rec-box" style="margin-bottom:24px;line-height:1.8"></div>
+
+  <!-- Scenario: statlig skattegräns -->
+  <h2>Scenario — under statlig skattegräns</h2>
+  <p class="subtitle" style="margin-bottom:16px">
+    Nuläge vs. hypotetiskt scenario där pensionsinkomsten per person hålls under 51 275 kr/mån (615 300 kr/år) — gränsen för 20 % statlig skatt.
+    ISK/Lysa-uttag räknas <em>inte</em> som inkomst och påverkar inte gränsen. ▲ = statlig skatt aktiveras.
+  </p>
+  <div class="card" style="overflow-x:auto;margin-bottom:24px">
+    <table class="pension-table" style="min-width:680px">
+      <thead><tr>
+        <th>År</th>
+        <th class="num">Felipe brutto/mån</th>
+        <th class="num">Ulrika brutto/mån</th>
+        <th class="num">Skatt nuläge/mån</th>
+        <th class="num">Skatt hypotetisk/mån</th>
+        <th class="num">Besparing/år</th>
+      </tr></thead>
+      <tbody id="skatt-opt-tbody"></tbody>
+    </table>
+  </div>
+
   <footer>Uttags-kalkylator · Verdu Ekonomi</footer>
 </div>
 <script type="module" src="/src/pages/uttag.ts"></script>

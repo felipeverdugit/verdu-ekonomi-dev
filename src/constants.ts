@@ -133,5 +133,6 @@ export const NAV_LINKS = [
   { href: 'hinkar.html',   label: 'Hinkar',      icon: '🪣' },
   { href: 'historik.html', label: 'Historik',    icon: '📈' },
   { href: 'skatt.html',   label: 'Skatt',        icon: '🧾' },
-  { href: 'budget.html',  label: 'Budget',       icon: '📋' },
+  { href: 'budget.html',   label: 'Budget',    icon: '📋' },
+  { href: 'kvartal.html', label: 'Kvartal',   icon: '📅' },
 ] as const;
