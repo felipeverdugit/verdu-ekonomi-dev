@@ -5,10 +5,11 @@
   --bg:      #0f1117;
   --card:    #1a1d27;
   --border:  #2d3348;
+  --fg:      #e2e8f0;
   --text:    #e2e8f0;
   --muted:   #8892a4;
-  --accent1: #4f8ef7;  /* blå — Felipe */
-  --accent2: #a78bfa;  /* lila — Ulrika */
+  --accent1: #4f8ef7;
+  --accent2: #a78bfa;
   --green:   #6ee7b7;
   --orange:  #f59e0b;
   --red:     #f87171;
@@ -17,6 +18,34 @@
   color: var(--text);
   background: var(--bg);
   line-height: 1.5;
+}
+
+[data-theme="light"] {
+  --bg:      #f0f2f7;
+  --card:    #ffffff;
+  --border:  #dde1ec;
+  --fg:      #1e2333;
+  --text:    #1e2333;
+  --muted:   #5b6478;
+  --accent1: #2563eb;
+  --accent2: #7c3aed;
+  --green:   #059669;
+  --orange:  #b45309;
+  --red:     #dc2626;
+  --purple:  #7c3aed;
+}
+
+[data-theme="light"] .card {
+  box-shadow: 0 1px 4px rgba(0,0,0,.07);
+}
+
+[data-theme="light"] .form-row input[type=number],
+[data-theme="light"] .pension-table td input[type=number] {
+  background: #f4f5f9;
+}
+
+[data-theme="light"] body {
+  background: var(--bg);
 }
 
 body { min-height: 100vh; }
@@ -129,6 +158,13 @@ hr            { border: none; border-top: 1px solid var(--border); margin: 28px 
 footer        { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: .8rem; }
 
 /* ── Knappar ─────────────────────────────────────────────────────────────────── */
+.btn-theme {
+  margin-left: auto; background: none; border: 1px solid var(--border);
+  border-radius: 8px; padding: 4px 10px; cursor: pointer; font-size: .88rem;
+  color: var(--muted); transition: border-color .15s;
+}
+.btn-theme:hover { border-color: var(--accent1); }
+
 .btn { border: none; border-radius: 8px; padding: 9px 20px; font-size: .9rem; font-weight: 600; cursor: pointer; transition: opacity .15s; }
 .btn:hover { opacity: .85; }
 .btn-primary   { background: var(--green);  color: #0f1117; }

@@ -1,13 +1,11 @@
 import '../../src/style.css';
 import { initAuth } from '../auth';
 import { resultStore, ekStore } from '../store';
-import { NAV_LINKS } from '../constants';
+import { renderTopnav } from '../nav';
 
 await initAuth();
 
-document.getElementById('topnav')!.innerHTML = NAV_LINKS.map(l =>
-  `<a href="${l.href}"${l.href === 'kvartal.html' ? ' class="active"' : ''}>${l.icon} ${l.label}</a>`
-).join('');
+renderTopnav('kvartal.html');
 
 function fmt(n: number) { return Math.round(n).toLocaleString('sv-SE') + ' kr'; }
 

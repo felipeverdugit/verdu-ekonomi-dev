@@ -3,7 +3,7 @@ import { initAuth } from '../auth';
 import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler } from 'chart.js';
 import { simulateUttag } from '../calculations';
 import { resultStore, ekStore, fireStore } from '../store';
-import { NAV_LINKS } from '../constants';
+import { renderTopnav } from '../nav';
 import type { PensionStream } from '../types';
 
 await initAuth();
@@ -11,9 +11,7 @@ await initAuth();
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler);
 
 // ── Navigation ─────────────────────────────────────────────────────────────────
-document.getElementById('topnav')!.innerHTML = NAV_LINKS.map(l =>
-  `<a href="${l.href}"${l.href === 'uttag.html' ? ' class="active"' : ''}>${l.icon} ${l.label}</a>`
-).join('');
+renderTopnav('uttag.html');
 
 const DARK_GRID = '#2d3348';
 const DARK_TEXT = '#8892a4';
@@ -98,7 +96,9 @@ function render(): void {
   renderTaxStrategy(pensions);
 
   // Simulering
-  const sim = simulateUttag(kapital, avkPct, startYear, uttag, pensions);
+  const uttag2    = ekStore.getField('levnadskostnad2');
+  const switchAr  = ekStore.getField('exp_switch_ar');
+  const sim = simulateUttag(kapital, avkPct, startYear, uttag, pensions, uttag2, switchAr);
 
   // Verdict — bryggeperspektiv, inte SWR
   const verdictEl = document.getElementById('verdict')!;
@@ -121,6 +121,8 @@ function render(): void {
   }
 
   // Diagram
+  const switchYear2   = switchAr > 0 && uttag2 > 0 ? startYear + switchAr : 9999;
+  const levnadLinje   = sim.rows.map(r => r.year >= switchYear2 ? uttag2 : uttag);
   const ctx = (document.getElementById('uttaks-chart') as HTMLCanvasElement).getContext('2d')!;
   if (chart) chart.destroy();
   chart = new Chart(ctx, {
@@ -130,6 +132,7 @@ function render(): void {
       datasets: [
         { label: 'Kapital (MSEK)', data: sim.rows.map(r => r.capital / 1e6), borderColor: '#4f8ef7', backgroundColor: '#4f8ef720', fill: true, tension: 0.3, pointRadius: 0, yAxisID: 'y' },
         { label: 'Pension/mån (kr)', data: sim.rows.map(r => r.pensionMon), borderColor: '#6ee7b7', backgroundColor: 'transparent', tension: 0.3, pointRadius: 0, yAxisID: 'y1' },
+        { label: 'Levnadskostnad/mån (kr)', data: levnadLinje, borderColor: '#fb923c', backgroundColor: 'transparent', borderDash: [5, 3], tension: 0, pointRadius: 0, yAxisID: 'y1' },
       ],
     },
     options: {

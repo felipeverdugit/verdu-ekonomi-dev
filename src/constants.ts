@@ -113,7 +113,7 @@ export const SHEETS_MAP: Record<string, string> = {
 export const EXCEL_PMTS = {
   tjp_f_pmt_q:  25000,  // TjP Kommun Felipe, kr/kvartal
   lonevxl_pmt:  11638,  // Löneväxling, kr/månad
-  tjp_u_pmt_q:  6500,   // TjP UV Kommun Ulrika, kr/kvartal
+  tjp_u_pmt_q:  6500,   // TjP Kommun Ulrika, kr/kvartal
 };
 
 // ── Kreditkort (sekundär buffert) ─────────────────────────────────────────────

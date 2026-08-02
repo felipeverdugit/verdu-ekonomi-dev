@@ -3,7 +3,8 @@ import { initAuth } from '../auth';
 import { Chart, ArcElement, DoughnutController, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler } from 'chart.js';
 import { computeFire, simulateUttag } from '../calculations';
 import { ekStore, fireStore, resultStore } from '../store';
-import { NAV_LINKS, SLIDER_RANGES } from '../constants';
+import { SLIDER_RANGES } from '../constants';
+import { renderTopnav } from '../nav';
 import type { FireResult, FireSettings } from '../types';
 import { initSyncWidget } from '../syncWidget';
 
@@ -12,9 +13,7 @@ await initAuth();
 Chart.register(ArcElement, DoughnutController, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler);
 
 // ── Navigation ─────────────────────────────────────────────────────────────────
-document.getElementById('topnav')!.innerHTML = NAV_LINKS.map(l =>
-  `<a href="${l.href}"${l.href === 'fire.html' ? ' class="active"' : ''}>${l.icon} ${l.label}</a>`
-).join('');
+renderTopnav('fire.html');
 
 // ── Slider-konfiguration ───────────────────────────────────────────────────────
 type SliderKey = keyof typeof SLIDER_RANGES;
@@ -119,7 +118,10 @@ function updatePieChart(r: FireResult): void {
 
 function updateUttaksChart(r: FireResult, ek: { levnadskostnad: number, levnadskostnad2: number, exp_switch_ar: number }): void {
   const monthlyUttag = ek.levnadskostnad;
-  const sim = simulateUttag(r.kapital, r.uttakAvkPct, r.fireYear, monthlyUttag, r.pensions);
+  const sim = simulateUttag(r.kapital, r.uttakAvkPct, r.fireYear, monthlyUttag, r.pensions, ek.levnadskostnad2, ek.exp_switch_ar);
+
+  const switchYear2 = ek.exp_switch_ar > 0 && ek.levnadskostnad2 > 0 ? r.fireYear + ek.exp_switch_ar : 9999;
+  const levnadLinje = sim.rows.map(row => row.year >= switchYear2 ? ek.levnadskostnad2 : ek.levnadskostnad);
 
   const ctx = (document.getElementById('uttaks-chart') as HTMLCanvasElement).getContext('2d')!;
   if (uttaksChart) uttaksChart.destroy();
@@ -140,6 +142,13 @@ function updateUttaksChart(r: FireResult, ek: { levnadskostnad: number, levnadsk
           data: sim.rows.map(row => row.pensionMon),
           borderColor: '#6ee7b7', backgroundColor: 'transparent',
           tension: 0.3, pointRadius: 0,
+          yAxisID: 'y1',
+        },
+        {
+          label: 'Levnadskostnad/mån (kr)',
+          data: levnadLinje,
+          borderColor: '#fb923c', backgroundColor: 'transparent',
+          borderDash: [5, 3], tension: 0, pointRadius: 0,
           yAxisID: 'y1',
         },
       ],

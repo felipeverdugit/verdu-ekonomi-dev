@@ -1,14 +1,12 @@
 import '../../src/style.css';
 import { initAuth } from '../auth';
 import { budgetStore, ekStore } from '../store';
-import { NAV_LINKS } from '../constants';
+import { renderTopnav } from '../nav';
 import type { BudgetData } from '../types';
 
 await initAuth();
 
-document.getElementById('topnav')!.innerHTML = NAV_LINKS.map(l =>
-  `<a href="${l.href}"${l.href === 'budget.html' ? ' class="active"' : ''}>${l.icon} ${l.label}</a>`
-).join('');
+renderTopnav('budget.html');
 
 const fmt  = (n: number) => Math.round(n).toLocaleString('sv-SE');
 const fmtM = (n: number) => (n / 1_000_000).toFixed(2) + ' MSEK';
@@ -98,10 +96,11 @@ const GROUPS: GroupDef[] = [
     fields: [
       { id: 'lysa_f_mon',       label: 'Lysa Felipe' },
       { id: 'lysa_u_mon',       label: 'Lysa Ulrika' },
-      { id: 'lysa_buffert_mon', label: 'Lysa Buffert' },
-      { id: 'lysa_n_mon',       label: 'Lysa N' },
+      { id: 'lysa_buffert_mon', label: 'Lysa Buffert (U+F)' },
+      { id: 'lysa_n_mon',       label: 'Lysa N', skipTotal: true },
       { id: 'borgo_bank_mon',   label: 'Borgo Bank' },
       { id: 'resor_mon',        label: 'Resor (månadsspar)' },
+      { id: 'lonevxl_mon',      label: 'Löneväxling Felipe' },
     ],
   },
   {
@@ -159,6 +158,9 @@ function renderCard(g: GroupDef, bd: BudgetData): string {
 }
 
 const bd = budgetStore.get();
+if (!bd.lonevxl_mon) {
+  bd.lonevxl_mon = ekStore.getField('lonevxl_pmt');
+}
 const container = document.getElementById('budget-cards')!;
 container.innerHTML = GROUPS.map(g => renderCard(g, bd)).join('');
 
@@ -182,11 +184,13 @@ function recalc(): void {
   const inkGroup  = GROUPS.find(g => g.isIncome)!;
   const sparGroup = GROUPS.find(g => g.id === 'sparande')!;
 
+  const lonevxl   = cur.lonevxl_mon ?? 0;
   const totalInk  = groupTotal(inkGroup,  cur);
   const totalSpar = groupTotal(sparGroup, cur);
   const totalUt   = GROUPS.filter(g => !g.isIncome).reduce((s, g) => s + groupTotal(g, cur), 0);
-  const saldo     = totalInk - totalUt;
-  const sparkvot  = totalInk > 0 ? (totalSpar / totalInk) * 100 : 0;
+  const saldo     = totalInk - totalUt + lonevxl;  // löneväxling når aldrig kassan
+  const adjInk    = totalInk + lonevxl;             // total ersättning inkl. pensionsavsättning
+  const sparkvot  = adjInk > 0 ? (totalSpar / adjInk) * 100 : 0;
 
   function setKpi(id: string, val: string, color?: string) {
     const el = document.getElementById(id);
@@ -196,7 +200,7 @@ function recalc(): void {
   }
 
   setKpi('kpi-ink',     `${fmt(totalInk)} kr`);
-  setKpi('kpi-ut',      `${fmt(totalUt)} kr`);
+  setKpi('kpi-ut',      `${fmt(totalUt - lonevxl)} kr`);
   setKpi('kpi-saldo',   `${fmt(saldo)} kr`, saldo >= 0 ? 'green' : 'red');
   setKpi('kpi-sparkvot',`${sparkvot.toFixed(0)} %`, sparkvot >= 25 ? 'green' : 'orange');
 

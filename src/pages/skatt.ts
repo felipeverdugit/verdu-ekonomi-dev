@@ -3,15 +3,13 @@ import { initAuth } from '../auth';
 import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend } from 'chart.js';
 import { computeFire } from '../calculations';
 import { ekStore, fireStore } from '../store';
-import { NAV_LINKS } from '../constants';
+import { renderTopnav } from '../nav';
 
 await initAuth();
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend);
 
-document.getElementById('topnav')!.innerHTML = NAV_LINKS.map(l =>
-  `<a href="${l.href}"${l.href === 'skatt.html' ? ' class="active"' : ''}>${l.icon} ${l.label}</a>`
-).join('');
+renderTopnav('skatt.html');
 
 const KOMMUNAL       = 0.31;
 const STATLIG_GRANS  = 615_300;

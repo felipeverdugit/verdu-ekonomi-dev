@@ -292,19 +292,23 @@ export function simulateUttag(
   startYear: number,
   monthlyUttag: number,
   pensions: PensionStream[],
+  monthlyUttag2 = 0,
+  switchAfterYears = 0,
 ): UttakResult {
   const rows: UttakRow[] = [];
   let cap = kapital;
   let depletedYear:    number | null = null;
   let pensionFullYear: number | null = null;
   let capitalAtBridge = 0;
-  const avkPctDecimal = avkPct / 100;
+  const avkPctDecimal  = avkPct / 100;
+  const switchYear     = switchAfterYears > 0 && monthlyUttag2 > 0 ? startYear + switchAfterYears : 9999;
 
   for (let yr = startYear; yr <= 2080; yr++) {
+    const currentUttag = yr >= switchYear ? monthlyUttag2 : monthlyUttag;
     const pensionMon = pensions
       .filter(p => p.fromYear <= yr && yr <= p.toYear)
       .reduce((s, p) => s + p.monthly, 0);
-    const netUttag = Math.max(0, monthlyUttag - pensionMon);
+    const netUttag = Math.max(0, currentUttag - pensionMon);
     const returns  = cap * avkPctDecimal;
     const delta    = returns - netUttag * 12;
 
@@ -312,7 +316,7 @@ export function simulateUttag(
 
     if (cap <= 0 && depletedYear === null) depletedYear = yr;
 
-    if (pensionFullYear === null && pensionMon >= monthlyUttag) {
+    if (pensionFullYear === null && pensionMon >= currentUttag) {
       pensionFullYear = yr;
       capitalAtBridge = Math.max(0, cap);
     }

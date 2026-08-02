@@ -15,7 +15,7 @@ export interface EkonomiData {
   lysa_f_pmt:      number;  // Lysa Felipe, månadsinsättning
   lysa_u_pv:       number;
   lysa_u_pmt:      number;
-  buffert_u_pv:    number;  // Buffert Lysa Ulrika
+  buffert_u_pv:    number;  // Buffert Lysa (U+F)
   buffert_u_pmt:   number;
 
   // Tjänstepension Sverige
@@ -25,7 +25,7 @@ export interface EkonomiData {
   lonevxl_pmt:     number;  // Löneväxling, månadsinsättning
   tidigare_pv:     number;  // Tidigare LöneVXL+TjP, nuv. värde
   kapan_pv:        number;  // TjP Kåpan Felipe, nuv. värde
-  tjp_u_pv:        number;  // TjP UV Kommun Ulrika
+  tjp_u_pv:        number;  // TjP Kommun Ulrika
   tjp_u_pmt_q:     number;  // TjP Ulrika, kvartalsinsättning
 
   // Tjänstepension Norge (OTP)
@@ -106,6 +106,7 @@ export interface BudgetData {
   // Sparande
   lysa_f_mon: number; lysa_u_mon: number; lysa_buffert_mon: number;
   lysa_n_mon: number; borgo_bank_mon: number; resor_mon: number;
+  lonevxl_mon: number;
   // Övriga utgifter
   mc_felipe: number; mc_ulrika: number;
   // Prenumerationer (via MC Felipe)

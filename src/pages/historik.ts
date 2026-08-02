@@ -12,15 +12,13 @@ import {
 } from 'chart.js';
 import { historikStore, ekStore } from '../store';
 import type { Snapshot, EkonomiData } from '../types';
-import { NAV_LINKS } from '../constants';
+import { renderTopnav } from '../nav';
 
 await initAuth();
 
 Chart.register(LineController, CategoryScale, LinearScale, PointElement, LineElement, Legend, Tooltip);
 
-document.getElementById('topnav')!.innerHTML = NAV_LINKS.map(l =>
-  `<a href="${l.href}"${l.href === 'historik.html' ? ' class="active"' : ''}>${l.icon} ${l.label}</a>`
-).join('');
+renderTopnav('historik.html');
 
 function fmtKr(n: number): string {
   return Math.round(n).toLocaleString('sv-SE') + ' kr';

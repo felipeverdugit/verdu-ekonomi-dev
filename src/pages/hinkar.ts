@@ -1,15 +1,14 @@
 import '../../src/style.css';
 import { initAuth } from '../auth';
 import { ekStore } from '../store';
-import { NAV_LINKS, KREDITKORT } from '../constants';
+import { KREDITKORT } from '../constants';
+import { renderTopnav } from '../nav';
 import type { EkonomiData } from '../types';
 
 await initAuth();
 
 // ── Navigation ─────────────────────────────────────────────────────────────────
-document.getElementById('topnav')!.innerHTML = NAV_LINKS.map(l =>
-  `<a href="${l.href}"${l.href === 'hinkar.html' ? ' class="active"' : ''}>${l.icon} ${l.label}</a>`
-).join('');
+renderTopnav('hinkar.html');
 
 // ── Formatering ────────────────────────────────────────────────────────────────
 function fmt(n: number)  { return Math.round(n).toLocaleString('sv-SE') + ' kr'; }

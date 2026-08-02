@@ -1,15 +1,14 @@
 import '../../src/style.css';
 import { initAuth } from '../auth';
 import { ekStore } from '../store';
-import { NAV_LINKS, SHEETS_URL, SHEETS_MAP, EXCEL_PMTS, ALLMAN_DEFAULTS } from '../constants';
+import { SHEETS_URL, SHEETS_MAP, EXCEL_PMTS, ALLMAN_DEFAULTS } from '../constants';
+import { renderTopnav } from '../nav';
 import type { EkonomiData } from '../types';
 
 await initAuth();
 
 // ── Navigation ─────────────────────────────────────────────────────────────────
-document.getElementById('topnav')!.innerHTML = NAV_LINKS.map(l =>
-  `<a href="${l.href}"${l.href === 'ekonomi.html' ? ' class="active"' : ''}>${l.icon} ${l.label}</a>`
-).join('');
+renderTopnav('ekonomi.html');
 
 // ── Alla fält som har ett input-element med samma id som EkonomiData-fältet ────
 const FIELDS: (keyof EkonomiData)[] = [

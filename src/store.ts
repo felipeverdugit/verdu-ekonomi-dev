@@ -202,7 +202,7 @@ const BUDGET_DEFAULTS: BudgetData = {
   ledarna: 428, ledarnas_akas: 150, lararnas_akas: 150,
   csn: 1_741, hjarnfonden: 600, friskis: 550,
   lysa_f_mon: 5_000, lysa_u_mon: 8_500, lysa_buffert_mon: 9_000,
-  lysa_n_mon: 750, borgo_bank_mon: 2_000, resor_mon: 1_000,
+  lysa_n_mon: 750, borgo_bank_mon: 2_000, resor_mon: 1_000, lonevxl_mon: 0,
   mc_felipe: 11_750, mc_ulrika: 10_000,
   nextory: 269, anthropic: 253, spotify: 219, misc_prenums: 0,
 };

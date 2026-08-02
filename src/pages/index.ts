@@ -2,14 +2,12 @@ import '../../src/style.css';
 import { initAuth } from '../auth';
 import { computeFire } from '../calculations';
 import { ekStore, fireStore } from '../store';
-import { NAV_LINKS } from '../constants';
+import { renderTopnav } from '../nav';
 
 await initAuth();
 
 // ── Navigation ─────────────────────────────────────────────────────────────────
-document.getElementById('topnav')!.innerHTML = NAV_LINKS.map(l =>
-  `<a href="${l.href}"${l.href === 'index.html' ? ' class="active"' : ''}>${l.icon} ${l.label}</a>`
-).join('');
+renderTopnav('index.html');
 
 function fmt(n: number)  { return Math.round(n).toLocaleString('sv-SE') + ' kr'; }
 function fmtM(n: number) { return (n / 1e6).toFixed(2) + ' MSEK'; }
