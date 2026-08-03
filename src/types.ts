@@ -133,6 +133,7 @@ export interface FireSettings {
   aktierIFire:   boolean;
   engBelopp:     number;   // Engångsuttag belopp
   engAr:         number;   // Engångsuttag år
+  iskPct:        number;   // ISK-schablonskatt %/år (typiskt 1–1,5 %)
 }
 
 // ── Pensionsström ─────────────────────────────────────────────────────────────
@@ -162,6 +163,8 @@ export interface FireResult {
 
   // Portföljkomponenter vid FIRE
   fonder_fv:     number;
+  iskKapital:    number;   // Lysa-konton (ISK) vid FIRE
+  iskPct:        number;   // Vidarebefordras från FireSettings
   sparkonto_fv:  number;
   tjp_fv:        number;
   norge_fv:      number;

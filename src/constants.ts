@@ -48,6 +48,7 @@ export const SLIDER_DEFAULTS = {
   uNorskTjpAge:  62,   // Ulrika: Norsk TjP startålder
   fAllmanAge:    67,   // Felipe: Allmänpension startålder
   uAllmanAge:    68,   // Ulrika: Allmänpension startålder
+  iskPct:      1.25,   // ISK-schablonskatt %/år
 } as const;
 
 // ── Slider-gränser ────────────────────────────────────────────────────────────
@@ -65,8 +66,9 @@ export const SLIDER_RANGES = {
   fNorskTjpAge:  { min: 62, max: 70, step: 1   },
   uTjpAge:       { min: 55, max: 70, step: 1   },
   uNorskTjpAge:  { min: 62, max: 70, step: 1   },
-  fAllmanAge:    { min: 62, max: 70, step: 1   },
-  uAllmanAge:    { min: 62, max: 70, step: 1   },
+  fAllmanAge:    { min: 62, max: 70, step: 1    },
+  uAllmanAge:    { min: 62, max: 70, step: 1    },
+  iskPct:        { min: 0,  max: 2.5, step: 0.05 },
 } as const;
 
 // ── Google Sheets sync ───────────────────────────────────────────────────────

@@ -19,7 +19,7 @@ renderTopnav('fire.html');
 type SliderKey = keyof typeof SLIDER_RANGES;
 const SLIDERS: SliderKey[] = [
   'avkPct','antalAr','uttakAvkPct','tjpAr','skattPct','borgoRanta',
-  'lonehojF','lonehojU','fTjpAge','fNorskTjpAge','uNorskTjpAge','uTjpAge','fAllmanAge','uAllmanAge',
+  'lonehojF','lonehojU','fTjpAge','fNorskTjpAge','uNorskTjpAge','uTjpAge','fAllmanAge','uAllmanAge','iskPct',
 ];
 
 // ── Diagram-instanser ──────────────────────────────────────────────────────────
@@ -56,6 +56,7 @@ function updateKPIs(r: FireResult, levnad: number): void {
   document.getElementById('kpi-pct')!.style.color     = r.bryggaTackning >= 100 ? 'var(--green)' : r.bryggaTackning >= 75 ? 'var(--orange)' : 'var(--red)';
   document.getElementById('kpi-kapital')!.textContent = fmtM(r.kapital);
   document.getElementById('kpi-total')!.textContent   = fmtM(r.totaltFV);
+  document.getElementById('kpi-isk')!.textContent     = fmt(Math.round(r.iskKapital * r.iskPct / 100));
   document.getElementById('fire-subtitle')!.textContent =
     `Genererad ${new Date().toLocaleDateString('sv-SE')} · Levnadskostnad ${fmt(levnad)}/mån`;
 }

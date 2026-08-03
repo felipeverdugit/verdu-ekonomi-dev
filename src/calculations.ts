@@ -87,10 +87,11 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
 
   // ── Portföljvärden vid FIRE ────────────────────────────────────────────────
 
-  // Privata fonder
-  const lysa_f_fv    = accountFV(ek.lysa_f_pv,    ek.lysa_f_pmt,    'monthly',   avkPct, antalAr, antalAr);
-  const lysa_u_fv    = accountFV(ek.lysa_u_pv,    ek.lysa_u_pmt,    'monthly',   avkPct, antalAr, antalAr);
-  const buffert_u_fv = accountFV(ek.buffert_u_pv,  ek.buffert_u_pmt, 'monthly',   avkPct, antalAr, antalAr);
+  // Privata fonder (ISK — avkastning reduceras med schablonskatt)
+  const iskAvkPct    = Math.max(0, avkPct - s.iskPct);
+  const lysa_f_fv    = accountFV(ek.lysa_f_pv,    ek.lysa_f_pmt,    'monthly',   iskAvkPct, antalAr, antalAr);
+  const lysa_u_fv    = accountFV(ek.lysa_u_pv,    ek.lysa_u_pmt,    'monthly',   iskAvkPct, antalAr, antalAr);
+  const buffert_u_fv = accountFV(ek.buffert_u_pv,  ek.buffert_u_pmt, 'monthly',   iskAvkPct, antalAr, antalAr);
 
   // Tjänstepension Sverige (insättningar slutar vid FIRE, växer med lönehöjning)
   const tjp_f_fv     = accountFVGrowing(ek.tjp_f_pv,   ek.tjp_f_pmt_q,  'quarterly', avkPct, s.lonehojF, antalAr, antalAr);
@@ -276,10 +277,12 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const firePct      = fireNumber > 0 ? (kapital / fireNumber) * 100 : 0;
   const bryggaTackning = bryggaKapital > 0 ? (kapital / bryggaKapital) * 100 : 0;
 
+  const iskKapital = lysa_f_fv + lysa_u_fv + buffert_u_fv;
+
   return {
     fireYear, fireNumber, firePct, bryggaKapital, bryggaTackning, kapital, totaltFV,
     uttakAvkPct: s.uttakAvkPct, skattFaktor,
-    fonder_fv, sparkonto_fv, tjp_fv: tjp_fv_tot,
+    fonder_fv, iskKapital, iskPct: s.iskPct, sparkonto_fv, tjp_fv: tjp_fv_tot,
     norge_fv, pp_fv, ap_fv,
     pensions, phases, events,
   };

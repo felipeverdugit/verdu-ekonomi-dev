@@ -128,6 +128,7 @@ export const fireStore = {
       aktierIFire:  getBool(K.fire('aktierIFire'),  FIRE_DEFAULTS.aktierIFire),
       engBelopp:    getNum(K.fire('engBelopp'),     FIRE_DEFAULTS.engBelopp),
       engAr:        getNum(K.fire('engAr'),         FIRE_DEFAULTS.engAr),
+      iskPct:       getNum(K.fire('iskPct'),        FIRE_DEFAULTS.iskPct),
     };
   },
   setField(field: keyof FireSettings, val: number | boolean): void {

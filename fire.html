@@ -22,6 +22,7 @@
     <div class="kpi"><div class="kpi-label">Brygga-täckning</div><div class="kpi-value green" id="kpi-pct">—</div><div class="kpi-sub" style="font-size:.7rem;color:var(--muted)">Fritt kapital / brygga-kapital</div></div>
     <div class="kpi"><div class="kpi-label">Fritt kapital vid start</div><div class="kpi-value" id="kpi-kapital">—</div></div>
     <div class="kpi"><div class="kpi-label">Total förmögenhet vid start</div><div class="kpi-value purple" id="kpi-total">—</div></div>
+    <div class="kpi"><div class="kpi-label">ISK-skatt/år (Lysa)</div><div class="kpi-value orange" id="kpi-isk">—</div><div class="kpi-sub" style="font-size:.7rem;color:var(--muted)">schablonbeskattning ISK-konton</div></div>
   </div>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
@@ -97,6 +98,11 @@
           <label>Borgensränta / sparkonto</label>
           <span class="ctrl-val"><span id="val-borgoRanta">2.3</span> %</span>
           <input type="range" id="sl-borgoRanta" min="0" max="6" step="0.1" value="2.3">
+        </div>
+        <div class="ctrl-group">
+          <label>ISK-schablonskatt (Lysa-konton)</label>
+          <span class="ctrl-val"><span id="val-iskPct">1.25</span> %/år</span>
+          <input type="range" id="sl-iskPct" min="0" max="2.5" step="0.05" value="1.25">
         </div>
         <div class="ctrl-group">
           <label>Löneökning Felipe</label>

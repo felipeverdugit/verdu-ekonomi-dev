@@ -108,6 +108,9 @@ function render(): void {
   savEl.style.color  = saving >= 0 ? 'var(--green)' : 'var(--red)';
   document.getElementById('kpi-f-peak')!.textContent  = pct(fPeakPct);
   document.getElementById('kpi-u-peak')!.textContent  = pct(uPeakPct);
+  const iskAr1 = Math.round(r.iskKapital * r.iskPct / 100);
+  document.getElementById('kpi-isk-ar1')!.textContent  = fmt(iskAr1);
+  document.getElementById('kpi-isk-pct-lbl')!.textContent = `${r.iskPct.toFixed(2)} % × ${fmtM(r.iskKapital)} ISK`;
 
   // ── Tabell ───────────────────────────────────────────────────────────────────
   const tbody = document.getElementById('skatt-tbody')!;
