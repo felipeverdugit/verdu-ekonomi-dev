@@ -99,14 +99,21 @@ function updateFaseTable(r: FireResult, ek: { levnadskostnad: number }): void {
 }
 
 function updatePieChart(r: FireResult): void {
-  const data = [r.fonder_fv, r.sparkonto_fv, r.tjp_fv, r.norge_fv, r.pp_fv, r.ap_fv];
+  const labels = [...PIE_LABELS];
+  const data   = [r.fonder_fv, r.sparkonto_fv, r.tjp_fv, r.norge_fv, r.pp_fv, r.ap_fv];
+  const colors = [...PIE_COLORS];
+  if (r.aktierIFire && r.aktierVal > 0) {
+    labels.push('Aktier');
+    data.push(r.aktierVal);
+    colors.push('#f97316');
+  }
   const ctx  = (document.getElementById('pie-chart') as HTMLCanvasElement).getContext('2d')!;
   if (pieChart) pieChart.destroy();
   pieChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: PIE_LABELS,
-      datasets: [{ data, backgroundColor: PIE_COLORS, borderWidth: 2, borderColor: '#1a1d27' }],
+      labels,
+      datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#1a1d27' }],
     },
     options: {
       plugins: {
@@ -206,6 +213,14 @@ function initSliders(): void {
       fireStore.setField(key as keyof FireSettings, v);
       render();
     });
+  });
+
+  // Aktier-kryssruta
+  const chkAktier = document.getElementById('chk-aktierIFire') as HTMLInputElement;
+  chkAktier.checked = saved.aktierIFire;
+  chkAktier.addEventListener('change', () => {
+    fireStore.setField('aktierIFire', chkAktier.checked);
+    render();
   });
 
   // Engångsuttag

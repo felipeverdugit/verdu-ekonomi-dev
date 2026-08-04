@@ -163,6 +163,8 @@ export interface FireResult {
 
   // Portföljkomponenter vid FIRE
   fonder_fv:     number;
+  aktierVal:     number;   // Aktier (Norconsult + Onco) — nuvärde vid FIRE
+  aktierIFire:   boolean;  // Om aktier ingår i fritt kapital
   iskKapital:    number;   // Lysa-konton (ISK) vid FIRE
   iskPct:        number;   // Vidarebefordras från FireSettings
   sparkonto_fv:  number;

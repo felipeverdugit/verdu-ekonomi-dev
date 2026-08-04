@@ -27,9 +27,10 @@ export const ALLMAN_DEFAULTS = {
 export const DEFAULT_SKATT_PCT = 0;
 
 // ── Inkomstpension-index ──────────────────────────────────────────────────────
-export const AP_INDEX_RATE = 0.03;   // 3 % per år
-export const AP_IBB        = 77_400;
-export const AP_TAK        = 7.5 * AP_IBB; // ~580 500 kr/år
+export const AP_INDEX_RATE = 0.019;  // 1,9 % (pensionsmyndigheten 2025/2026)
+export const AP_IBB        = 89_680; // Inkomstbasbelopp 2026
+export const AP_TAK        = 7.5 * AP_IBB; // 672 600 kr/år = 56 050 kr/mån
+export const PP_RATE       = 0.025;  // 2,5 % av pensionsgrundande inkomst
 
 // ── Slider-defaultvärden ──────────────────────────────────────────────────────
 export const SLIDER_DEFAULTS = {

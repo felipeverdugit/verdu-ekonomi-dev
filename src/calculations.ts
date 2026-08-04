@@ -282,7 +282,7 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   return {
     fireYear, fireNumber, firePct, bryggaKapital, bryggaTackning, kapital, totaltFV,
     uttakAvkPct: s.uttakAvkPct, skattFaktor,
-    fonder_fv, iskKapital, iskPct: s.iskPct, sparkonto_fv, tjp_fv: tjp_fv_tot,
+    fonder_fv, aktierVal, aktierIFire: s.aktierIFire, iskKapital, iskPct: s.iskPct, sparkonto_fv, tjp_fv: tjp_fv_tot,
     norge_fv, pp_fv, ap_fv,
     pensions, phases, events,
   };
