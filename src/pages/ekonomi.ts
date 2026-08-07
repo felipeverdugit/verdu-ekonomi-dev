@@ -33,7 +33,7 @@ injectInfoBtn('💰 Ekonomi — grunddata', [
     </ul>`,
   },
   {
-    heading: 'Datalagringe',
+    heading: 'Datalagring',
     html: `<p>All data sparas <strong>lokalt i webbläsaren</strong> (localStorage). Inget skickas till server om du inte synkar med Sheets.</p>`,
   },
 ]);
