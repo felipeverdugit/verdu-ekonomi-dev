@@ -18,10 +18,14 @@ type OnPull = (s: FireSettings) => void;
 let _onPull: OnPull | null = null;
 
 export function initSyncWidget(onPullCallback?: OnPull): void {
-  _onPull = onPullCallback ?? null;
+  // Om callback anges, uppdatera (utan att rensa befintlig)
+  if (onPullCallback !== undefined) _onPull = onPullCallback;
 
   const bar = document.getElementById('sync-bar');
   if (!bar) return;
+
+  // Idempotent: om knapparna redan finns, lägg bara till callback och avsluta
+  if (bar.querySelector('.sync-bar')) return;
 
   bar.innerHTML = `
     <div class="sync-bar">

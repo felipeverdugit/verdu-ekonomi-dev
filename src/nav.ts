@@ -1,4 +1,5 @@
 import { NAV_LINKS } from './constants';
+import { initSyncWidget } from './syncWidget';
 
 const LS_THEME = 'vek_theme';
 
@@ -87,4 +88,13 @@ export function renderTopnav(activeHref: string): void {
     localStorage.setItem(LS_THEME, next);
     (document.getElementById('theme-toggle') as HTMLButtonElement).textContent = next === 'dark' ? '☀️' : '🌙';
   });
+
+  // Injicera sync-bar direkt efter nav (om den inte redan finns i DOM:en)
+  let syncBar = document.getElementById('sync-bar');
+  if (!syncBar) {
+    syncBar = document.createElement('div');
+    syncBar.id = 'sync-bar';
+    nav.parentNode!.insertBefore(syncBar, nav.nextSibling);
+  }
+  initSyncWidget();
 }
