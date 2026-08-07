@@ -2,6 +2,7 @@ import '../../src/style.css';
 import { initAuth } from '../auth';
 import { budgetStore, ekStore } from '../store';
 import { renderTopnav, injectInfoBtn } from '../nav';
+import { initSyncWidget } from '../syncWidget';
 import type { BudgetData } from '../types';
 
 await initAuth();
@@ -250,4 +251,5 @@ document.querySelectorAll<HTMLInputElement>('.bgt-inp').forEach(inp => {
   inp.addEventListener('input', recalc);
 });
 
+initSyncWidget();
 recalc();

@@ -2,6 +2,7 @@ import '../../src/style.css';
 import { initAuth } from '../auth';
 import { resultStore, ekStore } from '../store';
 import { renderTopnav, injectInfoBtn } from '../nav';
+import { initSyncWidget } from '../syncWidget';
 
 await initAuth();
 
@@ -248,6 +249,7 @@ function updateNextKvartal(): void {
 }
 
 updateNextKvartal();
+initSyncWidget();
 
 render();
 

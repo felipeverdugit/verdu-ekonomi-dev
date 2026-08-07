@@ -211,6 +211,34 @@ export interface Snapshot {
   totalt:  number;
 }
 
+// ── Avkastningslogg ───────────────────────────────────────────────────────────
+export interface AvkRow {
+  year:       number;
+  lysaPct:    number | null;
+  tjpSvePct:  number | null;
+  tjpNorPct:  number | null;
+}
+
+export interface AvkStartValues {
+  year:     number;
+  lysaKr:   number;
+  tjpSveKr: number;
+  tjpNorKr: number;
+}
+
+export interface AvkastningData {
+  rows:  AvkRow[];
+  start: AvkStartValues;
+}
+
+// ── Kvartalsinmatning ─────────────────────────────────────────────────────────
+export interface KvartalData {
+  faktisk: number;
+  pension: number;
+  buffert: number;
+  rorelse: number;
+}
+
 // ── Uttags-simulering ─────────────────────────────────────────────────────────
 export interface UttakRow {
   year:       number;

@@ -6,6 +6,8 @@ import {
 } from 'chart.js';
 import { fireStore } from '../store';
 import { renderTopnav, injectInfoBtn } from '../nav';
+import { initSyncWidget } from '../syncWidget';
+import type { AvkRow, AvkStartValues } from '../types';
 
 await initAuth();
 
@@ -37,20 +39,8 @@ injectInfoBtn('🎯 Faktisk avkastning', [
   },
 ]);
 
-// ── Datatyper & lagring ───────────────────────────────────────────────────────
-interface AvkRow {
-  year:       number;
-  lysaPct:    number | null;
-  tjpSvePct:  number | null;
-  tjpNorPct:  number | null;
-}
-
-interface StartValues {
-  year:     number;
-  lysaKr:   number;
-  tjpSveKr: number;
-  tjpNorKr: number;
-}
+// ── Lokalt alias (StartValues → AvkStartValues) ───────────────────────────────
+type StartValues = AvkStartValues;
 
 const LS_ROWS  = 'vek_avk_rows';
 const LS_START = 'vek_avk_start';
@@ -461,6 +451,9 @@ function onSvChange(): void {
 [svYear, svLysa, svTjpSve, svTjpNor].forEach(el =>
   el.addEventListener('change', onSvChange)
 );
+
+// ── Molnsynk ──────────────────────────────────────────────────────────────────
+initSyncWidget();
 
 // ── Lägg till år ──────────────────────────────────────────────────────────────
 const rows = loadRows();
