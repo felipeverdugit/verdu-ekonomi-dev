@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faktisk avkastning — Verdu Ekonomi</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🎯</text></svg>">
+  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('vek_theme')||'dark')</script>
+</head>
+<body>
+<div class="page">
+  <nav class="topnav" id="topnav"></nav>
+
+  <h1>🎯 Faktisk avkastning</h1>
+  <p class="subtitle">Logga faktisk årsavkastning för Lysa och tjänstepensioner. Jämför mot simulatorns antagande.</p>
+
+  <!-- KPI-rad -->
+  <div class="kpi-bar" style="margin-bottom:24px" id="kpi-bar">
+    <div class="kpi">
+      <div class="kpi-label">CAGR Lysa</div>
+      <div class="kpi-value" id="kpi-lysa-cagr">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">CAGR TjP Sverige</div>
+      <div class="kpi-value" id="kpi-tjpsve-cagr">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">CAGR TjP Norge</div>
+      <div class="kpi-value" id="kpi-tjpnor-cagr">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Antaget (Brygga)</div>
+      <div class="kpi-value orange" id="kpi-antaget">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Lysa vs antaget</div>
+      <div class="kpi-value" id="kpi-diff">—</div>
+    </div>
+  </div>
+
+  <!-- Tabell -->
+  <div class="card" style="margin-bottom:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="card-title" style="margin-bottom:0">Årsavkastning per kategori</div>
+      <button class="btn btn-primary" id="btn-add" style="font-size:.82rem;padding:6px 14px">+ Lägg till år</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:.88rem">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:8px 10px;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">År</th>
+            <th style="text-align:right;padding:8px 10px;color:#4f8ef7;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">Lysa %</th>
+            <th style="text-align:right;padding:8px 10px;color:#6ee7b7;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">TjP Sverige %</th>
+            <th style="text-align:right;padding:8px 10px;color:#f87171;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">TjP Norge %</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">vs antaget</th>
+            <th style="border-bottom:1px solid var(--border)"></th>
+          </tr>
+        </thead>
+        <tbody id="avk-tbody"></tbody>
+      </table>
+    </div>
+    <div id="empty-msg" style="text-align:center;padding:32px;color:var(--muted);font-size:.9rem;display:none">
+      Inga år inlagda ännu. Klicka "+ Lägg till år" för att börja.
+    </div>
+  </div>
+
+  <!-- Diagram -->
+  <div class="card" style="margin-bottom:24px">
+    <div class="card-title">Faktisk vs antagen avkastning per år</div>
+    <div id="chart-empty" style="text-align:center;padding:32px;color:var(--muted);font-size:.9rem;display:none">
+      Lägg till minst ett år för att visa diagrammet.
+    </div>
+    <canvas id="avk-chart" height="200"></canvas>
+  </div>
+
+  <footer>Faktisk avkastning · Verdu Ekonomi</footer>
+</div>
+<script type="module" src="/src/pages/avkastning.ts"></script>
+</body>
+</html>
