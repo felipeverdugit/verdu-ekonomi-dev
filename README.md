@@ -104,7 +104,7 @@ All data sparas primärt i **localStorage** med namnprefix:
 
 ## Molnsynk (Firebase)
 
-Synk finns på sidorna **Brygga**, **Budget**, **Kvartal** och **Avkastning** via en ☁️-widget längst ner.
+Synk finns på **alla sidor** via en ☁️-widget direkt under navigeringen (injiceras automatiskt via `renderTopnav()`).
 
 ### Vad synkas
 
