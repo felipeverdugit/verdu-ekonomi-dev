@@ -23,7 +23,7 @@ renderTopnav('historik.html');
 injectInfoBtn('📈 Historik', [
   {
     heading: 'Vad är det här?',
-    html: `<p>Loggbok där du tar <strong>månatliga ögonblicksbilder</strong> (snapshots) av förmögenheten. Diagrammet visar hur kapitalet utvecklats över tid.</p>`,
+    html: `<p>Loggbok där du tar <strong>månatliga ögonblicksbilder</strong> (snapshots) av förmögenheten. Visar faktisk historik och en framåtblickande prognos mot FIRE-målet.</p>`,
   },
   {
     heading: 'Vad behöver du göra?',
@@ -33,15 +33,16 @@ injectInfoBtn('📈 Historik', [
     </ul>`,
   },
   {
-    heading: 'Vad visas?',
-    html: `<ul>
-      <li>Linjediagram över totalkapital, Lysa-ISK och sparkonto.</li>
-      <li>Tabell med alla sparade snapshots.</li>
-    </ul>`,
+    heading: 'Historik-diagrammet',
+    html: `<p>Sex linjer: <strong>Privata fonder</strong> (Lysa + sparkonto + buffert), <strong>TjP & LöneVXL</strong>, <strong>TjP Norge</strong>, <strong>Allmänpension</strong> (AP + PP + NAV), <strong>Aktier</strong> och <strong>Totalt</strong>.</p>`,
+  },
+  {
+    heading: 'Prognos',
+    html: `<p>Extrapolerar totalt kapital framåt med 7 % avkastning + löpande sparande. Visar FIRE-tal (25× levnadskostnaden/år) och planerade FIRE-år som markeringar.</p>`,
   },
   {
     heading: 'Mål',
-    html: `<p>Se att förmögenhetskurvan pekar uppåt och att du är på rätt spår mot FIRE-målet. Identifiera månader med onormalt stort kapitalfall.</p>`,
+    html: `<p>Totalkurvan ska peka uppåt och prognosen ska nå FIRE-talet i tid. Identifiera månader med onormalt stort kapitalfall.</p>`,
   },
 ]);
 

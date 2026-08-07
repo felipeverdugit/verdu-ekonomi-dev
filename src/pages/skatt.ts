@@ -14,23 +14,28 @@ renderTopnav('skatt.html');
 injectInfoBtn('🧾 Skatteanalys', [
   {
     heading: 'Vad är det här?',
-    html: `<p>Visar hur skatten påverkar brygga-planen — framför allt ISK-schablonskatt på Lysa och inkomstskatt på pensioner.</p>`,
+    html: `<p>Jämför <strong>schablonmässig flat-skatt</strong> (din slider i Brygga) mot <strong>faktisk progressiv inkomstskatt</strong> för varje år från FIRE-start. Visar hur mycket du faktiskt betalar — och vad du sparar jämfört med ett förenklat antagande.</p>`,
+  },
+  {
+    heading: 'Tabellen & grafen',
+    html: `<ul>
+      <li>År-för-år-rad med Felipe och Ulrikas bruttopension, flat-skatt och progressiv skatt.</li>
+      <li>Progressiv beräkning inkluderar <strong>förhöjt grundavdrag</strong> för pensionärer 65+ (31 % kommunalskatt + 20 % statlig skatt över 615 300 kr/år).</li>
+      <li>Grafen visar effektiv skatteprocent över tid — jämfört med din flat-rate-slider.</li>
+      <li><strong>Besparing</strong> = total flat-skattepost minus total progressiv skatt (positivt = progressiv är lägre).</li>
+    </ul>`,
   },
   {
     heading: 'ISK-schablonskatt',
     html: `<ul>
-      <li>Lysa-konton beskattas med en schablonintäkt (ca 1,25 % av kapital/år, justeras i Brygga-simulatorn).</li>
-      <li>Skatten betalas <strong>oavsett om du tar ut pengar eller inte</strong>.</li>
+      <li>Lysa-konton beskattas med en schablonintäkt — justeras via ISK-slidern i Brygga (standard 1,25 %).</li>
+      <li>Betalas <strong>oavsett om du tar ut pengar eller inte</strong>.</li>
       <li>Uttag från ISK räknas inte som inkomst → ingen extra inkomstskatt vid uttaget.</li>
     </ul>`,
   },
   {
-    heading: 'Pensionsskatt',
-    html: `<p>Inkomstpensioner (AP, TjP) beskattas som inkomst. Använd skatt-slidern i Brygga-simulatorn för att lägga in en marginalskatt och se hur nettoutbetalningarna påverkas.</p>`,
-  },
-  {
     heading: 'Vad behöver du göra?',
-    html: `<p>Kontrollera att ISK-schablonprocenten (satt i Brygga) stämmer med Skatteverkets aktuella nivå. 2026 är den ca 1,09 %.</p>`,
+    html: `<p>Sätt flat-skatt-slidern i Brygga till din bästa uppskattning. Jämför sedan mot den progressiva kolumnen — om progressiv är lägre är din plan konservativt skatteberäknad (bra).</p>`,
   },
 ]);
 
