@@ -3,7 +3,7 @@ import { initAuth } from '../auth';
 import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { computeFire } from '../calculations';
 import { ekStore, fireStore } from '../store';
-import { renderTopnav } from '../nav';
+import { renderTopnav, injectInfoBtn } from '../nav';
 import { AP_INDEX_RATE, AP_TAK, PP_RATE } from '../constants';
 
 await initAuth();
@@ -11,6 +11,29 @@ await initAuth();
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 renderTopnav('index.html');
+
+injectInfoBtn('🏠 Dashboard', [
+  {
+    heading: 'Vad är det här?',
+    html: `<p>Översiktssidan som visar din ekonomi i ett ögonkast: nettoförmögenhet, brygga-status, uppskattad förmögenhetstillväxt per år och kommande pensionshändelser.</p>`,
+  },
+  {
+    heading: 'Netto förmögenhet (NV)',
+    html: `<p>Summan av <strong>alla tillgångar minus skulder</strong>: AP, PP, TjP, Lysa, sparkonto, bostäder, aktier m.m. Uppdateras automatiskt när du ändrar värden i Ekonomi-fliken.</p>`,
+  },
+  {
+    heading: 'Förmögenhetsförändring per år',
+    html: `<p>Uppskattning av hur NV förändras under ett normalår — fördelat på sju kategorier. Avkastning hämtas från Brygga-slidern. Bostadstillväxt kan justeras direkt här.</p>`,
+  },
+  {
+    heading: 'Vad behöver du göra?',
+    html: `<ul>
+      <li>Håll <strong>Ekonomi</strong>-fliken uppdaterad med aktuella balanser.</li>
+      <li>Kontrollera brygga-täckning — målet är ≥ 100 %.</li>
+      <li>Använd diagrammet för att se vad som driver förmögenhetstillväxten mest.</li>
+    </ul>`,
+  },
+]);
 
 // ── AKAP-KR 2026 ──────────────────────────────────────────────────────────────
 const AKAP_CAP  = 52_125;   // 7,5 IBB kr/mån

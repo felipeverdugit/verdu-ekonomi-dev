@@ -1,12 +1,39 @@
 import '../../src/style.css';
 import { initAuth } from '../auth';
 import { budgetStore, ekStore } from '../store';
-import { renderTopnav } from '../nav';
+import { renderTopnav, injectInfoBtn } from '../nav';
 import type { BudgetData } from '../types';
 
 await initAuth();
 
 renderTopnav('budget.html');
+
+injectInfoBtn('📋 Budget', [
+  {
+    heading: 'Vad är det här?',
+    html: `<p>Månadsbudgeten visar inkomster, utgifter och sparande samlat på ett ställe. KPI-raden högst upp räknar ut saldo, sparkvot och totalt sparande automatiskt.</p>`,
+  },
+  {
+    heading: 'Vad behöver du göra?',
+    html: `<ul>
+      <li>Fyll i faktiska månadsbelopp för varje post.</li>
+      <li>Löneväxling räknas med i sparkvoten men syns inte som inkomst (det är ett bruttolöneavdrag).</li>
+      <li>Lysa N (ej avkastningsbärande) exkluderas från sparkvoten.</li>
+    </ul>`,
+  },
+  {
+    heading: 'Nyckeltal',
+    html: `<ul>
+      <li><strong>Saldo</strong>: inkomst − utgifter (löneväxling adderas tillbaka).</li>
+      <li><strong>Sparkvot</strong>: totalt sparande / (inkomst + löneväxling) × 100.</li>
+      <li><strong>Totalt sparande</strong>: summan av alla sparande-poster (exkl. Lysa N).</li>
+    </ul>`,
+  },
+  {
+    heading: 'Målet',
+    html: `<p>En <strong>sparkvot på 30–50 %</strong> är ett vanligt riktmärke för FIRE-planering. Saldo bör vara nära noll — stor positiv rest betyder att mer kan sparas.</p>`,
+  },
+]);
 
 const fmt  = (n: number) => Math.round(n).toLocaleString('sv-SE');
 const fmtM = (n: number) => (n / 1_000_000).toFixed(2) + ' MSEK';

@@ -4,7 +4,7 @@ import { Chart, ArcElement, DoughnutController, LineController, LineElement, Poi
 import { computeFire, simulateUttag } from '../calculations';
 import { ekStore, fireStore, resultStore } from '../store';
 import { SLIDER_RANGES } from '../constants';
-import { renderTopnav } from '../nav';
+import { renderTopnav, injectInfoBtn } from '../nav';
 import type { FireResult, FireSettings } from '../types';
 import { initSyncWidget } from '../syncWidget';
 
@@ -14,6 +14,33 @@ Chart.register(ArcElement, DoughnutController, LineController, LineElement, Poin
 
 // ── Navigation ─────────────────────────────────────────────────────────────────
 renderTopnav('fire.html');
+
+injectInfoBtn('🌉 Brygga-simulatorn', [
+  {
+    heading: 'Vad är det här?',
+    html: `<p>Simulerar <strong>brygga-fasen</strong> — perioden från att du slutar jobba tills pensionerna täcker levnadskostnaderna. Visar om ditt fria kapital räcker och hur länge.</p>`,
+  },
+  {
+    heading: 'Hur fungerar det?',
+    html: `<ul>
+      <li>Ange antal år till FIRE, avkastning och uttaksprocent via sliders.</li>
+      <li>Simulatorn räknar framtida kapital och jämför med planerade uttag.</li>
+      <li>Brygga-täckning ≥ 100 % = kapital räcker hela vägen till full pension.</li>
+    </ul>`,
+  },
+  {
+    heading: 'Viktiga inställningar',
+    html: `<ul>
+      <li><strong>ISK-schablonskatt</strong>: reducerar Lysa-avkastningen (standard 1,25 %/år).</li>
+      <li><strong>Aktier i fritt kapital</strong>: kryssa i om du vill räkna med aktievärden.</li>
+      <li><strong>Levnadskostnad period 2</strong>: lägre belopp efter pensionsstart (t.ex. när båda pensioner är aktiva).</li>
+    </ul>`,
+  },
+  {
+    heading: 'Målet',
+    html: `<p>Brygga-täckning på <strong>minst 100 %</strong> med rimliga antaganden. Pie-diagrammet visar kapitalfördelningen vid FIRE-start.</p>`,
+  },
+]);
 
 // ── Slider-konfiguration ───────────────────────────────────────────────────────
 type SliderKey = keyof typeof SLIDER_RANGES;

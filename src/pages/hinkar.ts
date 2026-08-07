@@ -2,13 +2,36 @@ import '../../src/style.css';
 import { initAuth } from '../auth';
 import { ekStore } from '../store';
 import { KREDITKORT } from '../constants';
-import { renderTopnav } from '../nav';
+import { renderTopnav, injectInfoBtn } from '../nav';
 import type { EkonomiData } from '../types';
 
 await initAuth();
 
 // ── Navigation ─────────────────────────────────────────────────────────────────
 renderTopnav('hinkar.html');
+
+injectInfoBtn('🪣 Hink-strategi', [
+  {
+    heading: 'Vad är det här?',
+    html: `<p>Hink-strategin delar upp kapitalet i tre "hinkar" baserat på tidshorisonten — <strong>kort, medel och lång</strong>. Det gör det lättare att hantera marknadsrörelser utan panik.</p>`,
+  },
+  {
+    heading: 'De tre hinkarna',
+    html: `<ul>
+      <li>🟢 <strong>Kort (0–2 år)</strong>: Sparkonto, buffert. Inga marknadsrisker. Täcker löpande uttag.</li>
+      <li>🔵 <strong>Medel (2–10 år)</strong>: Räntebärande, lågrisk. Fyller på korta hinken.</li>
+      <li>🟣 <strong>Lång (10+ år)</strong>: Aktier, fonder. Hög risk ok — lång tid att återhämta sig.</li>
+    </ul>`,
+  },
+  {
+    heading: 'Målet',
+    html: `<p>Korta hinken ska alltid täcka <strong>minst 1–2 år</strong> av uttag. Lysa-portföljen tillhör långa hinken och ska inte röras vid tillfälliga nedgångar.</p>`,
+  },
+  {
+    heading: 'Vad behöver du göra?',
+    html: `<p>Se till att fördelningen stämmer med din plan. Rebalansera kvartalsvis om hinkarna driftar — det sker naturligt via kvartalstrategin.</p>`,
+  },
+]);
 
 // ── Formatering ────────────────────────────────────────────────────────────────
 function fmt(n: number)  { return Math.round(n).toLocaleString('sv-SE') + ' kr'; }

@@ -3,7 +3,7 @@ import { initAuth } from '../auth';
 import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler } from 'chart.js';
 import { simulateUttag } from '../calculations';
 import { resultStore, ekStore, fireStore } from '../store';
-import { renderTopnav } from '../nav';
+import { renderTopnav, injectInfoBtn } from '../nav';
 import type { PensionStream } from '../types';
 
 await initAuth();
@@ -12,6 +12,30 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
 
 // ── Navigation ─────────────────────────────────────────────────────────────────
 renderTopnav('uttag.html');
+
+injectInfoBtn('📊 Uttaksplan', [
+  {
+    heading: 'Vad är det här?',
+    html: `<p>En detaljerad år-för-år-simulering av hela uttaksfasen. Visar hur kapitalet utvecklas, när varje pensionsström aktiveras och hur länge pengarna räcker.</p>`,
+  },
+  {
+    heading: 'Vad visas i diagrammet?',
+    html: `<ul>
+      <li><strong>Kapital</strong>: det fria kapitalet (Lysa, sparkonto m.m.) som minskar med uttag.</li>
+      <li><strong>Uttag/mån</strong>: vad du tar ut ur kapitalet varje månad (minskar när pensioner slår in).</li>
+      <li><strong>Levnadskostnad</strong> (orange streckad linje): din planerade levnadskostnad, inkl. steget ner till period 2.</li>
+      <li><strong>Pensioner</strong>: de staplar som byggs upp allteftersom pensionerna startar.</li>
+    </ul>`,
+  },
+  {
+    heading: 'Målet',
+    html: `<p>Kapitalet ska inte nå noll under din livstid. Målet är att <strong>uttagen täcks av pensioner</strong> senast när kapitalet är nära slut — helst med god marginal.</p>`,
+  },
+  {
+    heading: 'Tips',
+    html: `<p>Justera startåldrarna för varje pension i Brygga-simulatorn för att se hur timing påverkar uttaksbehovet.</p>`,
+  },
+]);
 
 const DARK_GRID = '#2d3348';
 const DARK_TEXT = '#8892a4';

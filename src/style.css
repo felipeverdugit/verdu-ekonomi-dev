@@ -157,6 +157,66 @@ h2 { font-size: 1.2rem; font-weight: 600; margin: 32px 0 14px; color: var(--text
 hr            { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
 footer        { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: .8rem; }
 
+/* ── Info-knapp ──────────────────────────────────────────────────────────────── */
+.btn-info {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: transparent; border: 1.5px solid var(--accent1);
+  color: var(--accent1); font-size: .82rem; font-weight: 700;
+  cursor: pointer; line-height: 1; vertical-align: middle;
+  margin-left: 10px; transition: background .15s, color .15s;
+  flex-shrink: 0;
+}
+.btn-info:hover { background: var(--accent1); color: #0f1117; }
+
+/* ── Info-modal ──────────────────────────────────────────────────────────────── */
+.info-backdrop {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,.6); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  animation: fadeIn .15s ease;
+}
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+.info-modal {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px 28px 24px;
+  max-width: 560px; width: 100%;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  animation: slideUp .18s ease;
+}
+@keyframes slideUp { from { transform: translateY(12px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+
+.info-modal-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; margin-bottom: 20px;
+}
+.info-modal-title {
+  font-size: 1.15rem; font-weight: 700; color: var(--fg);
+}
+.info-modal-close {
+  background: none; border: 1px solid var(--border); border-radius: 6px;
+  color: var(--muted); font-size: 1rem; cursor: pointer;
+  padding: 2px 8px; line-height: 1.4; flex-shrink: 0;
+  transition: border-color .15s, color .15s;
+}
+.info-modal-close:hover { border-color: var(--red); color: var(--red); }
+
+.info-modal-section { margin-bottom: 18px; }
+.info-modal-section:last-child { margin-bottom: 0; }
+.info-modal-section h3 {
+  font-size: .72rem; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--accent1); margin-bottom: 6px;
+}
+.info-modal-section p, .info-modal-section ul {
+  font-size: .88rem; color: var(--muted); line-height: 1.7;
+}
+.info-modal-section ul { padding-left: 18px; }
+.info-modal-section li { margin-bottom: 4px; }
+.info-modal-section strong { color: var(--fg); }
+
 /* ── Knappar ─────────────────────────────────────────────────────────────────── */
 .btn-theme {
   margin-left: auto; background: none; border: 1px solid var(--border);

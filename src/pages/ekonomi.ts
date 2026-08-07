@@ -2,13 +2,41 @@ import '../../src/style.css';
 import { initAuth } from '../auth';
 import { ekStore } from '../store';
 import { SHEETS_URL, SHEETS_MAP, EXCEL_PMTS, ALLMAN_DEFAULTS } from '../constants';
-import { renderTopnav } from '../nav';
+import { renderTopnav, injectInfoBtn } from '../nav';
 import type { EkonomiData } from '../types';
 
 await initAuth();
 
 // ── Navigation ─────────────────────────────────────────────────────────────────
 renderTopnav('ekonomi.html');
+
+injectInfoBtn('💰 Ekonomi — grunddata', [
+  {
+    heading: 'Vad är det här?',
+    html: `<p>Här matar du in alla <strong>aktuella balanser och månadssparanden</strong> som de övriga sidorna räknar med. Det är källan till hela planen.</p>`,
+  },
+  {
+    heading: 'Vad behöver du göra?',
+    html: `<ul>
+      <li>Uppdatera balanserna (PV) en gång i månaden eller kvartalet från Lysa, Hoist, NAV m.fl.</li>
+      <li>Ange månatliga insättningsbelopp (PMT) — dessa hämtas automatiskt till Budget-sidan.</li>
+      <li>Synka från Google Sheets med knappen längst ner för snabbare uppdatering.</li>
+    </ul>`,
+  },
+  {
+    heading: 'Viktiga fält',
+    html: `<ul>
+      <li><strong>Lysa F/U/Buffert</strong>: fria fondkonton (ISK) — grunden i brygga-kapitalet.</li>
+      <li><strong>AP (inkomstpension)</strong>: hämta intjänad behållning från minpension.se.</li>
+      <li><strong>NAV (Norge)</strong>: norsk statlig pension i NOK.</li>
+      <li><strong>Levnadskostnad</strong>: din planerade månadskostnad i FIRE — påverkar alla simulatorer.</li>
+    </ul>`,
+  },
+  {
+    heading: 'Datalagringe',
+    html: `<p>All data sparas <strong>lokalt i webbläsaren</strong> (localStorage). Inget skickas till server om du inte synkar med Sheets.</p>`,
+  },
+]);
 
 // ── Alla fält som har ett input-element med samma id som EkonomiData-fältet ────
 const FIELDS: (keyof EkonomiData)[] = [

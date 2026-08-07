@@ -1,11 +1,38 @@
 import '../../src/style.css';
 import { initAuth } from '../auth';
 import { resultStore, ekStore } from '../store';
-import { renderTopnav } from '../nav';
+import { renderTopnav, injectInfoBtn } from '../nav';
 
 await initAuth();
 
 renderTopnav('kvartal.html');
+
+injectInfoBtn('📅 Kvartalsstrategi', [
+  {
+    heading: 'Vad är det här?',
+    html: `<p>En guided checklista inför varje kvartal baserad på <strong>Jespers uttagsstrategi</strong> (Rika tillsammans). Istället för att ta ut pengar automatiskt varje månad gör du en aktiv bedömning fyra gånger per år.</p>`,
+  },
+  {
+    heading: 'Vad behöver du göra?',
+    html: `<ul>
+      <li>Logga in på <strong>Lysa</strong> och läs av portföljens procentutveckling sedan förra kvartalet.</li>
+      <li>Ange din faktiska genomsnittliga månadsutgift (senaste 3 månaderna).</li>
+      <li>Kolla ditt buffertkontos saldo (t.ex. Borgo sparkonto).</li>
+      <li>Flytta slidern till rätt procentutveckling — appen visar sedan vad du ska göra.</li>
+    </ul>`,
+  },
+  {
+    heading: 'Målet',
+    html: `<p>Aldrig tvingas sälja fonder när marknaden är nere. Bufferten (1–1⅓ kvartalsbehov) absorberar nedgångar; uppgångar fylls på igen. Fyra reviewdatum per år: <strong>5 jan · 5 apr · 5 jul · 5 okt</strong>.</p>`,
+  },
+  {
+    heading: 'Nyckeltal',
+    html: `<ul>
+      <li><strong>Kvartalsbehov</strong> = (faktisk utgift − aktiva pensioner) × 3</li>
+      <li><strong>Buffertmål</strong> = 4/3 × kvartalsbehov (≈ ett kvartal + 33 % kudde)</li>
+    </ul>`,
+  },
+]);
 
 function fmt(n: number) { return Math.round(n).toLocaleString('sv-SE') + ' kr'; }
 

@@ -3,13 +3,36 @@ import { initAuth } from '../auth';
 import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend } from 'chart.js';
 import { computeFire } from '../calculations';
 import { ekStore, fireStore } from '../store';
-import { renderTopnav } from '../nav';
+import { renderTopnav, injectInfoBtn } from '../nav';
 
 await initAuth();
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend);
 
 renderTopnav('skatt.html');
+
+injectInfoBtn('🧾 Skatteanalys', [
+  {
+    heading: 'Vad är det här?',
+    html: `<p>Visar hur skatten påverkar brygga-planen — framför allt ISK-schablonskatt på Lysa och inkomstskatt på pensioner.</p>`,
+  },
+  {
+    heading: 'ISK-schablonskatt',
+    html: `<ul>
+      <li>Lysa-konton beskattas med en schablonintäkt (ca 1,25 % av kapital/år, justeras i Brygga-simulatorn).</li>
+      <li>Skatten betalas <strong>oavsett om du tar ut pengar eller inte</strong>.</li>
+      <li>Uttag från ISK räknas inte som inkomst → ingen extra inkomstskatt vid uttaget.</li>
+    </ul>`,
+  },
+  {
+    heading: 'Pensionsskatt',
+    html: `<p>Inkomstpensioner (AP, TjP) beskattas som inkomst. Använd skatt-slidern i Brygga-simulatorn för att lägga in en marginalskatt och se hur nettoutbetalningarna påverkas.</p>`,
+  },
+  {
+    heading: 'Vad behöver du göra?',
+    html: `<p>Kontrollera att ISK-schablonprocenten (satt i Brygga) stämmer med Skatteverkets aktuella nivå. 2026 är den ca 1,09 %.</p>`,
+  },
+]);
 
 const KOMMUNAL       = 0.31;
 const STATLIG_GRANS  = 615_300;

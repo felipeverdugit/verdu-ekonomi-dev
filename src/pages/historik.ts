@@ -12,13 +12,38 @@ import {
 } from 'chart.js';
 import { historikStore, ekStore } from '../store';
 import type { Snapshot, EkonomiData } from '../types';
-import { renderTopnav } from '../nav';
+import { renderTopnav, injectInfoBtn } from '../nav';
 
 await initAuth();
 
 Chart.register(LineController, CategoryScale, LinearScale, PointElement, LineElement, Legend, Tooltip);
 
 renderTopnav('historik.html');
+
+injectInfoBtn('📈 Historik', [
+  {
+    heading: 'Vad är det här?',
+    html: `<p>Loggbok där du tar <strong>månatliga ögonblicksbilder</strong> (snapshots) av förmögenheten. Diagrammet visar hur kapitalet utvecklats över tid.</p>`,
+  },
+  {
+    heading: 'Vad behöver du göra?',
+    html: `<ul>
+      <li>Klicka <strong>"Spara snapshot"</strong> en gång i månaden (t.ex. sista vardagen) efter att du uppdaterat Ekonomi-fliken.</li>
+      <li>Snapshotet fångar alla balanser som de ser ut just nu.</li>
+    </ul>`,
+  },
+  {
+    heading: 'Vad visas?',
+    html: `<ul>
+      <li>Linjediagram över totalkapital, Lysa-ISK och sparkonto.</li>
+      <li>Tabell med alla sparade snapshots.</li>
+    </ul>`,
+  },
+  {
+    heading: 'Mål',
+    html: `<p>Se att förmögenhetskurvan pekar uppåt och att du är på rätt spår mot FIRE-målet. Identifiera månader med onormalt stort kapitalfall.</p>`,
+  },
+]);
 
 function fmtKr(n: number): string {
   return Math.round(n).toLocaleString('sv-SE') + ' kr';
