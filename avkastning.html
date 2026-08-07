@@ -15,7 +15,7 @@
   <p class="subtitle">Logga faktisk årsavkastning för Lysa och tjänstepensioner. Jämför mot simulatorns antagande.</p>
 
   <!-- KPI-rad -->
-  <div class="kpi-bar" style="margin-bottom:24px" id="kpi-bar">
+  <div class="kpi-bar" style="margin-bottom:24px">
     <div class="kpi">
       <div class="kpi-label">CAGR Lysa</div>
       <div class="kpi-value" id="kpi-lysa-cagr">—</div>
@@ -36,12 +36,46 @@
       <div class="kpi-label">Lysa vs antaget</div>
       <div class="kpi-value" id="kpi-diff">—</div>
     </div>
+    <div class="kpi">
+      <div class="kpi-label">Lysa faktisk idag</div>
+      <div class="kpi-value" id="kpi-lysa-kr">—</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Lysa simulerat idag</div>
+      <div class="kpi-value orange" id="kpi-lysa-sim">—</div>
+    </div>
   </div>
 
-  <!-- Tabell -->
+  <!-- Startvärden -->
+  <div class="card" style="margin-bottom:24px">
+    <div class="card-title">Startvärden (ingående kapital)</div>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:16px">
+      Ange vad varje kategori var värd i början av det första året du loggat. Används för att räkna ut kr-värden och jämföra mot simulerad portfölj.
+    </p>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Startår</label>
+        <input type="number" id="sv-year" style="width:100px" placeholder="2023">
+      </div>
+      <div class="form-row">
+        <label style="color:#4f8ef7">Lysa (kr)</label>
+        <input type="number" id="sv-lysa" style="width:140px" placeholder="0">
+      </div>
+      <div class="form-row">
+        <label style="color:#6ee7b7">TjP Sverige (kr)</label>
+        <input type="number" id="sv-tjpsve" style="width:140px" placeholder="0">
+      </div>
+      <div class="form-row">
+        <label style="color:#f87171">TjP Norge (kr)</label>
+        <input type="number" id="sv-tjpnor" style="width:140px" placeholder="0">
+      </div>
+    </div>
+  </div>
+
+  <!-- % Tabell -->
   <div class="card" style="margin-bottom:24px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div class="card-title" style="margin-bottom:0">Årsavkastning per kategori</div>
+      <div class="card-title" style="margin-bottom:0">Årsavkastning per kategori (%)</div>
       <button class="btn btn-primary" id="btn-add" style="font-size:.82rem;padding:6px 14px">+ Lägg till år</button>
     </div>
     <div style="overflow-x:auto">
@@ -59,18 +93,53 @@
         <tbody id="avk-tbody"></tbody>
       </table>
     </div>
-    <div id="empty-msg" style="text-align:center;padding:32px;color:var(--muted);font-size:.9rem;display:none">
+    <div id="empty-msg" style="text-align:center;padding:32px;color:var(--muted);font-size:.9rem">
       Inga år inlagda ännu. Klicka "+ Lägg till år" för att börja.
     </div>
   </div>
 
-  <!-- Diagram -->
+  <!-- Kr-tabell -->
+  <div class="card" style="margin-bottom:24px" id="kr-card">
+    <div class="card-title">Portföljvärde i kronor per år</div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:14px">Beräknat från startvärden + faktisk avkastning. Ingen hänsyn till nya insättningar — ren avkastningseffekt.</p>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:.86rem">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:8px 10px;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">År</th>
+            <th style="text-align:right;padding:8px 10px;color:#4f8ef7;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">Lysa ingående</th>
+            <th style="text-align:right;padding:8px 10px;color:#4f8ef7;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">Lysa avk kr</th>
+            <th style="text-align:right;padding:8px 10px;color:#4f8ef7;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">Lysa utgående</th>
+            <th style="text-align:right;padding:8px 10px;color:#6ee7b7;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">TjP Sve utgående</th>
+            <th style="text-align:right;padding:8px 10px;color:#f87171;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">TjP Nor utgående</th>
+            <th style="text-align:right;padding:8px 10px;color:var(--accent2);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">Totalt</th>
+          </tr>
+        </thead>
+        <tbody id="kr-tbody"></tbody>
+      </table>
+    </div>
+    <div id="kr-empty" style="text-align:center;padding:20px;color:var(--muted);font-size:.85rem;display:none">
+      Fyll i startvärden och minst ett år för att se kr-värden.
+    </div>
+  </div>
+
+  <!-- Procentdiagram -->
   <div class="card" style="margin-bottom:24px">
-    <div class="card-title">Faktisk vs antagen avkastning per år</div>
+    <div class="card-title">Faktisk vs antagen avkastning per år (%)</div>
     <div id="chart-empty" style="text-align:center;padding:32px;color:var(--muted);font-size:.9rem;display:none">
       Lägg till minst ett år för att visa diagrammet.
     </div>
-    <canvas id="avk-chart" height="200"></canvas>
+    <canvas id="avk-chart" height="180"></canvas>
+  </div>
+
+  <!-- Kr-diagram -->
+  <div class="card" style="margin-bottom:24px" id="kr-chart-card">
+    <div class="card-title">Portföljutveckling — faktisk vs simulerad (kr)</div>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:14px">Faktisk = verkliga % år för år. Simulerad = om du haft antaget % varje år.</p>
+    <div id="kr-chart-empty" style="text-align:center;padding:32px;color:var(--muted);font-size:.85rem;display:none">
+      Fyll i startvärden och minst ett år för att visa.
+    </div>
+    <canvas id="kr-chart" height="180"></canvas>
   </div>
 
   <footer>Faktisk avkastning · Verdu Ekonomi</footer>
