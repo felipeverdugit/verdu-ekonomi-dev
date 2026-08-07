@@ -33,8 +33,8 @@ injectInfoBtn('💰 Ekonomi — grunddata', [
     </ul>`,
   },
   {
-    heading: 'Datalagring',
-    html: `<p>All data sparas <strong>lokalt i webbläsaren</strong> (localStorage). Inget skickas till server om du inte synkar med Sheets.</p>`,
+    heading: 'Datalagring & Sheets-sync',
+    html: `<p>All data sparas <strong>lokalt i webbläsaren</strong> (localStorage) — ingenting skickas till någon server. Sheets-knappen <em>hämtar</em> balanser från ditt Google Sheets (läsning enbart) och skriver dem till localStorage. Ingen data lämnar appen.</p>`,
   },
 ]);
 
