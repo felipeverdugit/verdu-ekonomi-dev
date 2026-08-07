@@ -111,8 +111,8 @@ function getScenario(rorelse: number, kv: number, buffert: number, kvMax: number
   const actions = [
     'Ta ut kvartalsbehov från bäst presterande fond.',
     fill > 0
-      ? `Sälj ytterligare fonder → fyll bufferten med ${f(fill)} (${fillLbl} × ${f(kv)}, max ${f(kvMax)}).`
-      : 'Bufferten är redan full.',
+      ? `Sälj ytterligare ${f(fill)} (${fillLbl} av kvartalsbehov ${f(kv)}) och lägg i bufferten — buffertmål: ${f(kvMax)}.`
+      : 'Bufferten är redan full — ingen extra försäljning behövs.',
   ];
 
   const belaning = rorelse > 22
@@ -145,10 +145,13 @@ function render(): void {
   // Marknadsrörelse-display
   const rSign = rorelse > 0 ? '+' : '';
   const rText = `${rSign}${rorelse} %`;
-  const rColor = rorelse < -3 ? 'var(--red)' : rorelse > 7 ? 'var(--green)' : 'var(--orange)';
-  const rEl = document.getElementById('disp-rorelse')!;
-  rEl.textContent  = rText;
-  rEl.style.color  = rColor;
+  const rColor = rorelse < 0 ? 'var(--red)' : rorelse > 0 ? 'var(--green)' : 'var(--muted)';
+  const rEl    = document.getElementById('disp-rorelse')!;
+  const rElKpi = document.getElementById('disp-rorelse-kpi')!;
+  rEl.textContent     = rText;
+  rEl.style.color     = rColor;
+  rElKpi.textContent  = rText;
+  rElKpi.style.color  = rColor;
 
   // Buffert-status
   const pct = kvMax > 0 ? Math.min(100, (buffert / kvMax) * 100) : 0;
@@ -180,6 +183,44 @@ function render(): void {
     belEl.style.display = 'none';
   }
 }
+
+// ── Nästa kvartalsdag ─────────────────────────────────────────────────────────
+function updateNextKvartal(): void {
+  const now   = new Date();
+  const year  = now.getFullYear();
+
+  // Kvartalsreviewdatum: 5:e dagen i jan/apr/jul/okt (ger marknaderna 4 dagar att landa)
+  const kv_months = [0, 3, 6, 9]; // Jan=0, Apr=3, Jul=6, Okt=9
+  const kv_day    = 5;
+
+  // Bygg upp en lista med årets + nästa års datum och välj första i framtiden
+  const candidates: Date[] = [];
+  for (const yr of [year, year + 1]) {
+    for (const m of kv_months) {
+      candidates.push(new Date(yr, m, kv_day));
+    }
+  }
+
+  const nextDate = candidates.find(d => d > now)!;
+  const diffMs   = nextDate.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  const kvNames = ['Q1 (jan–mar)', 'Q2 (apr–jun)', 'Q3 (jul–sep)', 'Q4 (okt–dec)'];
+  const kvIdx   = kv_months.indexOf(nextDate.getMonth());
+  const period  = kvNames[kvIdx] ?? '';
+
+  const dateStr = nextDate.toLocaleDateString('sv-SE', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+  });
+
+  document.getElementById('next-kv-date')!.textContent = dateStr;
+  document.getElementById('next-kv-days')!.textContent =
+    diffDays === 1 ? '🔔 Imorgon!' : `om ${diffDays} dagar`;
+  document.getElementById('next-kv-period')!.textContent =
+    `Kolla Lysa-portföljens procentutveckling för ${period} och ange den i slidern nedan.`;
+}
+
+updateNextKvartal();
 
 render();
 

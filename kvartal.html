@@ -26,7 +26,7 @@
     </div>
     <div class="kpi-item">
       <div class="kpi-label">Marknadsrörelse</div>
-      <div class="kpi-value fw-bold" id="disp-rorelse">—</div>
+      <div class="kpi-value fw-bold" id="disp-rorelse-kpi">—</div>
     </div>
   </div>
 
@@ -64,16 +64,32 @@
     </div>
   </div>
 
+  <!-- Nästa kvartalsreview -->
+  <div class="card" style="margin-bottom:24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+    <div>
+      <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px">Nästa kvartalsreview</div>
+      <div style="font-size:1.4rem;font-weight:700;color:var(--accent1)" id="next-kv-date">—</div>
+    </div>
+    <div style="color:var(--muted);font-size:.85rem" id="next-kv-days">—</div>
+    <div style="margin-left:auto;font-size:.8rem;color:var(--muted);max-width:280px;line-height:1.6" id="next-kv-period">—</div>
+  </div>
+
   <!-- Marknadsrörelse -->
   <div class="card" style="margin-bottom:24px">
-    <div class="card-title">Marknadsrörelse senaste kvartal</div>
+    <div class="card-title">Lysas portföljutveckling senaste kvartal</div>
     <div style="text-align:center;font-size:3rem;font-weight:800;margin:16px 0;letter-spacing:-.02em" id="disp-rorelse">0 %</div>
-    <input type="range" id="sl-rorelse" min="-50" max="50" step="1" value="0"
-           style="width:100%;margin-top:4px;accent-color:var(--accent1)">
-    <div style="display:flex;justify-content:space-between;color:var(--muted);font-size:.8rem;margin-top:6px">
-      <span style="color:var(--red)">−50 %  krasch</span>
-      <span>0 %</span>
-      <span style="color:var(--green)">+50 %  rus</span>
+    <div style="position:relative;margin-top:4px">
+      <input type="range" id="sl-rorelse" min="-50" max="50" step="1" value="0"
+             style="width:100%;accent-color:var(--accent1)">
+      <!-- 0%-markering mitt på slidern -->
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+                  width:3px;height:18px;background:var(--muted);border-radius:2px;
+                  pointer-events:none;opacity:.7"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;color:var(--muted);font-size:.8rem;margin-top:8px">
+      <span style="color:var(--red)">−50 % krasch</span>
+      <span style="font-weight:600;color:var(--muted)">▲ 0 %</span>
+      <span style="color:var(--green)">+50 % rus</span>
     </div>
   </div>
 
