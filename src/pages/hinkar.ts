@@ -13,23 +13,28 @@ renderTopnav('hinkar.html');
 injectInfoBtn('🪣 Hink-strategi', [
   {
     heading: 'Vad är det här?',
-    html: `<p>Hink-strategin delar upp kapitalet i tre "hinkar" baserat på tidshorisonten — <strong>kort, medel och lång</strong>. Det gör det lättare att hantera marknadsrörelser utan panik.</p>`,
+    html: `<p>Kapitalet delas upp i <strong>fyra hinkar</strong> efter risk och tidshorisont. Det gör det lättare att hantera marknadsrörelser utan panik — du vet alltid vilken hink du tar ifrån.</p>`,
   },
   {
-    heading: 'De tre hinkarna',
+    heading: 'De fyra hinkarna',
     html: `<ul>
-      <li>🟢 <strong>Kort (0–2 år)</strong>: Sparkonto, buffert. Inga marknadsrisker. Täcker löpande uttag.</li>
-      <li>🔵 <strong>Medel (2–10 år)</strong>: Räntebärande, lågrisk. Fyller på korta hinken.</li>
-      <li>🟣 <strong>Lång (10+ år)</strong>: Aktier, fonder. Hög risk ok — lång tid att återhämta sig.</li>
+      <li>🟢 <strong>Hink 1 — Likviditet</strong>: Sparkonto/buffert. Täcker 3–6 månaders utgifter. Noll marknadsrisk. Det är härifrån du betalar räkningar.</li>
+      <li>🔵 <strong>Hink 2 — Trygghet</strong>: AP (inkomstpension), NAV (norsk pension), fastigheter (villa + lägenhet equity). Låg risk, ej likvida men stabila.</li>
+      <li>🟣 <strong>Hink 3 — Tillväxt</strong>: Lysa-fonder, TjP Sverige, TjP Norge, PP. Hög förväntad avkastning på lång sikt — rörs inte vid kortsiktiga nedgångar.</li>
+      <li>🎲 <strong>Hink 4 — Lek</strong>: Enskilda aktier (NorCo, OncoP). Spekulativt — max 10 % av hink 3. Förlust av hela beloppet ska inte påverka planen.</li>
     </ul>`,
   },
   {
     heading: 'Målet',
-    html: `<p>Korta hinken ska alltid täcka <strong>minst 1–2 år</strong> av uttag. Lysa-portföljen tillhör långa hinken och ska inte röras vid tillfälliga nedgångar.</p>`,
+    html: `<ul>
+      <li>Hink 1 täcker alltid <strong>minst 3 månaders</strong> utgifter (helst 6).</li>
+      <li>Hink 4 håller sig under <strong>10 % av hink 3</strong>.</li>
+      <li>Kvartalstrategin fyller på hink 1 från hink 3 vid uppgång och tär på hink 1 vid nedgång.</li>
+    </ul>`,
   },
   {
     heading: 'Vad behöver du göra?',
-    html: `<p>Se till att fördelningen stämmer med din plan. Rebalansera kvartalsvis om hinkarna driftar — det sker naturligt via kvartalstrategin.</p>`,
+    html: `<p>Kontrollera att hink 1 är tillräckligt stor och att lek-andelen (hink 4) inte driftat för högt. Rikedomstrappan nedanför visar din ekonomiska nivå baserat på hinkarna.</p>`,
   },
 ]);
 
