@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skatt-optimering — Verdu Ekonomi</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🧾</text></svg>">
+  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('vek_theme')||'dark')</script>
+  <script type="module" crossorigin src="/verdu-ekonomi-dev/assets/skatt-G8xMIPH3.js"></script>
+  <link rel="modulepreload" crossorigin href="/verdu-ekonomi-dev/assets/nav-q_tFxpN7.js">
+  <link rel="modulepreload" crossorigin href="/verdu-ekonomi-dev/assets/chart-c4LUrWq9.js">
+  <link rel="modulepreload" crossorigin href="/verdu-ekonomi-dev/assets/calculations-CGQ-IIRb.js">
+  <link rel="stylesheet" crossorigin href="/verdu-ekonomi-dev/assets/nav-B1Q4PkU7.css">
+</head>
+<body>
+<div class="page">
+  <nav class="topnav" id="topnav"></nav>
+
+  <h1>🧾 Skatt-optimering</h1>
+  <p class="subtitle">Progressiv skatt per person vs. schablonmässig 30 % · Förhöjt grundavdrag 65+ · Kommunalskatt 31 % · Statlig skatt &gt;615 300 kr/år</p>
+
+  <div class="kpi-bar">
+    <div class="kpi"><div class="kpi-label">Skatt (flat 30 %)</div><div class="kpi-value red" id="kpi-flat">—</div><div style="font-size:.7rem;color:var(--muted)">totalt over bryggperioden</div></div>
+    <div class="kpi"><div class="kpi-label">Skatt (progressiv)</div><div class="kpi-value" id="kpi-prog">—</div><div style="font-size:.7rem;color:var(--muted)">totalt over bryggperioden</div></div>
+    <div class="kpi"><div class="kpi-label">Besparing vs 30 %</div><div class="kpi-value green" id="kpi-saving">—</div></div>
+    <div class="kpi"><div class="kpi-label">Peak effektiv skatt Felipe</div><div class="kpi-value orange" id="kpi-f-peak">—</div></div>
+    <div class="kpi"><div class="kpi-label">Peak effektiv skatt Ulrika</div><div class="kpi-value" style="color:var(--accent2)" id="kpi-u-peak">—</div></div>
+    <div class="kpi"><div class="kpi-label">ISK-skatt år 1 (Lysa)</div><div class="kpi-value orange" id="kpi-isk-ar1">—</div><div style="font-size:.7rem;color:var(--muted)" id="kpi-isk-pct-lbl"></div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px">
+    <div class="card">
+      <h3 style="margin-top:0">Effektiv skattesats per år</h3>
+      <canvas id="skatt-chart" height="220"></canvas>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Modellens antaganden</h3>
+      <ul style="font-size:.85rem;line-height:1.8;color:var(--muted);padding-left:1.2em">
+        <li>Pensionärsavdrag (65+): förhöjt grundavdrag approximerat per SKV 2024</li>
+        <li>Under 65 år: litet grundavdrag (~13 900 kr), högre effektiv skatt</li>
+        <li>Kommunalskatt: 31 % (riksgenomsnitt)</li>
+        <li>Statlig inkomstskatt: 20 % på inkomst &gt;615 300 kr/år</li>
+        <li>Norsk pension (NAV/TjP-NO) approximeras med samma formel — i verkligheten beskattas dessa i Norge (~22 %)</li>
+        <li>Modellen är en approximation — exakt skatt beror på folkbokföringskommun, avdrag och deklaration</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+      <thead>
+        <tr style="color:var(--muted);text-transform:uppercase;font-size:.68rem;letter-spacing:.06em">
+          <th style="text-align:left;padding:6px 8px">År</th>
+          <th style="text-align:right;padding:6px 8px" colspan="4">Felipe</th>
+          <th style="text-align:right;padding:6px 8px" colspan="4">Ulrika</th>
+          <th style="text-align:right;padding:6px 8px">Besparing/år</th>
+        </tr>
+        <tr style="color:var(--muted);font-size:.7rem">
+          <th style="padding:4px 8px"></th>
+          <th style="text-align:right;padding:4px 6px">Brutto/mån</th>
+          <th style="text-align:right;padding:4px 6px">Skatt 30%</th>
+          <th style="text-align:right;padding:4px 6px">Skatt prog.</th>
+          <th style="text-align:right;padding:4px 6px;color:var(--accent)">Eff. %</th>
+          <th style="text-align:right;padding:4px 6px">Brutto/mån</th>
+          <th style="text-align:right;padding:4px 6px">Skatt 30%</th>
+          <th style="text-align:right;padding:4px 6px">Skatt prog.</th>
+          <th style="text-align:right;padding:4px 6px;color:var(--accent2)">Eff. %</th>
+          <th style="text-align:right;padding:4px 6px;color:var(--green)">kr/år</th>
+        </tr>
+      </thead>
+      <tbody id="skatt-tbody"></tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

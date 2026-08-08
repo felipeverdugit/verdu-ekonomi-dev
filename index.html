@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Verdu Ekonomi</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🏠</text></svg>">
+  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('vek_theme')||'dark')</script>
+  <script type="module" crossorigin src="/verdu-ekonomi-dev/assets/index-W0Yp6KkP.js"></script>
+  <link rel="modulepreload" crossorigin href="/verdu-ekonomi-dev/assets/nav-q_tFxpN7.js">
+  <link rel="modulepreload" crossorigin href="/verdu-ekonomi-dev/assets/chart-c4LUrWq9.js">
+  <link rel="modulepreload" crossorigin href="/verdu-ekonomi-dev/assets/calculations-CGQ-IIRb.js">
+  <link rel="stylesheet" crossorigin href="/verdu-ekonomi-dev/assets/nav-B1Q4PkU7.css">
+</head>
+<body>
+<div class="page">
+  <nav class="topnav" id="topnav"></nav>
+
+  <h1>Verdu Ekonomi</h1>
+  <p class="subtitle">Din brygga-plan i ett ögonkast.</p>
+
+  <!-- Hero: Netto förmögenhet -->
+  <div class="card" style="text-align:center;padding:28px 24px;margin-bottom:24px">
+    <div style="font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px">Netto förmögenhet idag</div>
+    <div id="hero-nv" style="font-size:3rem;font-weight:800;color:var(--accent1);letter-spacing:-.02em">—</div>
+    <div id="hero-nv-sub" style="font-size:.85rem;color:var(--muted);margin-top:4px">—</div>
+  </div>
+
+  <!-- KPI-rad: brygga -->
+  <div class="kpi-bar">
+    <div class="kpi"><div class="kpi-label">Brygga-startår</div><div class="kpi-value orange" id="kpi-year">—</div></div>
+    <div class="kpi"><div class="kpi-label">Brygga-täckning</div><div class="kpi-value green" id="kpi-pct">—</div></div>
+    <div class="kpi"><div class="kpi-label">Fritt kapital vid start</div><div class="kpi-value" id="kpi-kapital">—</div></div>
+    <div class="kpi"><div class="kpi-label">Total förmögenhet vid start</div><div class="kpi-value purple" id="kpi-total">—</div></div>
+    <div class="kpi"><div class="kpi-label">Levnadskostnad</div><div class="kpi-value" id="kpi-levnad">—</div></div>
+  </div>
+
+  <!-- Årlig förmögenhetsförändring -->
+  <h2>Uppskattad förmögenhetsförändring per år</h2>
+  <div class="card">
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;margin-bottom:20px">
+      <label style="font-size:.85rem;color:var(--muted);display:flex;align-items:center;gap:8px">
+        Bostadstillväxt %/år
+        <input type="number" id="idx-bostad-avk" value="2" min="0" max="10" step="0.5"
+               style="width:70px;background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px">
+      </label>
+      <div id="nv-change-total" style="margin-left:auto;font-size:1.1rem;font-weight:700;color:var(--green)">—</div>
+    </div>
+    <canvas id="nv-change-chart" height="220"></canvas>
+  </div>
+
+  <h2>Nästa pensionshändelse</h2>
+  <div class="card" id="next-event-card">
+    <span class="text-muted">Öppna Brygga-simulatorn för att beräkna.</span>
+  </div>
+
+  <h2>Pensionsströmmar</h2>
+  <div class="card" style="overflow-x:auto">
+    <table class="pension-table" style="min-width:480px">
+      <thead><tr>
+        <th>Källa</th><th>Från</th><th>T.o.m.</th><th class="num">kr/mån</th>
+      </tr></thead>
+      <tbody id="pension-summary"></tbody>
+    </table>
+  </div>
+
+  <footer>Verdu Ekonomi · Data sparas lokalt i webbläsaren</footer>
+</div>
+</body>
+</html>

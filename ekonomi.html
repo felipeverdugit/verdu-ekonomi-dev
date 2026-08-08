@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ekonomi — Verdu Ekonomi</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>💰</text></svg>">
+  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('vek_theme')||'dark')</script>
+  <script type="module" crossorigin src="/verdu-ekonomi-dev/assets/ekonomi-Dpg129E4.js"></script>
+  <link rel="modulepreload" crossorigin href="/verdu-ekonomi-dev/assets/nav-q_tFxpN7.js">
+  <link rel="stylesheet" crossorigin href="/verdu-ekonomi-dev/assets/nav-B1Q4PkU7.css">
+</head>
+<body>
+<div class="page">
+  <nav class="topnav" id="topnav"></nav>
+
+  <h1>💰 Ekonomi</h1>
+  <p class="subtitle">Mata in alla portföljvärden och inkomster. Sparas automatiskt i webbläsaren.</p>
+
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap">
+    <button id="btn-sync-sheets" style="background:var(--accent1);color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:600">
+      ☁️ Synka från Google Sheets
+    </button>
+    <span id="sync-status" style="font-size:.82rem;color:var(--muted)"></span>
+  </div>
+
+  <!-- Privata fonder -->
+  <h2>Privata fonder</h2>
+  <div class="card"><div class="form-grid">
+    <div>
+      <div class="form-row"><label>Lysa Felipe — nuv. värde (kr)</label><input type="number" id="lysa_f_pv" step="10000"></div>
+      <div class="form-row"><label>Lysa Felipe — månadsinsättning (kr)</label><input type="number" id="lysa_f_pmt" step="500"></div>
+    </div>
+    <div>
+      <div class="form-row"><label>Lysa Ulrika — nuv. värde (kr)</label><input type="number" id="lysa_u_pv" step="10000"></div>
+      <div class="form-row"><label>Lysa Ulrika — månadsinsättning (kr)</label><input type="number" id="lysa_u_pmt" step="500"></div>
+      <div class="form-row"><label>Buffert Lysa (U+F) — nuv. värde (kr)</label><input type="number" id="buffert_u_pv" step="10000"></div>
+      <div class="form-row"><label>Buffert Lysa (U+F) — månadsinsättning (kr)</label><input type="number" id="buffert_u_pmt" step="500"></div>
+    </div>
+  </div></div>
+
+  <!-- Tjänstepension Sverige -->
+  <h2>Tjänstepension Sverige</h2>
+  <div class="card"><div class="form-grid">
+    <div>
+      <p style="font-size:.8rem;color:var(--accent1);margin-bottom:10px">Felipe</p>
+      <div class="form-row"><label>TjP Kommun — nuv. värde (kr)</label><input type="number" id="tjp_f_pv" step="10000"></div>
+      <div class="form-row"><label>TjP Kommun — kvartalsinsättning (kr)</label><input type="number" id="tjp_f_pmt_q" step="1000"></div>
+      <div class="form-row"><label>Löneväxling — nuv. värde (kr)</label><input type="number" id="lonevxl_pv" step="10000"></div>
+      <div class="form-row"><label>Löneväxling — månadsinsättning (kr)</label><input type="number" id="lonevxl_pmt" step="500"></div>
+      <div class="form-row"><label>Tidigare LöneVXL+TjP — nuv. värde (kr)</label><input type="number" id="tidigare_pv" step="10000"></div>
+      <div class="form-row"><label>TjP Kåpan — nuv. värde (kr)</label><input type="number" id="kapan_pv" step="10000"></div>
+    </div>
+    <div>
+      <p style="font-size:.8rem;color:var(--accent2);margin-bottom:10px">Ulrika</p>
+      <div class="form-row"><label>TjP Kommun — nuv. värde (kr)</label><input type="number" id="tjp_u_pv" step="10000"></div>
+      <div class="form-row"><label>TjP Kommun — kvartalsinsättning (kr)</label><input type="number" id="tjp_u_pmt_q" step="1000"></div>
+    </div>
+  </div></div>
+
+  <!-- Tjänstepension Norge (OTP) -->
+  <h2>Tjänstepension Norge (OTP)</h2>
+  <div class="card"><div class="form-grid">
+    <div>
+      <p style="font-size:.8rem;color:var(--accent1);margin-bottom:10px">Felipe</p>
+      <div class="form-row"><label>TjP Norge (huvud) — nuv. värde (kr)</label><input type="number" id="norge_f_pv" step="10000"></div>
+      <div class="form-row"><label>DNB Felipe — nuv. värde (kr)</label><input type="number" id="dnb_f_pv" step="10000"></div>
+      <div class="form-row"><label>DNB Norge Felipe — nuv. värde (kr)</label><input type="number" id="sb_f_pv" step="10000"></div>
+    </div>
+    <div>
+      <p style="font-size:.8rem;color:var(--accent2);margin-bottom:10px">Ulrika</p>
+      <div class="form-row"><label>DNB Norge Ulrika — nuv. värde (kr)</label><input type="number" id="sb_u_pv" step="10000"></div>
+      <div class="form-row"><label>DNB Ulrika — nuv. värde (kr)</label><input type="number" id="dnb_u_pv" step="10000"></div>
+    </div>
+  </div></div>
+
+  <!-- Sparkonto -->
+  <h2>Sparkonto / Borgensavi</h2>
+  <div class="card">
+    <div class="form-row"><label>Nuv. värde (kr)</label><input type="number" id="sparkonto_pv" step="10000"></div>
+    <div class="form-row"><label>Månadsinsättning (kr)</label><input type="number" id="sparkonto_pmt" step="500"></div>
+  </div>
+
+  <!-- Allmän pension & NAV -->
+  <h2>Allmän pension &amp; NAV</h2>
+  <div class="card"><div class="form-grid">
+    <div>
+      <p style="font-size:.8rem;color:var(--accent1);margin-bottom:10px">Felipe</p>
+      <div class="form-row"><label>Inkomstpension — nuv. kapital (kr)</label><input type="number" id="ap_f" step="10000"></div>
+      <div class="form-row"><label>NAV inntektspension — kapital (NOK)</label><input type="number" id="nav_f_nok" step="10000"></div>
+      <div class="form-row"><label>Estimerat månadsbelopp SE (kr)</label><input type="number" id="allman_se_f" step="500"></div>
+      <div class="form-row"><label>Estimerat månadsbelopp NAV (kr)</label><input type="number" id="norsk_f" step="500"></div>
+    </div>
+    <div>
+      <p style="font-size:.8rem;color:var(--accent2);margin-bottom:10px">Ulrika</p>
+      <div class="form-row"><label>Inkomstpension — nuv. kapital (kr)</label><input type="number" id="ap_u" step="10000"></div>
+      <div class="form-row"><label>NAV inntektspension — kapital (NOK)</label><input type="number" id="nav_u_nok" step="10000"></div>
+      <div class="form-row"><label>Estimerat månadsbelopp SE (kr)</label><input type="number" id="allman_se_u" step="500"></div>
+      <div class="form-row"><label>Estimerat månadsbelopp NAV (kr)</label><input type="number" id="norsk_u" step="500"></div>
+      <div class="form-row"><label>NOK → SEK kurs</label><input type="number" id="nok_sek" step="0.01"></div>
+    </div>
+  </div></div>
+
+  <!-- Premiepension -->
+  <h2>Premiepension (AP7)</h2>
+  <div class="card"><div class="form-grid">
+    <div class="form-row"><label>Felipe — nuv. värde (kr)</label><input type="number" id="pp_f" step="10000"></div>
+    <div class="form-row"><label>Ulrika — nuv. värde (kr)</label><input type="number" id="pp_u" step="10000"></div>
+  </div></div>
+
+  <!-- Aktier -->
+  <h2>Aktier</h2>
+  <div class="card"><div class="form-grid">
+    <div>
+      <div class="form-row"><label>Norconsult (NOAB) — antal</label><input type="number" id="norco_antal" step="1"></div>
+      <div class="form-row"><label>Norconsult — kurs (kr)</label><input type="number" id="norco_kurs" step="1"></div>
+    </div>
+    <div>
+      <div class="form-row"><label>Oncopeptides — antal</label><input type="number" id="oncop_antal" step="1"></div>
+      <div class="form-row"><label>Oncopeptides — kurs (kr)</label><input type="number" id="oncop_kurs" step="0.01"></div>
+    </div>
+  </div></div>
+
+  <!-- Fastigheter -->
+  <h2>Fastigheter (Hink 2 — Bevara värde)</h2>
+  <div class="card"><div class="form-grid">
+    <div>
+      <p style="font-size:.8rem;color:var(--accent);margin-bottom:10px">Villa</p>
+      <div class="form-row"><label>Marknadsvärde villa (kr)</label><input type="number" id="villa_varde" step="50000" value="5300000"></div>
+      <div class="form-row"><label>Bolån villa — totalt (kr)</label><input type="number" id="villa_lan" step="10000" value="3569946"></div>
+      <div class="form-row"><label>Amortering villa (kr/mån)</label><input type="number" id="villa_amor" step="500" value="4650"></div>
+    </div>
+    <div>
+      <p style="font-size:.8rem;color:var(--accent2);margin-bottom:10px">Lägenhet</p>
+      <div class="form-row"><label>Marknadsvärde lägenhet (kr)</label><input type="number" id="lagenhet_varde" step="50000" value="1850000"></div>
+      <div class="form-row"><label>Bolån lägenhet (kr)</label><input type="number" id="lagenhet_lan" step="10000" value="1249574"></div>
+      <div class="form-row"><label>Amortering lägenhet (kr/mån)</label><input type="number" id="lagenhet_amor" step="500"></div>
+    </div>
+  </div></div>
+
+  <!-- Löner & levnadskostnad -->
+  <h2>Löner &amp; levnadskostnad</h2>
+  <div class="card"><div class="form-grid">
+    <div>
+      <div class="form-row"><label>Bruttolön Felipe (kr/mån)</label><input type="number" id="brutto_f" step="1000"></div>
+      <div class="form-row"><label>Bruttolön Ulrika (kr/mån)</label><input type="number" id="brutto_u" step="1000"></div>
+    </div>
+    <div>
+      <div class="form-row"><label>Levnadskostnad period 1 (kr/mån)</label><input type="number" id="levnadskostnad" step="1000"></div>
+      <div class="form-row"><label>Levnadskostnad period 2 (kr/mån)</label><input type="number" id="levnadskostnad2" step="1000"></div>
+      <div class="form-row"><label>Byt till period 2 efter (år)</label><input type="number" id="exp_switch_ar" step="1" min="1" max="30"></div>
+    </div>
+  </div></div>
+
+  <p style="color:var(--green);margin-top:16px;font-size:.85rem" id="save-status"></p>
+
+  <footer>Ekonomi · Verdu Ekonomi</footer>
+</div>
+</body>
+</html>

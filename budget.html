@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Budget — Verdu Ekonomi</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>📋</text></svg>">
+  <style>
+    .budget-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 18px;
+      margin-bottom: 32px;
+    }
+    .bgt-tbl { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    .bgt-tbl td { padding: 5px 4px; vertical-align: middle; }
+    .bgt-tbl td:nth-child(2) { text-align: right; }
+    .bgt-tbl td:nth-child(3) { color: var(--muted); font-size: .72rem; padding-left: 4px; white-space: nowrap; }
+    .bgt-inp {
+      width: 90px;
+      text-align: right;
+      background: transparent;
+      border: 1px solid var(--border, #444);
+      border-radius: 4px;
+      padding: 3px 6px;
+      color: inherit;
+      font-size: .85rem;
+      font-family: inherit;
+    }
+    .bgt-inp:focus { outline: none; border-color: var(--accent, #4a9eff); }
+    .bgt-amor td { color: var(--muted); font-size: .78rem; padding-top: 1px; }
+    .bgt-amor .bgt-inp { font-size: .78rem; width: 80px; }
+    .bgt-info td { color: var(--muted); }
+    .bgt-sum-row td { border-top: 1px solid var(--border, #444); font-weight: 600; padding-top: 8px; }
+    .bgt-card-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+    .bgt-card-head h3 { margin: 0; font-size: 1rem; }
+    .bgt-card-total { font-weight: 600; font-size: .9rem; }
+    @media (max-width: 600px) { .budget-cards { grid-template-columns: 1fr; } }
+  </style>
+  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('vek_theme')||'dark')</script>
+  <script type="module" crossorigin src="/verdu-ekonomi-dev/assets/budget-D2TIVb_l.js"></script>
+  <link rel="modulepreload" crossorigin href="/verdu-ekonomi-dev/assets/nav-q_tFxpN7.js">
+  <link rel="stylesheet" crossorigin href="/verdu-ekonomi-dev/assets/nav-B1Q4PkU7.css">
+</head>
+<body>
+<div class="page">
+  <nav class="topnav" id="topnav"></nav>
+
+  <h1>📋 Budget</h1>
+  <p class="subtitle">Månadsöversikt · Redigera värden direkt i tabellen · Sparas automatiskt</p>
+
+  <div class="kpi-bar">
+    <div class="kpi">
+      <div class="kpi-label">Inkomster</div>
+      <div class="kpi-value green" id="kpi-ink">—</div>
+      <div style="font-size:.7rem;color:var(--muted)">kr/mån</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Utgifter</div>
+      <div class="kpi-value" id="kpi-ut">—</div>
+      <div style="font-size:.7rem;color:var(--muted)">kr/mån</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Saldo</div>
+      <div class="kpi-value" id="kpi-saldo">—</div>
+      <div style="font-size:.7rem;color:var(--muted)">kr/mån</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Sparkvot</div>
+      <div class="kpi-value" id="kpi-sparkvot">—</div>
+      <div style="font-size:.7rem;color:var(--muted)">av inkomst</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Nettovärde</div>
+      <div class="kpi-value" id="kpi-nv">—</div>
+      <div style="font-size:.7rem;color:var(--muted)">portfölj + fastigheter</div>
+    </div>
+  </div>
+
+  <div id="budget-cards" class="budget-cards"></div>
+
+  <footer>Budget · Verdu Ekonomi</footer>
+</div>
+</body>
+</html>

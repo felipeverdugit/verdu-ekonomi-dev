@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uttags-kalkylator — Verdu Ekonomi</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>📊</text></svg>">
+  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('vek_theme')||'dark')</script>
+  <script type="module" crossorigin src="/verdu-ekonomi-dev/assets/uttag-B_35HAEX.js"></script>
+  <link rel="modulepreload" crossorigin href="/verdu-ekonomi-dev/assets/nav-q_tFxpN7.js">
+  <link rel="modulepreload" crossorigin href="/verdu-ekonomi-dev/assets/chart-c4LUrWq9.js">
+  <link rel="modulepreload" crossorigin href="/verdu-ekonomi-dev/assets/calculations-CGQ-IIRb.js">
+  <link rel="stylesheet" crossorigin href="/verdu-ekonomi-dev/assets/nav-B1Q4PkU7.css">
+</head>
+<body>
+<div class="page">
+  <nav class="topnav" id="topnav"></nav>
+
+  <h1>📊 Uttags-kalkylator</h1>
+  <p class="subtitle">Simulera hur länge kapitalet räcker — pensionsinkomster hämtas automatiskt från FIRE-simulatorn.</p>
+
+  <!-- Förutsättningar (skrivskyddade — sätts av FIRE-simulatorn) -->
+  <div class="card" style="margin-bottom:24px">
+    <div class="card-title">Förutsättningar (från FIRE-simulatorn)</div>
+    <div class="form-grid">
+      <div class="form-row"><label>Startkapital (kr)</label><span id="disp-kapital" class="fw-bold text-orange">—</span></div>
+      <div class="form-row"><label>Avkastning (%/år)</label><span id="disp-avk" class="fw-bold text-orange">—</span></div>
+      <div class="form-row"><label>Startår för uttag</label><span id="disp-year" class="fw-bold text-orange">—</span></div>
+    </div>
+  </div>
+
+  <!-- Månadsuttag (enda interaktiva kontrollen) -->
+  <div class="card" style="margin-bottom:24px">
+    <div class="card-title">Månadsuttag</div>
+    <div class="form-row">
+      <label>Uttag per månad</label>
+      <div style="display:flex;align-items:center;gap:16px">
+        <span id="disp-uttag" style="font-size:1.3rem;font-weight:700;color:var(--orange)">65 000 kr</span>
+      </div>
+    </div>
+    <input type="range" id="sl-uttag" min="20000" max="150000" step="1000" value="65000" style="width:100%;margin-top:12px;accent-color:var(--accent1)">
+  </div>
+
+  <!-- Pensionsinkomster (skrivskyddade — hämtas från FIRE) -->
+  <h2>Pensionsinkomster</h2>
+  <div class="card" style="overflow-x:auto;margin-bottom:24px">
+    <table class="pension-table" style="min-width:560px" id="pension-table">
+      <thead><tr>
+        <th style="min-width:220px">Källa</th>
+        <th style="width:85px">Från år</th>
+        <th style="width:85px">T.o.m. år</th>
+        <th class="num" style="width:130px">kr/mån (netto)</th>
+      </tr></thead>
+      <tbody id="pension-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- Resultat -->
+  <h2>Resultat</h2>
+  <div id="verdict" class="verdict ok">—</div>
+
+  <div class="card" style="margin-bottom:24px">
+    <canvas id="uttaks-chart" height="220"></canvas>
+  </div>
+
+  <!-- Detaljerad tabell -->
+  <h2>Detaljer per år</h2>
+  <div class="card" style="overflow-x:auto">
+    <table class="pension-table">
+      <thead><tr>
+        <th>År</th>
+        <th class="num">Kapital</th>
+        <th class="num">Avkastning</th>
+        <th class="num">Pension/mån</th>
+        <th class="num">Netto-uttag/mån</th>
+        <th class="num">Förändring/år</th>
+      </tr></thead>
+      <tbody id="detail-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- Skattestrategi -->
+  <h2>Skattestrategi</h2>
+  <div class="card" id="rec-box" style="margin-bottom:24px;line-height:1.8"></div>
+
+  <!-- Scenario: statlig skattegräns -->
+  <h2>Scenario — under statlig skattegräns</h2>
+  <p class="subtitle" style="margin-bottom:16px">
+    Nuläge vs. hypotetiskt scenario där pensionsinkomsten per person hålls under 51 275 kr/mån (615 300 kr/år) — gränsen för 20 % statlig skatt.
+    ISK/Lysa-uttag räknas <em>inte</em> som inkomst och påverkar inte gränsen. ▲ = statlig skatt aktiveras.
+  </p>
+  <div class="card" style="overflow-x:auto;margin-bottom:24px">
+    <table class="pension-table" style="min-width:680px">
+      <thead><tr>
+        <th>År</th>
+        <th class="num">Felipe brutto/mån</th>
+        <th class="num">Ulrika brutto/mån</th>
+        <th class="num">Skatt nuläge/mån</th>
+        <th class="num">Skatt hypotetisk/mån</th>
+        <th class="num">Besparing/år</th>
+      </tr></thead>
+      <tbody id="skatt-opt-tbody"></tbody>
+    </table>
+  </div>
+
+  <footer>Uttags-kalkylator · Verdu Ekonomi</footer>
+</div>
+</body>
+</html>

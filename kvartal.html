@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kvartalsstrategi — Verdu Ekonomi</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>📅</text></svg>">
+  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('vek_theme')||'dark')</script>
+  <script type="module" crossorigin src="/verdu-ekonomi-dev/assets/kvartal-CCXPSTI2.js"></script>
+  <link rel="modulepreload" crossorigin href="/verdu-ekonomi-dev/assets/nav-q_tFxpN7.js">
+  <link rel="stylesheet" crossorigin href="/verdu-ekonomi-dev/assets/nav-B1Q4PkU7.css">
+</head>
+<body>
+<div class="page">
+  <nav class="topnav" id="topnav"></nav>
+
+  <h1>📅 Kvartalsstrategi</h1>
+  <p class="subtitle">Inför varje kvartal — summera faktiska utgifter, ange börsutvecklingen, följ reglerna. Baserat på Jespers uttagsstrategi.</p>
+
+  <!-- KPI-rad -->
+  <div class="kpi-bar" style="margin-bottom:24px">
+    <div class="kpi-item">
+      <div class="kpi-label">Netto kvartalsbehov</div>
+      <div class="kpi-value text-orange" id="disp-kv">—</div>
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-label">Buffertmål (max 4/3)</div>
+      <div class="kpi-value" id="disp-kvmax">—</div>
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-label">Marknadsrörelse</div>
+      <div class="kpi-value fw-bold" id="disp-rorelse-kpi">—</div>
+    </div>
+  </div>
+
+  <!-- Förutsättningar -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">Förutsättningar</div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>Faktisk månadsutgift <span class="text-muted" style="font-size:.8rem">(genomsnitt senaste 3 mån, inkl. bankkonton)</span></label>
+        <input type="number" id="inp-faktisk" step="500" style="width:140px">
+      </div>
+      <div class="form-row">
+        <label>Aktiva pensioner denna månad <span class="text-muted" style="font-size:.8rem" id="pension-note">(auto från FIRE-simulatorn)</span></label>
+        <input type="number" id="inp-pension" step="500" style="width:140px">
+      </div>
+      <div class="form-row">
+        <label>Buffert idag (Borgo sparkonto, kr)</label>
+        <input type="number" id="inp-buffert" step="10000" style="width:140px">
+      </div>
+    </div>
+  </div>
+
+  <!-- Buffert-status -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">Buffert-status</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:1rem;font-weight:600" id="disp-buffert-status">—</span>
+      <span style="font-size:.9rem;color:var(--muted)" id="buffert-pct">—</span>
+    </div>
+    <div style="height:14px;background:#2d3348;border-radius:7px;overflow:hidden">
+      <div id="buffert-bar" style="height:100%;width:0%;border-radius:7px;transition:width .3s,background .3s"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;color:var(--muted);font-size:.75rem;margin-top:5px">
+      <span>0 kr</span><span>Mål (4/3 × kvartalsbehov)</span>
+    </div>
+  </div>
+
+  <!-- Nästa kvartalsreview -->
+  <div class="card" style="margin-bottom:24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+    <div>
+      <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px">Nästa kvartalsreview</div>
+      <div style="font-size:1.4rem;font-weight:700;color:var(--accent1)" id="next-kv-date">—</div>
+    </div>
+    <div style="color:var(--muted);font-size:.85rem" id="next-kv-days">—</div>
+    <div style="margin-left:auto;font-size:.8rem;color:var(--muted);max-width:280px;line-height:1.6" id="next-kv-period">—</div>
+  </div>
+
+  <!-- Marknadsrörelse -->
+  <div class="card" style="margin-bottom:24px">
+    <div class="card-title">Lysas portföljutveckling senaste kvartal</div>
+    <div style="text-align:center;font-size:3rem;font-weight:800;margin:16px 0;letter-spacing:-.02em" id="disp-rorelse">0 %</div>
+    <div style="position:relative;margin-top:4px">
+      <input type="range" id="sl-rorelse" min="-50" max="50" step="1" value="0"
+             style="width:100%;accent-color:var(--accent1)">
+      <!-- 0%-markering mitt på slidern -->
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+                  width:3px;height:18px;background:var(--muted);border-radius:2px;
+                  pointer-events:none;opacity:.7"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;color:var(--muted);font-size:.8rem;margin-top:8px">
+      <span style="color:var(--red)">−50 % krasch</span>
+      <span style="font-weight:600;color:var(--muted)">▲ 0 %</span>
+      <span style="color:var(--green)">+50 % rus</span>
+    </div>
+  </div>
+
+  <!-- Rekommendation -->
+  <h2>Rekommendation</h2>
+  <div class="card" id="scenario-box" style="margin-bottom:24px;border:1px solid transparent">
+    <div style="font-size:1.15rem;font-weight:700;margin-bottom:14px" id="scenario-label">—</div>
+    <ul style="margin:0;padding-left:20px;line-height:1.9;font-size:.95rem" id="scenario-actions"></ul>
+    <div id="scenario-belaning"
+         style="margin-top:14px;padding:10px 14px;background:rgba(79,142,247,.1);border-radius:6px;
+                font-size:.88rem;color:#4f8ef7;border-left:3px solid #4f8ef7;display:none"></div>
+  </div>
+
+  <!-- Förklaring buffert & belåning -->
+  <div class="card" style="margin-bottom:24px;font-size:.88rem;line-height:1.7;color:var(--muted)">
+    <div class="card-title">Om bufferten och portföljbelåning</div>
+    <p style="margin:0 0 8px">
+      <strong style="color:var(--fg)">Buffert</strong> = likvida medel (t.ex. Borgo sparkonto) som täcker 1–1.33 kvartal.
+      Den fyller du på vid uppgång och tömmer vid nedgång — så att du aldrig tvingas sälja fonder när de är billiga.
+    </p>
+    <p style="margin:0 0 8px">
+      <strong style="color:var(--fg)">Portföljbelåning</strong> = du lånar mot dina fondvärden som säkerhet.
+      Passar vid djup krasch om räntan är låg, men riskerar margin call om portföljvärdet faller ytterligare.
+      Använd med stor försiktighet — förstå alltid lånevillkoren innan du aktiverar.
+    </p>
+    <p style="margin:0">
+      <strong style="color:var(--fg)">ISK/Lysa</strong> = schablonbeskattas (~0.9 %/år) oavsett om du tar ut eller inte.
+      Uttag härifrån räknas inte som inkomst → ingen extra inkomstskatt vid uttaget.
+    </p>
+  </div>
+
+  <footer>Kvartalsstrategi · Verdu Ekonomi</footer>
+</div>
+</body>
+</html>

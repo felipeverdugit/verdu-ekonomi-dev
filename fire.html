@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brygga-simulator — Verdu Ekonomi</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🌉</text></svg>">
+  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('vek_theme')||'dark')</script>
+  <script type="module" crossorigin src="/verdu-ekonomi-dev/assets/fire-59_U11_s.js"></script>
+  <link rel="modulepreload" crossorigin href="/verdu-ekonomi-dev/assets/nav-q_tFxpN7.js">
+  <link rel="modulepreload" crossorigin href="/verdu-ekonomi-dev/assets/chart-c4LUrWq9.js">
+  <link rel="modulepreload" crossorigin href="/verdu-ekonomi-dev/assets/calculations-CGQ-IIRb.js">
+  <link rel="stylesheet" crossorigin href="/verdu-ekonomi-dev/assets/nav-B1Q4PkU7.css">
+</head>
+<body>
+<div class="page">
+  <nav class="topnav" id="topnav"></nav>
+  <h1>🌉 Brygga-simulator</h1>
+  <p class="subtitle" id="fire-subtitle">Laddar…</p>
+
+  <!-- KPI -->
+  <div class="kpi-bar">
+    <div class="kpi"><div class="kpi-label">Brygga-startår</div><div class="kpi-value orange" id="kpi-year">—</div></div>
+    <div class="kpi"><div class="kpi-label">Brygga-kapital</div><div class="kpi-value" id="kpi-brygga">—</div><div class="kpi-sub" style="font-size:.7rem;color:var(--muted)">PV av gap tills pension täcker allt</div></div>
+    <div class="kpi"><div class="kpi-label">Brygga-täckning</div><div class="kpi-value green" id="kpi-pct">—</div><div class="kpi-sub" style="font-size:.7rem;color:var(--muted)">Fritt kapital / brygga-kapital</div></div>
+    <div class="kpi"><div class="kpi-label">Fritt kapital vid start</div><div class="kpi-value" id="kpi-kapital">—</div></div>
+    <div class="kpi"><div class="kpi-label">Total förmögenhet vid start</div><div class="kpi-value purple" id="kpi-total">—</div></div>
+    <div class="kpi"><div class="kpi-label">ISK-skatt/år (Lysa)</div><div class="kpi-value orange" id="kpi-isk">—</div><div class="kpi-sub" style="font-size:.7rem;color:var(--muted)">schablonbeskattning ISK-konton</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
+
+    <!-- Sliders -->
+    <section>
+      <h2>Avkastning &amp; horisont</h2>
+      <div class="ctrl-panel" style="grid-template-columns:1fr">
+        <div class="ctrl-group">
+          <label>Årsavkastning (ackumulering)</label>
+          <span class="ctrl-val"><span id="val-avkPct">10</span> %</span>
+          <input type="range" id="sl-avkPct" min="0" max="15" step="0.5" value="10">
+        </div>
+        <div class="ctrl-group">
+          <label>År till FIRE</label>
+          <span class="ctrl-val"><span id="val-antalAr">10</span> år</span>
+          <input type="range" id="sl-antalAr" min="1" max="20" step="1" value="10">
+        </div>
+        <div class="ctrl-group">
+          <label>Uttaksavkastning</label>
+          <span class="ctrl-val"><span id="val-uttakAvkPct">2</span> %</span>
+          <input type="range" id="sl-uttakAvkPct" min="0" max="8" step="0.5" value="2">
+        </div>
+      </div>
+
+      <h2>Pension</h2>
+      <div class="ctrl-panel" style="grid-template-columns:1fr">
+        <div class="ctrl-group">
+          <label>TjP uttaksperiod</label>
+          <span class="ctrl-val"><span id="val-tjpAr">20</span> år</span>
+          <input type="range" id="sl-tjpAr" min="5" max="30" step="1" value="20">
+        </div>
+        <div class="ctrl-group">
+          <label>Felipe: Svensk TjP startålder</label>
+          <span class="ctrl-val"><span id="val-fTjpAge">65</span> år</span>
+          <input type="range" id="sl-fTjpAge" min="55" max="70" step="1" value="65">
+        </div>
+        <div class="ctrl-group">
+          <label>Felipe: Norsk TjP startålder</label>
+          <span class="ctrl-val"><span id="val-fNorskTjpAge">62</span> år</span>
+          <input type="range" id="sl-fNorskTjpAge" min="62" max="70" step="1" value="62">
+        </div>
+        <div class="ctrl-group">
+          <label>Ulrika: Norsk TjP startålder</label>
+          <span class="ctrl-val"><span id="val-uNorskTjpAge">62</span> år</span>
+          <input type="range" id="sl-uNorskTjpAge" min="62" max="70" step="1" value="62">
+        </div>
+        <div class="ctrl-group">
+          <label>Ulrika: Svensk TjP startålder</label>
+          <span class="ctrl-val"><span id="val-uTjpAge">65</span> år</span>
+          <input type="range" id="sl-uTjpAge" min="55" max="70" step="1" value="65">
+        </div>
+        <div class="ctrl-group">
+          <label>Felipe: Allmänpension startålder</label>
+          <span class="ctrl-val"><span id="val-fAllmanAge">67</span> år</span>
+          <input type="range" id="sl-fAllmanAge" min="62" max="70" step="1" value="67">
+        </div>
+        <div class="ctrl-group">
+          <label>Ulrika: Allmänpension startålder</label>
+          <span class="ctrl-val"><span id="val-uAllmanAge">68</span> år</span>
+          <input type="range" id="sl-uAllmanAge" min="62" max="70" step="1" value="68">
+        </div>
+        <div class="ctrl-group">
+          <label>Skatt på pensionsinkomster</label>
+          <span class="ctrl-val"><span id="val-skattPct">0</span> %</span>
+          <input type="range" id="sl-skattPct" min="0" max="40" step="1" value="0">
+        </div>
+      </div>
+
+      <h2>Sparande &amp; övriga</h2>
+      <div style="margin-bottom:12px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.9rem">
+          <input type="checkbox" id="chk-aktierIFire" style="width:16px;height:16px;accent-color:var(--accent1)">
+          Inkludera aktier (Norconsult + Oncopeptides) i fritt kapital
+        </label>
+      </div>
+      <div class="ctrl-panel" style="grid-template-columns:1fr">
+        <div class="ctrl-group">
+          <label>Borgensränta / sparkonto</label>
+          <span class="ctrl-val"><span id="val-borgoRanta">2.3</span> %</span>
+          <input type="range" id="sl-borgoRanta" min="0" max="6" step="0.1" value="2.3">
+        </div>
+        <div class="ctrl-group">
+          <label>ISK-schablonskatt (Lysa-konton)</label>
+          <span class="ctrl-val"><span id="val-iskPct">1.25</span> %/år</span>
+          <input type="range" id="sl-iskPct" min="0" max="2.5" step="0.05" value="1.25">
+        </div>
+        <div class="ctrl-group">
+          <label>Löneökning Felipe</label>
+          <span class="ctrl-val"><span id="val-lonehojF">0</span> %</span>
+          <input type="range" id="sl-lonehojF" min="0" max="10" step="0.5" value="0">
+        </div>
+        <div class="ctrl-group">
+          <label>Löneökning Ulrika</label>
+          <span class="ctrl-val"><span id="val-lonehojU">0</span> %</span>
+          <input type="range" id="sl-lonehojU" min="0" max="10" step="0.5" value="0">
+        </div>
+      </div>
+    </section>
+
+    <!-- Fasdiagram + pensionstabell -->
+    <section>
+      <h2>Pensionsinkomster per fas</h2>
+      <div class="card" style="overflow-x:auto">
+        <table class="fase-table" id="fase-table">
+          <thead><tr>
+            <th>Fas</th><th>År</th><th>Ålder F/U</th><th>Händelser</th>
+            <th class="num" style="color:var(--accent1)">Felipe/mån</th>
+            <th class="num" style="color:var(--accent2)">Ulrika/mån</th>
+            <th class="num">Totalt</th>
+            <th class="num">Gap</th>
+          </tr></thead>
+          <tbody id="fase-tbody"></tbody>
+        </table>
+      </div>
+
+      <h2>Portföljvärde vid FIRE</h2>
+      <div class="card">
+        <canvas id="pie-chart" height="200"></canvas>
+      </div>
+
+      <h2>Uttaksdiagram</h2>
+      <div class="card">
+        <canvas id="uttaks-chart" height="220"></canvas>
+      </div>
+    </section>
+  </div>
+
+  <hr>
+
+  <!-- Engångsuttag -->
+  <h2>Engångsuttag före FIRE (valfritt)</h2>
+  <div class="card">
+    <div class="form-grid">
+      <div class="form-row"><label>Belopp (kr)</label><input type="number" id="inp-eng-belopp" value="0" step="10000"></div>
+      <div class="form-row"><label>År</label><input type="number" id="inp-eng-ar" value="0" min="2025" max="2040"></div>
+    </div>
+  </div>
+
+  <footer>FIRE-simulator · Verdu Ekonomi · Ej finansiell rådgivning</footer>
+</div>
+</body>
+</html>
