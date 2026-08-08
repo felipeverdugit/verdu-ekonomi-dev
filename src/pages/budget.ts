@@ -101,11 +101,12 @@ const GROUPS: GroupDef[] = [
   {
     id: 'forsakring', label: 'Försäkringar', icon: '🛡️',
     fields: [
-      { id: 'hemforsakring', label: 'Hemförsäkring' },
-      { id: 'tryghansa',     label: 'Trygg-Hansa' },
-      { id: 'skandia_liv',   label: 'Skandia Liv' },
-      { id: 'if_skadef',     label: 'IF Skadeförs.' },
-      { id: 'sv_lararnas',   label: 'SV Lärarnas' },
+      { id: 'hemforsakring',  label: 'Hemförsäkring' },
+      { id: 'tryghansa',      label: 'Trygg-Hansa' },
+      { id: 'skandia_liv',    label: 'Skandia Liv' },
+      { id: 'if_skadef',      label: 'IF Skadeförs.' },
+      { id: 'sv_lararnas',    label: 'SV Lärarnas' },
+      { id: 'djurforsakring', label: 'Djurförsäkring' },
     ],
   },
   {

@@ -199,7 +199,7 @@ const BUDGET_DEFAULTS: BudgetData = {
   streaming: 499, bredband_fiber: 449, mobil: 1_194,
   bredband_5g: 299, telia_cloud: 200,
   hemforsakring: 411, tryghansa: 993, skandia_liv: 12,
-  if_skadef: 200, sv_lararnas: 907,
+  if_skadef: 200, sv_lararnas: 907, djurforsakring: 96,
   ledarna: 428, ledarnas_akas: 150, lararnas_akas: 150,
   csn: 1_741, hjarnfonden: 600, friskis: 550,
   lysa_f_mon: 5_000, lysa_u_mon: 8_500, lysa_buffert_mon: 9_000,

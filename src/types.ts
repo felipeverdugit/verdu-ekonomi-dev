@@ -99,7 +99,7 @@ export interface BudgetData {
   bredband_5g: number; telia_cloud: number;
   // Försäkringar
   hemforsakring: number; tryghansa: number; skandia_liv: number;
-  if_skadef: number; sv_lararnas: number;
+  if_skadef: number; sv_lararnas: number; djurforsakring: number;
   // Fack & övrigt
   ledarna: number; ledarnas_akas: number; lararnas_akas: number;
   csn: number; hjarnfonden: number; friskis: number;
