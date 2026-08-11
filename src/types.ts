@@ -88,6 +88,7 @@ export interface BudgetData {
   brutto_f: number; netto_f: number;
   brutto_u: number; netto_u: number;
   vardnadsbidrag: number; barnbidrag: number; hyra_lag_ink: number;
+  sparkonto_ink: number;
   // Boende
   lan_villa: number; amor_villa: number;
   lan_lag: number;   amor_lag: number;

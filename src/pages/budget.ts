@@ -45,6 +45,7 @@ type FieldDef = {
   skipTotal?: boolean;
   isAmor?: boolean;
   isInfo?: boolean;
+  exclSparkvot?: boolean;  // räknas i inkomsttotal men ej i sparkvotens nämnare
 };
 
 type GroupDef = {
@@ -66,6 +67,7 @@ const GROUPS: GroupDef[] = [
       { id: 'vardnadsbidrag', label: 'Vårdnadsbidrag' },
       { id: 'barnbidrag',     label: 'Barnbidrag' },
       { id: 'hyra_lag_ink',   label: 'Hyra lägenhet' },
+      { id: 'sparkonto_ink',  label: 'Sparkonto', exclSparkvot: true },
     ],
   },
   {
@@ -218,7 +220,12 @@ function recalc(): void {
   const totalSpar = groupTotal(sparGroup, cur);
   const totalUt   = GROUPS.filter(g => !g.isIncome).reduce((s, g) => s + groupTotal(g, cur), 0);
   const saldo     = totalInk - totalUt + lonevxl;  // löneväxling når aldrig kassan
-  const adjInk    = totalInk + lonevxl;             // total ersättning inkl. pensionsavsättning
+
+  // Exkludera fält märkta exclSparkvot (t.ex. Sparkonto) från sparkvotens nämnare
+  const exclInk   = inkGroup.fields
+    .filter(f => f.exclSparkvot)
+    .reduce((s, f) => s + (cur[f.id] ?? 0), 0);
+  const adjInk    = totalInk + lonevxl - exclInk;  // total ersättning inkl. pensionsavsättning
   const sparkvot  = adjInk > 0 ? (totalSpar / adjInk) * 100 : 0;
 
   function setKpi(id: string, val: string, color?: string) {

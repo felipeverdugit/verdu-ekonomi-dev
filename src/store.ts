@@ -191,7 +191,7 @@ export const historikStore = {
 const BUDGET_DEFAULTS: BudgetData = {
   brutto_f: 67_300, netto_f: 44_500,
   brutto_u: 35_500, netto_u: 28_090,
-  vardnadsbidrag: 4_317, barnbidrag: 1_250, hyra_lag_ink: 3_800,
+  vardnadsbidrag: 4_317, barnbidrag: 1_250, hyra_lag_ink: 3_800, sparkonto_ink: 0,
   lan_villa: 10_150, amor_villa: 3_400,
   lan_lag:    3_800, amor_lag:   1_250,
   vatten: 916, el: 0, energi: 588, avfall: 750,
