@@ -71,10 +71,8 @@ const GROUPS: GroupDef[] = [
   {
     id: 'boende', label: 'Boende', icon: '🏠',
     fields: [
-      { id: 'lan_villa',  label: 'Lån villa' },
-      { id: 'amor_villa', label: 'varav amortering',  skipTotal: true, isAmor: true },
-      { id: 'lan_lag',    label: 'Lån lägenhet' },
-      { id: 'amor_lag',   label: 'varav amortering',  skipTotal: true, isAmor: true },
+      { id: 'lan_villa',  label: 'Ränta villa' },
+      { id: 'lan_lag',    label: 'Ränta lägenhet' },
       { id: 'vatten',     label: 'Vatten & avlopp' },
       { id: 'el',         label: 'El' },
       { id: 'energi',     label: 'Fjärrvärme/energi' },
@@ -123,6 +121,8 @@ const GROUPS: GroupDef[] = [
   {
     id: 'sparande', label: 'Sparande', icon: '💎',
     fields: [
+      { id: 'amor_villa',        label: 'Amortering villa' },
+      { id: 'amor_lag',         label: 'Amortering lägenhet' },
       { id: 'lysa_f_mon',       label: 'Lysa Felipe' },
       { id: 'lysa_u_mon',       label: 'Lysa Ulrika' },
       { id: 'lysa_buffert_mon', label: 'Lysa Buffert (U+F)' },
