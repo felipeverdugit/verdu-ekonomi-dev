@@ -91,9 +91,9 @@ const GROUPS: GroupDef[] = [
   {
     id: 'telefoni', label: 'Telefoni & Internet', icon: '📱',
     fields: [
-      { id: 'streaming',      label: 'Streaming (TV4 etc.)' },
+      { id: 'streaming',      label: 'Streaming' },
       { id: 'bredband_fiber', label: 'Bredband fiber' },
-      { id: 'mobil',          label: 'Mobil (2 abonnemang)' },
+      { id: 'mobil',          label: 'Mobilabonnemang' },
       { id: 'bredband_5g',    label: 'Bredband 5G' },
       { id: 'telia_cloud',    label: 'Telia Cloud' },
     ],
