@@ -210,6 +210,18 @@ GitHub Pages servar från `gh-pages`-branchen. Propagering tar ca 1–2 minuter 
 ### ISK-schablonskatt
 - Justerbar slider i Brygga (standard 1,25 %/år)
 - Reducerar Lysa-avkastningen i beräkningarna
+- De första **300 000 kr** av kapitalunderlaget är skattefria → effektiv skatt alltid lägre än nominell
+- Effektiv skatt närmar sig asymptotiskt **1,065 %** när kapitalet växer
+
+| Kapitalunderlag | Effektiv skatt |
+|----------------|---------------|
+| 1 000 000 kr   | 0,746 %       |
+| 2 000 000 kr   | 0,905 %       |
+| 3 000 000 kr   | 0,959 %       |
+| 5 000 000 kr   | 1,001 %       |
+| 10 000 000 kr  | 1,033 %       |
+
+Formel: `effektiv_skatt = (kapital − 300 000) / kapital × 1,065 %`
 
 ### Kvartalsstrategi (Jesper)
 - `Kvartalsbehov = (faktisk utgift − aktiva pensioner) × 3`
