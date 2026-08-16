@@ -209,6 +209,50 @@ function render(): void {
   });
 }
 
+// ── Kom igång-kort ────────────────────────────────────────────────────────────
+function updateOnboarding(): void {
+  const ek = ekStore.get();
+  const isEmpty =
+    ek.lysa_f_pv === 0 && ek.lysa_u_pv === 0 &&
+    ek.tjp_f_pv  === 0 && ek.sparkonto_pv === 0 &&
+    ek.ap_f      === 0;
+  const card = document.getElementById('onboarding-card')!;
+  card.style.display = isEmpty ? '' : 'none';
+}
+
+// ── Scenario-sliders ──────────────────────────────────────────────────────────
+function initDashSliders(): void {
+  const s = fireStore.get();
+
+  const slAvk   = document.getElementById('dash-avk')   as HTMLInputElement;
+  const slAr    = document.getElementById('dash-ar')    as HTMLInputElement;
+  const slUttak = document.getElementById('dash-uttak') as HTMLInputElement;
+
+  slAvk.value   = String(s.avkPct);
+  slAr.value    = String(s.antalAr);
+  slUttak.value = String(s.uttakAvkPct);
+
+  function sync() {
+    const avk   = parseFloat(slAvk.value);
+    const ar    = parseFloat(slAr.value);
+    const uttak = parseFloat(slUttak.value);
+    document.getElementById('dash-avk-val')!.textContent   = `${avk} %`;
+    document.getElementById('dash-ar-val')!.textContent    = `${ar} år`;
+    document.getElementById('dash-uttak-val')!.textContent = `${uttak} %`;
+    fireStore.setField('avkPct',      avk);
+    fireStore.setField('antalAr',     ar);
+    fireStore.setField('uttakAvkPct', uttak);
+    render();
+  }
+
+  sync(); // initialt
+  slAvk.addEventListener('input',   sync);
+  slAr.addEventListener('input',    sync);
+  slUttak.addEventListener('input', sync);
+}
+
+initDashSliders();
+updateOnboarding();
 render();
 
 // Bostad-input
@@ -220,5 +264,5 @@ bostadInp.addEventListener('input', () => {
 });
 
 window.addEventListener('storage', (e) => {
-  if (e.key?.startsWith('vek_')) render();
+  if (e.key?.startsWith('vek_')) { updateOnboarding(); render(); }
 });
