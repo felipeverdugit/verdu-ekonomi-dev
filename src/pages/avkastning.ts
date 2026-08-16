@@ -115,15 +115,13 @@ function computeKrRows(rows: AvkRow[], sv: StartValues, antaget: number): KrRow[
   for (const row of sorted) {
     if (row.year < sv.year) continue; // hoppa över år före startår
 
-    const lPct   = row.lysaPct   ?? 0;
-    const sPct   = row.tjpSvePct ?? 0;
-    const nPct   = row.tjpNorPct ?? 0;
+    // null = ej inmatad → bevara förra årets kapital (multiplicera ej med 0)
     const aFrac  = antaget / 100;
 
     const lysaStart  = lysaAct;
-    const lysaEndAct = lysaAct   * (1 + lPct / 100);
-    const tjpSveEndA = tjpSveAct * (1 + sPct / 100);
-    const tjpNorEndA = tjpNorAct * (1 + nPct / 100);
+    const lysaEndAct = row.lysaPct   !== null ? lysaAct   * (1 + row.lysaPct   / 100) : lysaAct;
+    const tjpSveEndA = row.tjpSvePct !== null ? tjpSveAct * (1 + row.tjpSvePct / 100) : tjpSveAct;
+    const tjpNorEndA = row.tjpNorPct !== null ? tjpNorAct * (1 + row.tjpNorPct / 100) : tjpNorAct;
 
     const lysaEndSim  = lysaSim   * (1 + aFrac);
     const tjpSveEndS  = tjpSveSim * (1 + aFrac);

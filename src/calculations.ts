@@ -105,9 +105,9 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const norge_u_fv   = accountFV(ek.sb_u_pv + ek.dnb_u_pv,                  0, 'monthly', avkPct, antalAr, antalAr);
 
   // Sparkonto (växter med borgaRanta, ej avkPct)
+  // Notera: fv() hanterar nollränta korrekt (undviker 0/0)
   const r_sp_mon = Math.pow(1 + s.borgoRanta / 100, 1 / 12) - 1;
-  const sparkonto_fv = ek.sparkonto_pv * Math.pow(1 + s.borgoRanta / 100, antalAr)
-    + ek.sparkonto_pmt * (Math.pow(1 + r_sp_mon, antalAr * 12) - 1) / r_sp_mon;
+  const sparkonto_fv = -fv(r_sp_mon, antalAr * 12, -ek.sparkonto_pmt, -ek.sparkonto_pv);
 
   // Premiepension (AP7, ingen insättning — växer med avkPct)
   const pp_fv = (ek.pp_f + ek.pp_u) * Math.pow(1 + avkPct / 100, antalAr);

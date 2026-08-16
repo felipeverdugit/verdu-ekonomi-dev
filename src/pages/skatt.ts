@@ -4,6 +4,7 @@ import { Chart, LineController, LineElement, PointElement, LinearScale, Category
 import { computeFire } from '../calculations';
 import { ekStore, fireStore } from '../store';
 import { renderTopnav, injectInfoBtn } from '../nav';
+import { PEOPLE } from '../constants';
 
 await initAuth();
 
@@ -84,8 +85,8 @@ function render(): void {
 
   const flatRate       = s.skattPct / 100;
   const skattFaktor    = 1 - flatRate;
-  const felipeBorn     = 1975;
-  const ulrikaBorn     = 1970;
+  const felipeBorn     = PEOPLE.felipe.born;
+  const ulrikaBorn     = PEOPLE.ulrika.born;
 
   type Row = {
     year: number;
