@@ -7,7 +7,7 @@
  * Testbar utan webbläsare.
  */
 
-import { PEOPLE, FAST_TJP_FELIPE, FAST_TJP_AGE, NORSK_TJP_PERIOD, AP_INDEX_RATE, AP_TAK } from './constants';
+import { PEOPLE, FAST_TJP_FELIPE, FAST_TJP_AGE, NORSK_TJP_END_AGE, AP_INDEX_RATE, AP_TAK } from './constants';
 import type { EkonomiData, FireSettings, FireResult, PensionStream, Phase, TimelineEvent, UttakResult, UttakRow } from './types';
 
 const BASE_YEAR  = new Date().getFullYear();
@@ -16,7 +16,7 @@ const BASE_MONTH = new Date().getMonth() + 1; // 1-12
 // ── Finansiella hjälpfunktioner ────────────────────────────────────────────────
 
 /** Excel FV: framtida värde av ett konto med insättningar */
-function fv(rate: number, nper: number, pmt: number, pv: number): number {
+export function fv(rate: number, nper: number, pmt: number, pv: number): number {
   if (rate === 0) return -(pv + pmt * nper);
   return -(pv * Math.pow(1 + rate, nper) + pmt * ((Math.pow(1 + rate, nper) - 1) / rate));
 }
@@ -74,6 +74,23 @@ function accountFVGrowing(
   return nRest > 0 ? pvAtFire * Math.pow(1 + r, nRest) : pvAtFire;
 }
 
+// ── Netto förmögenhet (idag) ───────────────────────────────────────────────────
+
+export function computeNV(ek: EkonomiData): number {
+  return (
+    ek.sparkonto_pv +
+    ek.ap_f + ek.ap_u +
+    (ek.nav_f_nok + ek.nav_u_nok) * (ek.nok_sek || 0.97) +
+    Math.max(0, ek.villa_varde   - ek.villa_lan) +
+    Math.max(0, ek.lagenhet_varde - ek.lagenhet_lan) +
+    ek.lysa_f_pv + ek.lysa_u_pv + ek.buffert_u_pv +
+    ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pv + ek.kapan_pv + ek.tjp_u_pv +
+    ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv + ek.sb_u_pv + ek.dnb_u_pv +
+    ek.pp_f + ek.pp_u +
+    ek.norco_antal * ek.norco_kurs + ek.oncop_antal * ek.oncop_kurs
+  );
+}
+
 // ── Huvud-beräkningsfunktion ───────────────────────────────────────────────────
 
 export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
@@ -107,7 +124,7 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   // Sparkonto (växter med borgaRanta, ej avkPct)
   // Notera: fv() hanterar nollränta korrekt (undviker 0/0)
   const r_sp_mon = Math.pow(1 + s.borgoRanta / 100, 1 / 12) - 1;
-  const sparkonto_fv = -fv(r_sp_mon, antalAr * 12, -ek.sparkonto_pmt, -ek.sparkonto_pv);
+  const sparkonto_fv = fv(r_sp_mon, antalAr * 12, -ek.sparkonto_pmt, -ek.sparkonto_pv);
 
   // Premiepension (AP7, ingen insättning — växer med avkPct)
   const pp_fv = (ek.pp_f + ek.pp_u) * Math.pow(1 + avkPct / 100, antalAr);
@@ -168,18 +185,20 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const YR_F_ALLMAN    = felipe.born + s.fAllmanAge;
 
   // Slutår
-  const u_norsk_end = ulrika.born + 77;
-  const f_norsk_end = felipe.born + 77;
+  const u_norsk_end = ulrika.born + NORSK_TJP_END_AGE;
+  const f_norsk_end = felipe.born + NORSK_TJP_END_AGE;
   const u_tjp_end   = u_tjp_start + s.tjpAr;
   const f_tjp_end   = f_tjp_start + s.tjpAr;
 
-  // PMT för norsk TjP: kapitalet växer från FIRE till startår, sedan 15-år PMT
-  const u_norsk_extra = Math.max(0, YR_U_NORSK_TJP - fireYear);
-  const f_norsk_extra = Math.max(0, YR_F_NORSK_TJP - fireYear);
-  const u_norsk_cap   = grp_norge_u * Math.pow(1 + avkPct / 100, u_norsk_extra);
-  const f_norsk_cap   = grp_norge_f * Math.pow(1 + avkPct / 100, f_norsk_extra);
-  const u_norsk_mon   = Math.round(pmt(uttakAvkMon, NORSK_TJP_PERIOD * 12, u_norsk_cap));
-  const f_norsk_mon   = Math.round(pmt(uttakAvkMon, NORSK_TJP_PERIOD * 12, f_norsk_cap));
+  // PMT för norsk TjP: kapitalet växer från FIRE till startår, sedan dynamisk period (start→77)
+  const u_norsk_extra  = Math.max(0, YR_U_NORSK_TJP - fireYear);
+  const f_norsk_extra  = Math.max(0, YR_F_NORSK_TJP - fireYear);
+  const u_norsk_cap    = grp_norge_u * Math.pow(1 + avkPct / 100, u_norsk_extra);
+  const f_norsk_cap    = grp_norge_f * Math.pow(1 + avkPct / 100, f_norsk_extra);
+  const u_norsk_period = Math.max(1, u_norsk_end - YR_U_NORSK_TJP); // år, beroende på startålder
+  const f_norsk_period = Math.max(1, f_norsk_end - YR_F_NORSK_TJP);
+  const u_norsk_mon    = Math.round(pmt(uttakAvkMon, u_norsk_period * 12, u_norsk_cap));
+  const f_norsk_mon    = Math.round(pmt(uttakAvkMon, f_norsk_period * 12, f_norsk_cap));
 
   // PMT för svensk TjP: kapitalet växer från FIRE till startår, sedan tjpAr-PMT
   const u_tjp_extra    = Math.max(0, u_tjp_start - fireYear);
@@ -191,19 +210,23 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const f_tjp_mon      = Math.round(pmt(uttakAvkMon, s.tjpAr * 12, f_tjp_cap));
   const f_lonevxl_mon  = Math.round(pmt(uttakAvkMon, s.tjpAr * 12, f_lonevxl_cap));
 
-  // Allmänpension (statlig + norsk NAV inntektspension)
-  const u_allman_mon = Math.round((ek.allman_se_u + ek.norsk_u) * skattFaktor);
-  const f_allman_mon = Math.round((ek.allman_se_f + ek.norsk_f) * skattFaktor);
+  // Allmänpension (statlig SE) och NAV inntektspension — visas som separata rader
+  const u_allman_se_mon = Math.round(ek.allman_se_u * skattFaktor);
+  const f_allman_se_mon = Math.round(ek.allman_se_f * skattFaktor);
+  const u_nav_mon       = Math.round(ek.norsk_u     * skattFaktor);
+  const f_nav_mon       = Math.round(ek.norsk_f     * skattFaktor);
 
   const pensions: PensionStream[] = [
-    { id: 1, label: 'Norsk TjP — Ulrika',             who: 'u', fromYear: YR_U_NORSK_TJP, toYear: u_norsk_end, monthly: Math.round(u_norsk_mon * skattFaktor), livsvarig: false },
-    { id: 2, label: 'Svensk TjP — Ulrika',            who: 'u', fromYear: u_tjp_start,    toYear: u_tjp_end,   monthly: Math.round(u_tjp_mon  * skattFaktor), livsvarig: false },
-    { id: 3, label: 'Norsk TjP — Felipe',             who: 'f', fromYear: YR_F_NORSK_TJP, toYear: f_norsk_end, monthly: Math.round(f_norsk_mon * skattFaktor), livsvarig: false },
-    { id: 4, label: 'Allmänpension Ulrika (SE+NAV)',  who: 'u', fromYear: YR_U_ALLMAN,    toYear: 9999,        monthly: u_allman_mon,                          livsvarig: true  },
-    { id: 5, label: 'Svensk TjP — Felipe',            who: 'f', fromYear: f_tjp_start,    toYear: f_tjp_end,   monthly: Math.round(f_tjp_mon      * skattFaktor), livsvarig: false },
-    { id: 8, label: 'Löneväxling — Felipe',           who: 'f', fromYear: f_tjp_start,    toYear: f_tjp_end,   monthly: Math.round(f_lonevxl_mon  * skattFaktor), livsvarig: false },
-    { id: 6, label: 'Fast TjP Felipe (Alecta/KPA)',  who: 'f', fromYear: YR_F_FAST_TJP,  toYear: 9999,        monthly: Math.round(FAST_TJP_FELIPE * skattFaktor), livsvarig: true  },
-    { id: 7, label: 'Allmänpension Felipe (SE+NAV)', who: 'f', fromYear: YR_F_ALLMAN,    toYear: 9999,        monthly: f_allman_mon,                          livsvarig: true  },
+    { id: 1,  label: 'Norsk TjP — Ulrika',           who: 'u', fromYear: YR_U_NORSK_TJP, toYear: u_norsk_end, monthly: Math.round(u_norsk_mon    * skattFaktor), livsvarig: false },
+    { id: 2,  label: 'Svensk TjP — Ulrika',          who: 'u', fromYear: u_tjp_start,    toYear: u_tjp_end,   monthly: Math.round(u_tjp_mon      * skattFaktor), livsvarig: false },
+    { id: 3,  label: 'Norsk TjP — Felipe',           who: 'f', fromYear: YR_F_NORSK_TJP, toYear: f_norsk_end, monthly: Math.round(f_norsk_mon    * skattFaktor), livsvarig: false },
+    { id: 4,  label: 'Allmänpension — Ulrika (SE)',  who: 'u', fromYear: YR_U_ALLMAN,    toYear: 9999,        monthly: u_allman_se_mon,                          livsvarig: true  },
+    { id: 5,  label: 'Svensk TjP — Felipe',          who: 'f', fromYear: f_tjp_start,    toYear: f_tjp_end,   monthly: Math.round(f_tjp_mon      * skattFaktor), livsvarig: false },
+    { id: 6,  label: 'Fast TjP Felipe (Alecta/KPA)', who: 'f', fromYear: YR_F_FAST_TJP,  toYear: 9999,        monthly: Math.round(FAST_TJP_FELIPE * skattFaktor), livsvarig: true  },
+    { id: 7,  label: 'Allmänpension — Felipe (SE)',  who: 'f', fromYear: YR_F_ALLMAN,    toYear: 9999,        monthly: f_allman_se_mon,                          livsvarig: true  },
+    { id: 8,  label: 'Löneväxling — Felipe',         who: 'f', fromYear: f_tjp_start,    toYear: f_tjp_end,   monthly: Math.round(f_lonevxl_mon  * skattFaktor), livsvarig: false },
+    { id: 9,  label: 'NAV — Ulrika',                 who: 'u', fromYear: YR_U_ALLMAN,    toYear: 9999,        monthly: u_nav_mon,                                livsvarig: true  },
+    { id: 10, label: 'NAV — Felipe',                 who: 'f', fromYear: YR_F_ALLMAN,    toYear: 9999,        monthly: f_nav_mon,                                livsvarig: true  },
   ];
 
   function incomeF(yr: number): number {
@@ -226,8 +249,8 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
     { year: f_tjp_start,     who: 'f', type: 'tjp_start',       label: `Felipe ${s.fTjpAge}: Svensk TjP startar (${s.tjpAr} år)` },
     { year: f_tjp_end,       who: 'f', type: 'tjp_end',         label: `Felipe ${f_tjp_end - felipe.born}: Svensk TjP slutar` },
     { year: YR_F_FAST_TJP,  who: 'f', type: 'fast_tjp',        label: `Felipe ${FAST_TJP_AGE}: Fast TjP (Alecta/KPA/Kåpan)` },
-    { year: YR_U_ALLMAN,    who: 'u', type: 'allman',           label: `Ulrika ${s.uAllmanAge}: Allmänpension SE+NAV` },
-    { year: YR_F_ALLMAN,    who: 'f', type: 'allman',           label: `Felipe ${s.fAllmanAge}: Allmänpension SE+NAV` },
+    { year: YR_U_ALLMAN,    who: 'u', type: 'allman',           label: `Ulrika ${s.uAllmanAge}: Allmänpension SE + NAV` },
+    { year: YR_F_ALLMAN,    who: 'f', type: 'allman',           label: `Felipe ${s.fAllmanAge}: Allmänpension SE + NAV` },
   ].sort((a, b) => a.year - b.year) as TimelineEvent[];
 
   // ── Fasdata ────────────────────────────────────────────────────────────────
@@ -275,7 +298,8 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   }
 
   const firePct      = fireNumber > 0 ? (kapital / fireNumber) * 100 : 0;
-  const bryggaTackning = bryggaKapital > 0 ? (kapital / bryggaKapital) * 100 : 0;
+  // bryggaKapital = 0 innebär att pensioner täcker allt från FIRE-dag → inget bryggebehov
+  const bryggaTackning = bryggaKapital > 0 ? (kapital / bryggaKapital) * 100 : 100;
 
   const iskKapital = lysa_f_fv + lysa_u_fv + buffert_u_fv;
 
@@ -328,4 +352,42 @@ export function simulateUttag(
   }
 
   return { rows, depletedYear, pensionFullYear, capitalAtBridge };
+}
+
+// ── Inkomstskatt (progressiv) ─────────────────────────────────────────────────
+// SKV 2024/2025 — delad mellan skatt.ts och uttag.ts för konsekvent beräkning
+
+export const KOMMUNAL      = 0.31;
+export const STATLIG_GRANS = 615_300; // kr/år
+export const STATLIG_RATE  = 0.20;
+
+/** Förhöjt grundavdrag för pensionärer 65+ (approximation SKV 2024) */
+function fga65(annual: number): number {
+  if (annual <= 134_600) return annual;
+  if (annual <= 220_000) return 134_600;
+  if (annual <= 450_000) return 134_600 + 0.08 * (annual - 220_000);
+  if (annual <= 615_300) return Math.max(85_000, 152_000 - 0.08 * (annual - 450_000));
+  // Samma formel som föregående gren men lägre golv (75 000) ovanför statlig gräns.
+  // Använder 152 000 som bas så funktionen är kontinuerlig vid 615 300.
+  return Math.max(75_000, 152_000 - 0.08 * (annual - 450_000));
+}
+
+/**
+ * Grundavdrag för ej-pensionärer (<65) — approximation SKV 2024/2025.
+ * Minimum 13 900 kr, platå ~36 500 kr vid 140–245 tkr/år.
+ */
+function grundavdrag(annual: number): number {
+  if (annual <=  43_000) return 13_900;                                                // låg inkomst: minimum
+  if (annual <= 140_000) return 13_900 + 0.235 * (annual - 43_000);                   // stigande mot topp
+  if (annual <= 245_000) return 36_500;                                                // platå
+  if (annual <= 390_000) return Math.max(13_900, 36_500 - 0.155 * (annual - 245_000)); // sjunkande
+  return 13_900;                                                                        // hög inkomst: minimum
+}
+
+/** Progressiv inkomstskatt. isPensioner = 65+ (förhöjt grundavdrag). */
+export function incomeTax(annualGross: number, isPensioner: boolean): number {
+  if (annualGross <= 0) return 0;
+  const avdrag  = isPensioner ? fga65(annualGross) : grundavdrag(annualGross);
+  const taxable = Math.max(0, annualGross - avdrag);
+  return Math.round(taxable * KOMMUNAL + Math.max(0, annualGross - STATLIG_GRANS) * STATLIG_RATE);
 }

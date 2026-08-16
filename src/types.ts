@@ -78,8 +78,6 @@ export interface EkonomiData {
   levnadskostnad:  number;  // kr/mån, period 1
   levnadskostnad2: number;  // kr/mån, period 2
   exp_switch_ar:   number;  // Efter hur många år byter vi till period 2
-  exp_f:           number;  // Individuell kostnad Felipe
-  exp_u:           number;  // Individuell kostnad Ulrika
 }
 
 // ── Budget (månadsöversikt) ───────────────────────────────────────────────────
@@ -124,7 +122,6 @@ export interface FireSettings {
   borgoRanta:    number;
   lonehojF:      number;
   lonehojU:      number;
-  sparandel:     number;
   fTjpAge:       number;
   fNorskTjpAge:  number;
   uTjpAge:       number;
@@ -140,7 +137,7 @@ export interface FireSettings {
 // ── Pensionsström ─────────────────────────────────────────────────────────────
 // En enda utbetalninsström — t.ex. "Norsk TjP Felipe"
 export interface PensionStream {
-  id:       number;         // 1-7
+  id:       number;         // 1-10
   label:    string;
   who:      'f' | 'u';
   fromYear: number;

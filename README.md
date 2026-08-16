@@ -51,6 +51,17 @@ kvartal.html  ←  resultStore (läses)
 skatt.html    ←  computeFire() direkt
 ```
 
+### Skattberäkning
+
+`incomeTax(annualGross, isPensioner)` i `calculations.ts` beräknar progressiv skatt:
+
+| Vem | Grundavdrag | Källa |
+|---|---|---|
+| Pensionär ≥ 65 | `fga65()` — förhöjt grundavdrag, 13 900–134 600 kr | SKV 2024/2025 |
+| Ej pensionär < 65 | `grundavdrag()` — platå ~36 500 kr vid 140–245 tkr/år, minimum 13 900 kr | SKV 2024/2025 |
+
+Ovanpå kommunalskatt (31 %) tillkommer 20 % statlig skatt på inkomst över 615 300 kr/år. Används av `skatt.html` och `uttag.html` för jämförelse progressiv vs. schablonbeskattning.
+
 ### Pensionsströmmar (id 1–10)
 
 | ID | Ström | Vem | Livsvarig |

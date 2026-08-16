@@ -1,42 +1,17 @@
 import '../../src/style.css';
 import { initAuth } from '../auth';
-import { ekStore } from '../store';
+import { ekStore, fireStore } from '../store';
 import { SHEETS_URL, SHEETS_MAP, EXCEL_PMTS, ALLMAN_DEFAULTS } from '../constants';
 import { renderTopnav, injectInfoBtn } from '../nav';
-import type { EkonomiData } from '../types';
+import { INFO } from '../infoContent';
+import type { EkonomiData, FireSettings } from '../types';
 
 await initAuth();
 
 // ── Navigation ─────────────────────────────────────────────────────────────────
 renderTopnav('ekonomi.html');
 
-injectInfoBtn('💰 Ekonomi — grunddata', [
-  {
-    heading: 'Vad är det här?',
-    html: `<p>Här matar du in alla <strong>aktuella balanser och månadssparanden</strong> som de övriga sidorna räknar med. Det är källan till hela planen.</p>`,
-  },
-  {
-    heading: 'Vad behöver du göra?',
-    html: `<ul>
-      <li>Uppdatera balanserna (PV) en gång i månaden eller kvartalet från Lysa, Hoist, NAV m.fl.</li>
-      <li>Ange månatliga insättningsbelopp (PMT) — dessa hämtas automatiskt till Budget-sidan.</li>
-      <li>Synka från Google Sheets med knappen längst ner för snabbare uppdatering.</li>
-    </ul>`,
-  },
-  {
-    heading: 'Viktiga fält',
-    html: `<ul>
-      <li><strong>Lysa F/U/Buffert</strong>: fria fondkonton (ISK) — grunden i brygga-kapitalet.</li>
-      <li><strong>AP (inkomstpension)</strong>: hämta intjänad behållning från minpension.se.</li>
-      <li><strong>NAV (Norge)</strong>: norsk statlig pension i NOK.</li>
-      <li><strong>Levnadskostnad</strong>: din planerade månadskostnad i FIRE — påverkar alla simulatorer.</li>
-    </ul>`,
-  },
-  {
-    heading: 'Datalagring & Sheets-sync',
-    html: `<p>All data sparas <strong>lokalt i webbläsaren</strong> (localStorage) — ingenting skickas till någon server. Sheets-knappen <em>hämtar</em> balanser från ditt Google Sheets (läsning enbart) och skriver dem till localStorage. Ingen data lämnar appen.</p>`,
-  },
-]);
+injectInfoBtn(INFO.ekonomi.title, INFO.ekonomi.sections);
 
 // ── Alla fält som har ett input-element med samma id som EkonomiData-fältet ────
 const FIELDS: (keyof EkonomiData)[] = [
@@ -131,6 +106,40 @@ async function syncFromSheets(): Promise<void> {
 }
 
 document.getElementById('btn-sync-sheets')!.addEventListener('click', syncFromSheets);
+
+// ── Simuleringsantaganden (skrivs till fireStore) ──────────────────────────────
+const FIRE_NUM_FIELDS: { id: string; field: keyof FireSettings }[] = [
+  { id: 'fire_borgoRanta', field: 'borgoRanta' },
+  { id: 'fire_iskPct',     field: 'iskPct'     },
+  { id: 'fire_lonehojF',   field: 'lonehojF'   },
+  { id: 'fire_lonehojU',   field: 'lonehojU'   },
+];
+
+const savedFire = fireStore.get();
+FIRE_NUM_FIELDS.forEach(({ id, field }) => {
+  const el = document.getElementById(id) as HTMLInputElement | null;
+  if (!el) return;
+  el.value = String((savedFire as unknown as Record<string, number>)[field]);
+  el.addEventListener('input', () => {
+    fireStore.setField(field, parseFloat(el.value) || 0);
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      statusEl.textContent = `✓ Sparat ${new Date().toLocaleTimeString('sv-SE')}`;
+    }, 400);
+  });
+});
+
+const chkAktierEk = document.getElementById('fire_aktierIFire') as HTMLInputElement | null;
+if (chkAktierEk) {
+  chkAktierEk.checked = savedFire.aktierIFire;
+  chkAktierEk.addEventListener('change', () => {
+    fireStore.setField('aktierIFire', chkAktierEk.checked);
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      statusEl.textContent = `✓ Sparat ${new Date().toLocaleTimeString('sv-SE')}`;
+    }, 400);
+  });
+}
 
 // Auto-synka från Sheets om enheten saknar data (ny enhet / rensad cache)
 if (saved.lysa_f_pv === 0 && saved.tjp_f_pv === 0 && saved.norge_f_pv === 0) {

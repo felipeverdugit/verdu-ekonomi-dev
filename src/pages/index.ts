@@ -1,10 +1,11 @@
 import '../../src/style.css';
 import { initAuth } from '../auth';
 import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
-import { computeFire } from '../calculations';
+import { computeFire, computeNV } from '../calculations';
 import { ekStore, fireStore } from '../store';
 import { renderTopnav, injectInfoBtn } from '../nav';
-import { AP_INDEX_RATE, AP_TAK, PP_RATE } from '../constants';
+import { INFO } from '../infoContent';
+import { AP_INDEX_RATE, AP_TAK, PP_RATE, CHART_DARK_GRID, CHART_DARK_TEXT } from '../constants';
 
 await initAuth();
 
@@ -12,28 +13,7 @@ Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, L
 
 renderTopnav('index.html');
 
-injectInfoBtn('🏠 Dashboard', [
-  {
-    heading: 'Vad är det här?',
-    html: `<p>Översiktssidan som visar din ekonomi i ett ögonkast: nettoförmögenhet, brygga-status, uppskattad förmögenhetstillväxt per år och kommande pensionshändelser.</p>`,
-  },
-  {
-    heading: 'Netto förmögenhet (NV)',
-    html: `<p>Summan av <strong>alla tillgångar minus skulder</strong>: AP, PP, TjP, Lysa, sparkonto, bostäder, aktier m.m. Uppdateras automatiskt när du ändrar värden i Ekonomi-fliken.</p>`,
-  },
-  {
-    heading: 'Förmögenhetsförändring per år',
-    html: `<p>Uppskattning av hur NV förändras under ett normalår — fördelat på sju kategorier. Avkastning hämtas från Brygga-slidern. Bostadstillväxt kan justeras direkt här.</p>`,
-  },
-  {
-    heading: 'Vad behöver du göra?',
-    html: `<ul>
-      <li>Håll <strong>Ekonomi</strong>-fliken uppdaterad med aktuella balanser.</li>
-      <li>Kontrollera brygga-täckning — målet är ≥ 100 %.</li>
-      <li>Använd diagrammet för att se vad som driver förmögenhetstillväxten mest.</li>
-    </ul>`,
-  },
-]);
+injectInfoBtn(INFO.index.title, INFO.index.sections);
 
 // ── AKAP-KR 2026 ──────────────────────────────────────────────────────────────
 const AKAP_CAP  = 52_125;   // 7,5 IBB kr/mån
@@ -50,8 +30,7 @@ const LS_BOSTAD = 'vek_idx_bostad_avk';
 function fmt(n: number)  { return Math.round(n).toLocaleString('sv-SE') + ' kr'; }
 function fmtM(n: number) { return (n / 1e6).toFixed(2) + ' MSEK'; }
 
-const DARK_GRID = '#2d3348';
-const DARK_TEXT = '#8892a4';
+// CHART_DARK_GRID / CHART_DARK_TEXT importeras från constants.ts
 
 let nvChart: Chart | null = null;
 
@@ -66,17 +45,7 @@ function render(): void {
   ) / 100;
 
   // ── Netto förmögenhet ────────────────────────────────────────────────────────
-  const nv =
-    ek.sparkonto_pv +
-    ek.ap_f + ek.ap_u +
-    (ek.nav_f_nok + ek.nav_u_nok) * (ek.nok_sek || 0.97) +
-    Math.max(0, ek.villa_varde  - ek.villa_lan) +
-    Math.max(0, ek.lagenhet_varde - ek.lagenhet_lan) +
-    ek.lysa_f_pv + ek.lysa_u_pv + ek.buffert_u_pv +
-    ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pv + ek.kapan_pv + ek.tjp_u_pv +
-    ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv + ek.sb_u_pv + ek.dnb_u_pv +
-    ek.pp_f + ek.pp_u +
-    ek.norco_antal * ek.norco_kurs + ek.oncop_antal * ek.oncop_kurs;
+  const nv = computeNV(ek);
 
   document.getElementById('hero-nv')!.textContent = fmtM(nv);
   document.getElementById('hero-nv-sub')!.textContent =
@@ -101,9 +70,8 @@ function render(): void {
   }
 
   // ── Pensionstabell ────────────────────────────────────────────────────────────
-  const LIVSVARIG = [4, 6, 7];
   document.getElementById('pension-summary')!.innerHTML = r.pensions.map(p => {
-    const isLiv  = LIVSVARIG.includes(p.id);
+    const isLiv  = p.livsvarig;
     const tomCell = isLiv
       ? `<td style="color:var(--green);font-size:.78rem">livsvarig</td>`
       : `<td>${p.toYear < 9999 ? p.toYear : '—'}</td>`;
@@ -200,10 +168,10 @@ function render(): void {
       },
       scales: {
         x: {
-          grid: { color: DARK_GRID },
-          ticks: { color: DARK_TEXT, callback: v => `${Math.round(Number(v) / 1000)}k` },
+          grid: { color: CHART_DARK_GRID },
+          ticks: { color: CHART_DARK_TEXT, callback: v => `${Math.round(Number(v) / 1000)}k` },
         },
-        y: { grid: { color: DARK_GRID }, ticks: { color: DARK_TEXT, font: { size: 11 } } },
+        y: { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, font: { size: 11 } } },
       },
     },
   });

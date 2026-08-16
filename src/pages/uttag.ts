@@ -1,9 +1,11 @@
 import '../../src/style.css';
 import { initAuth } from '../auth';
 import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler } from 'chart.js';
-import { simulateUttag } from '../calculations';
+import { simulateUttag, incomeTax, STATLIG_GRANS } from '../calculations';
 import { resultStore, ekStore, fireStore } from '../store';
 import { renderTopnav, injectInfoBtn } from '../nav';
+import { CHART_DARK_GRID, CHART_DARK_TEXT } from '../constants';
+import { INFO } from '../infoContent';
 import type { PensionStream } from '../types';
 
 await initAuth();
@@ -13,71 +15,30 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
 // ── Navigation ─────────────────────────────────────────────────────────────────
 renderTopnav('uttag.html');
 
-injectInfoBtn('📊 Uttaksplan', [
-  {
-    heading: 'Vad är det här?',
-    html: `<p>En detaljerad år-för-år-simulering av hela uttaksfasen. Visar hur kapitalet utvecklas, när varje pensionsström aktiveras och hur länge pengarna räcker.</p>`,
-  },
-  {
-    heading: 'Vad visas i diagrammet?',
-    html: `<ul>
-      <li><strong>Kapital</strong>: det fria kapitalet (Lysa, sparkonto m.m.) som minskar med uttag.</li>
-      <li><strong>Uttag/mån</strong>: vad du tar ut ur kapitalet varje månad (minskar när pensioner slår in).</li>
-      <li><strong>Levnadskostnad</strong> (orange streckad linje): din planerade levnadskostnad, inkl. steget ner till period 2.</li>
-      <li><strong>Pensioner</strong>: de staplar som byggs upp allteftersom pensionerna startar.</li>
-    </ul>`,
-  },
-  {
-    heading: 'Målet',
-    html: `<p>Kapitalet ska inte nå noll under din livstid. Målet är att <strong>uttagen täcks av pensioner</strong> senast när kapitalet är nära slut — helst med god marginal.</p>`,
-  },
-  {
-    heading: 'Tips',
-    html: `<p>Justera startåldrarna för varje pension i Brygga-simulatorn för att se hur timing påverkar uttaksbehovet.</p>`,
-  },
-]);
+injectInfoBtn(INFO.uttag.title, INFO.uttag.sections);
 
-const DARK_GRID = '#2d3348';
-const DARK_TEXT = '#8892a4';
+// CHART_DARK_GRID / CHART_DARK_TEXT importeras från constants.ts
 let chart: Chart | null = null;
 
 function fmt(n: number) { return Math.round(n).toLocaleString('sv-SE') + ' kr'; }
 function fmtM(n: number) { return (n / 1e6).toFixed(2) + ' MSEK'; }
 
 // ── Skattekalkyl ───────────────────────────────────────────────────────────────
-const KOMMUNAL      = 0.31;
-const STATLIG_GRANS = 615_300;
-const STATLIG_RATE  = 0.20;
-const STATLIG_MON   = STATLIG_GRANS / 12; // ≈ 51 275 kr/mån
-
-function fga65(annual: number): number {
-  if (annual <= 134_600) return annual;
-  if (annual <= 220_000) return 134_600;
-  if (annual <= 450_000) return 134_600 + 0.08 * (annual - 220_000);
-  if (annual <= 615_300) return Math.max(85_000, 152_000 - 0.08 * (annual - 450_000));
-  return Math.max(75_000, 140_000 - 0.08 * (annual - 450_000));
-}
-function ga(annual: number): number {
-  return annual <= 134_600 ? annual : 13_900;
-}
-function incomeTax(annualGross: number, isPensioner: boolean): number {
-  if (annualGross <= 0) return 0;
-  const avdrag  = isPensioner ? fga65(annualGross) : ga(annualGross);
-  const taxable = Math.max(0, annualGross - avdrag);
-  return Math.round(taxable * KOMMUNAL + Math.max(0, annualGross - STATLIG_GRANS) * STATLIG_RATE);
-}
+// STATLIG_GRANS och incomeTax importeras från calculations.ts
+const STATLIG_MON = STATLIG_GRANS / 12; // ≈ 51 275 kr/mån
 
 // ── Läs pensionsströmmar från resultStore ─────────────────────────────────────
 function loadPensions(): PensionStream[] {
   const streams: PensionStream[] = [];
-  for (let i = 1; i <= 7; i++) {
+  for (let i = 1; i <= 10; i++) {
     const from  = resultStore.getNum(`p${i}_from`);
     const to    = resultStore.getNum(`p${i}_to`, 9999);
     const mon   = resultStore.getNum(`p${i}_monthly`);
     const label = resultStore.getString(`p${i}_label`, `Pension ${i}`);
     const liv   = resultStore.getNum(`p${i}_livsvarig`) === 1;
+    const who   = resultStore.getString(`p${i}_who`, 'f') as 'f' | 'u';
     if (from > 0) {
-      streams.push({ id: i, label, who: i <= 3 || i === 5 ? (i % 2 === 0 ? 'u' : 'f') : (i === 4 ? 'u' : 'f'), fromYear: from, toYear: to, monthly: mon, livsvarig: liv });
+      streams.push({ id: i, label, who, fromYear: from, toYear: to, monthly: mon, livsvarig: liv });
     }
   }
   return streams;
@@ -86,9 +47,8 @@ function loadPensions(): PensionStream[] {
 // ── Uppdatera pensionstabell ───────────────────────────────────────────────────
 function renderPensionTable(pensions: PensionStream[]): void {
   const tbody = document.getElementById('pension-tbody')!;
-  const LIVSVARIG = [4, 6, 7];
   tbody.innerHTML = pensions.map(p => {
-    const isLiv  = LIVSVARIG.includes(p.id);
+    const isLiv  = p.livsvarig;
     const tomCell = isLiv
       ? `<td style="text-align:center;color:var(--green);font-size:.78rem">livsvarig</td>`
       : `<td style="text-align:center">${p.toYear < 9999 ? p.toYear : '—'}</td>`;
@@ -161,11 +121,11 @@ function render(): void {
     },
     options: {
       scales: {
-        x:  { grid: { color: DARK_GRID }, ticks: { color: DARK_TEXT, maxTicksLimit: 10 } },
-        y:  { grid: { color: DARK_GRID }, ticks: { color: DARK_TEXT, callback: v => `${v} M` }, position: 'left' },
+        x:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, maxTicksLimit: 10 } },
+        y:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, callback: v => `${v} M` }, position: 'left' },
         y1: { grid: { drawOnChartArea: false }, ticks: { color: '#6ee7b7', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
       },
-      plugins: { legend: { labels: { color: DARK_TEXT } } },
+      plugins: { legend: { labels: { color: CHART_DARK_TEXT } } },
     },
   });
 

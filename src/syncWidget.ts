@@ -9,9 +9,10 @@ import {
   pushBudget,       pullBudget,
   pushKvartal,      pullKvartal,
   pushAvkastning,   pullAvkastning,
+  ensureAuth,
 } from './firebase';
-import { fireStore, ekStore, historikStore, budgetStore } from './store';
-import type { FireSettings, KvartalData, AvkastningData } from './types';
+import { fireStore, ekStore, historikStore, budgetStore, kvartalStore, avkastningStore } from './store';
+import type { FireSettings } from './types';
 
 type OnPull = (s: FireSettings) => void;
 
@@ -47,49 +48,21 @@ function showMsg(text: string, error = false, ms = 3000): void {
   setTimeout(() => { if (el) el.textContent = ''; }, ms);
 }
 
-// ── Hjälp: läs kvartal från localStorage ─────────────────────────────────────
-function readKvartalFromLS(): KvartalData {
-  const g = (key: string) => parseFloat(localStorage.getItem(key) ?? '0') || 0;
-  return {
-    faktisk: g('vek_kv_faktisk_mon'),
-    pension: g('vek_kv_pension_mon'),
-    buffert: g('vek_kv_buffert'),
-    rorelse: g('vek_kv_rorelse'),
-  };
-}
-
-function writeKvartalToLS(kv: KvartalData): void {
-  localStorage.setItem('vek_kv_faktisk_mon', String(kv.faktisk));
-  localStorage.setItem('vek_kv_pension_mon', String(kv.pension));
-  localStorage.setItem('vek_kv_buffert',     String(kv.buffert));
-  localStorage.setItem('vek_kv_rorelse',     String(kv.rorelse));
-}
-
-// ── Hjälp: läs avkastning från localStorage ───────────────────────────────────
-function readAvkFromLS(): AvkastningData {
-  const rows  = JSON.parse(localStorage.getItem('vek_avk_rows')  ?? '[]');
-  const start = JSON.parse(localStorage.getItem('vek_avk_start') ?? 'null')
-    ?? { year: new Date().getFullYear() - 1, lysaKr: 0, tjpSveKr: 0, tjpNorKr: 0 };
-  return { rows, start };
-}
-
-function writeAvkToLS(data: AvkastningData): void {
-  localStorage.setItem('vek_avk_rows',  JSON.stringify(data.rows));
-  localStorage.setItem('vek_avk_start', JSON.stringify(data.start));
-}
+// Kvartal och avkastning hanteras via typade stores i store.ts
 
 // ── Push (lokal → moln) ────────────────────────────────────────────────────────
 async function handlePush(): Promise<void> {
   const btn = document.getElementById('btn-push') as HTMLButtonElement;
   btn.disabled = true;
   try {
+    await ensureAuth();
     await Promise.all([
       pushFireSettings(fireStore.get()),
       pushEkonomiData(ekStore.get()),
       pushHistorik(historikStore.load()),
       pushBudget(budgetStore.get()),
-      pushKvartal(readKvartalFromLS()),
-      pushAvkastning(readAvkFromLS()),
+      pushKvartal(kvartalStore.get()),
+      pushAvkastning(avkastningStore.get()),
     ]);
     showMsg(`✓ Sparat ${new Date().toLocaleTimeString('sv-SE')}`);
   } catch (e: unknown) {
@@ -104,6 +77,7 @@ async function handlePull(): Promise<void> {
   const btn = document.getElementById('btn-pull') as HTMLButtonElement;
   btn.disabled = true;
   try {
+    await ensureAuth();
     const [s, ek, hist, bd, kv, avk] = await Promise.all([
       pullFireSettings(),
       pullEkonomiData(),
@@ -122,8 +96,8 @@ async function handlePull(): Promise<void> {
     if (hist?.length) historikStore.save(hist);
     if (bd)   (Object.keys(bd) as (keyof typeof bd)[])
                 .forEach(k => budgetStore.setField(k, bd[k]));
-    if (kv)   writeKvartalToLS(kv);
-    if (avk)  writeAvkToLS(avk);
+    if (kv)   kvartalStore.set(kv);
+    if (avk)  avkastningStore.save(avk);
 
     const changed = s ?? ek ?? hist ?? bd ?? kv ?? avk;
     showMsg(`✓ Hämtat ${new Date().toLocaleTimeString('sv-SE')}`);

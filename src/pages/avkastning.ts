@@ -4,8 +4,9 @@ import {
   Chart, BarController, BarElement, LineController, LineElement,
   PointElement, CategoryScale, LinearScale, Tooltip, Legend,
 } from 'chart.js';
-import { fireStore } from '../store';
+import { fireStore, avkastningStore } from '../store';
 import { renderTopnav, injectInfoBtn } from '../nav';
+import { INFO } from '../infoContent';
 import { initSyncWidget } from '../syncWidget';
 import type { AvkRow, AvkStartValues } from '../types';
 
@@ -16,53 +17,15 @@ Chart.register(BarController, BarElement, LineController, LineElement,
 
 renderTopnav('avkastning.html');
 
-injectInfoBtn('🎯 Faktisk avkastning', [
-  {
-    heading: 'Vad är det här?',
-    html: `<p>Logga den <strong>faktiska årsavkastningen</strong> för Lysa och tjänstepensioner. Jämför mot simulatorns antagande — både i procent och kronor.</p>`,
-  },
-  {
-    heading: 'Var hittar jag siffrorna?',
-    html: `<ul>
-      <li><strong>Lysa</strong>: logga in på Lysa → "Min portfölj" → årsavkastning.</li>
-      <li><strong>TjP Sverige</strong>: din pensionsförsäkrings årsbesked (Hoist, KPA, Alecta m.fl.).</li>
-      <li><strong>TjP Norge</strong>: DNB/Storebrand årsbesked eller inloggning.</li>
-    </ul>`,
-  },
-  {
-    heading: 'Startvärden',
-    html: `<p>Ange ingående kapital vid det första år du loggar. Utan startvärden visas bara procent — med dem beräknas faktisk kr-utveckling och jämförs mot simulerad portfölj (om du haft antaget % varje år).</p>`,
-  },
-  {
-    heading: 'CAGR',
-    html: `<p><strong>CAGR</strong> (Compound Annual Growth Rate) = sammansatt genomsnittsavkastning. Det är den siffra som stämmer med hur simulatorn räknar — jämför den mot "Antaget" i Brygga.</p>`,
-  },
-]);
+injectInfoBtn(INFO.avkastning.title, INFO.avkastning.sections);
 
-// ── Lokalt alias (StartValues → AvkStartValues) ───────────────────────────────
+// ── Lokalt alias för kortare namn ─────────────────────────────────────────────
 type StartValues = AvkStartValues;
 
-const LS_ROWS  = 'vek_avk_rows';
-const LS_START = 'vek_avk_start';
-
-function loadRows(): AvkRow[] {
-  try { return JSON.parse(localStorage.getItem(LS_ROWS) ?? '[]'); }
-  catch { return []; }
-}
-function saveRows(rows: AvkRow[]): void {
-  localStorage.setItem(LS_ROWS, JSON.stringify(rows));
-}
-function loadStart(): StartValues {
-  try {
-    return JSON.parse(localStorage.getItem(LS_START) ?? 'null') ??
-      { year: new Date().getFullYear() - 1, lysaKr: 0, tjpSveKr: 0, tjpNorKr: 0 };
-  } catch {
-    return { year: new Date().getFullYear() - 1, lysaKr: 0, tjpSveKr: 0, tjpNorKr: 0 };
-  }
-}
-function saveStart(s: StartValues): void {
-  localStorage.setItem(LS_START, JSON.stringify(s));
-}
+const loadRows  = () => avkastningStore.getRows();
+const saveRows  = (r: AvkRow[]) => avkastningStore.saveRows(r);
+const loadStart = () => avkastningStore.getStart();
+const saveStart = (s: StartValues) => avkastningStore.saveStart(s);
 
 // ── Formatering ───────────────────────────────────────────────────────────────
 const fmtKr  = (n: number) => Math.round(n).toLocaleString('sv-SE') + ' kr';

@@ -90,35 +90,6 @@
         </div>
       </div>
 
-      <h2>Sparande &amp; övriga</h2>
-      <div style="margin-bottom:12px">
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.9rem">
-          <input type="checkbox" id="chk-aktierIFire" style="width:16px;height:16px;accent-color:var(--accent1)">
-          Inkludera aktier (Norconsult + Oncopeptides) i fritt kapital
-        </label>
-      </div>
-      <div class="ctrl-panel" style="grid-template-columns:1fr">
-        <div class="ctrl-group">
-          <label>Borgensränta / sparkonto</label>
-          <span class="ctrl-val"><span id="val-borgoRanta">2.3</span> %</span>
-          <input type="range" id="sl-borgoRanta" min="0" max="6" step="0.1" value="2.3">
-        </div>
-        <div class="ctrl-group">
-          <label>ISK-schablonskatt (Lysa-konton)</label>
-          <span class="ctrl-val"><span id="val-iskPct">1.25</span> %/år</span>
-          <input type="range" id="sl-iskPct" min="0" max="2.5" step="0.05" value="1.25">
-        </div>
-        <div class="ctrl-group">
-          <label>Löneökning Felipe</label>
-          <span class="ctrl-val"><span id="val-lonehojF">0</span> %</span>
-          <input type="range" id="sl-lonehojF" min="0" max="10" step="0.5" value="0">
-        </div>
-        <div class="ctrl-group">
-          <label>Löneökning Ulrika</label>
-          <span class="ctrl-val"><span id="val-lonehojU">0</span> %</span>
-          <input type="range" id="sl-lonehojU" min="0" max="10" step="0.5" value="0">
-        </div>
-      </div>
     </section>
 
     <!-- Fasdiagram + pensionstabell -->
@@ -142,11 +113,12 @@
         <canvas id="pie-chart" height="200"></canvas>
       </div>
 
-      <h2>Uttaksdiagram</h2>
-      <div class="card">
-        <canvas id="uttaks-chart" height="220"></canvas>
-      </div>
     </section>
+  </div>
+
+  <h2>Uttaksdiagram</h2>
+  <div class="card">
+    <canvas id="uttaks-chart" style="height:460px"></canvas>
   </div>
 
   <hr>

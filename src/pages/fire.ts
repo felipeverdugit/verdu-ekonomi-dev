@@ -3,8 +3,9 @@ import { initAuth } from '../auth';
 import { Chart, ArcElement, DoughnutController, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler } from 'chart.js';
 import { computeFire, simulateUttag } from '../calculations';
 import { ekStore, fireStore, resultStore } from '../store';
-import { SLIDER_RANGES } from '../constants';
+import { SLIDER_RANGES, CHART_DARK_GRID, CHART_DARK_TEXT } from '../constants';
 import { renderTopnav, injectInfoBtn } from '../nav';
+import { INFO } from '../infoContent';
 import type { FireResult, FireSettings } from '../types';
 import { initSyncWidget } from '../syncWidget';
 
@@ -15,38 +16,14 @@ Chart.register(ArcElement, DoughnutController, LineController, LineElement, Poin
 // ── Navigation ─────────────────────────────────────────────────────────────────
 renderTopnav('fire.html');
 
-injectInfoBtn('🌉 Brygga-simulatorn', [
-  {
-    heading: 'Vad är det här?',
-    html: `<p>Simulerar <strong>brygga-fasen</strong> — perioden från att du slutar jobba tills pensionerna täcker levnadskostnaderna. Visar om ditt fria kapital räcker och hur länge.</p>`,
-  },
-  {
-    heading: 'Hur fungerar det?',
-    html: `<ul>
-      <li>Ange antal år till FIRE, avkastning och uttaksprocent via sliders.</li>
-      <li>Simulatorn räknar framtida kapital och jämför med planerade uttag.</li>
-      <li>Brygga-täckning ≥ 100 % = kapital räcker hela vägen till full pension.</li>
-    </ul>`,
-  },
-  {
-    heading: 'Viktiga inställningar',
-    html: `<ul>
-      <li><strong>ISK-schablonskatt</strong>: reducerar Lysa-avkastningen (standard 1,25 %/år).</li>
-      <li><strong>Aktier i fritt kapital</strong>: kryssa i om du vill räkna med aktievärden.</li>
-      <li><strong>Levnadskostnad period 2</strong>: lägre belopp efter pensionsstart (t.ex. när båda pensioner är aktiva).</li>
-    </ul>`,
-  },
-  {
-    heading: 'Målet',
-    html: `<p>Brygga-täckning på <strong>minst 100 %</strong> med rimliga antaganden. Pie-diagrammet visar kapitalfördelningen vid FIRE-start.</p>`,
-  },
-]);
+injectInfoBtn(INFO.fire.title, INFO.fire.sections);
 
 // ── Slider-konfiguration ───────────────────────────────────────────────────────
 type SliderKey = keyof typeof SLIDER_RANGES;
+// borgoRanta, iskPct, lonehojF, lonehojU och aktierIFire ställs in i ekonomi.html
 const SLIDERS: SliderKey[] = [
-  'avkPct','antalAr','uttakAvkPct','tjpAr','skattPct','borgoRanta',
-  'lonehojF','lonehojU','fTjpAge','fNorskTjpAge','uNorskTjpAge','uTjpAge','fAllmanAge','uAllmanAge','iskPct',
+  'avkPct','antalAr','uttakAvkPct','tjpAr','skattPct',
+  'fTjpAge','fNorskTjpAge','uNorskTjpAge','uTjpAge','fAllmanAge','uAllmanAge',
 ];
 
 // ── Diagram-instanser ──────────────────────────────────────────────────────────
@@ -55,8 +32,7 @@ let uttaksChart: Chart | null = null;
 
 const PIE_LABELS = ['Fonder', 'Sparkonto', 'TjP Sverige', 'TjP Norge', 'Premiepension', 'Inkomstpension'];
 const PIE_COLORS = ['#4f8ef7','#6ee7b7','#f59e0b','#f87171','#a78bfa','#34d399'];
-const DARK_GRID  = '#2d3348';
-const DARK_TEXT  = '#8892a4';
+// CHART_DARK_GRID / CHART_DARK_TEXT importeras från constants.ts
 
 function fmt(n: number) { return Math.round(n).toLocaleString('sv-SE') + ' kr'; }
 function fmtM(n: number) { return (n / 1e6).toFixed(2) + ' MSEK'; }
@@ -144,7 +120,7 @@ function updatePieChart(r: FireResult): void {
     },
     options: {
       plugins: {
-        legend: { position: 'bottom', labels: { color: DARK_TEXT, font: { size: 11 } } },
+        legend: { position: 'bottom', labels: { color: CHART_DARK_TEXT, font: { size: 11 } } },
         tooltip: { callbacks: { label: (c) => ` ${fmtM(c.raw as number)}` } },
       },
     },
@@ -189,12 +165,13 @@ function updateUttaksChart(r: FireResult, ek: { levnadskostnad: number, levnadsk
       ],
     },
     options: {
+      maintainAspectRatio: false,
       scales: {
-        x:  { grid: { color: DARK_GRID }, ticks: { color: DARK_TEXT, maxTicksLimit: 10 } },
-        y:  { grid: { color: DARK_GRID }, ticks: { color: DARK_TEXT, callback: v => `${v} M` }, position: 'left' },
+        x:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, maxTicksLimit: 10 } },
+        y:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, callback: v => `${v} M` }, position: 'left' },
         y1: { grid: { drawOnChartArea: false }, ticks: { color: '#6ee7b7', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
       },
-      plugins: { legend: { labels: { color: DARK_TEXT } } },
+      plugins: { legend: { labels: { color: CHART_DARK_TEXT } } },
     },
   });
 }
@@ -208,11 +185,12 @@ function exportToUttag(r: FireResult): void {
   };
   // Pensionsströmmar
   r.pensions.forEach(p => {
-    fields[`p${p.id}_from`]    = p.fromYear;
-    fields[`p${p.id}_to`]      = p.toYear;
-    fields[`p${p.id}_monthly`] = p.monthly;
-    fields[`p${p.id}_label`]   = p.label;
+    fields[`p${p.id}_from`]      = p.fromYear;
+    fields[`p${p.id}_to`]        = p.toYear;
+    fields[`p${p.id}_monthly`]   = p.monthly;
+    fields[`p${p.id}_label`]     = p.label;
     fields[`p${p.id}_livsvarig`] = p.livsvarig ? 1 : 0;
+    fields[`p${p.id}_who`]       = p.who;
   });
   fields['updated_at'] = Date.now();
   resultStore.write(fields);
@@ -240,14 +218,6 @@ function initSliders(): void {
       fireStore.setField(key as keyof FireSettings, v);
       render();
     });
-  });
-
-  // Aktier-kryssruta
-  const chkAktier = document.getElementById('chk-aktierIFire') as HTMLInputElement;
-  chkAktier.checked = saved.aktierIFire;
-  chkAktier.addEventListener('change', () => {
-    fireStore.setField('aktierIFire', chkAktier.checked);
-    render();
   });
 
   // Engångsuttag

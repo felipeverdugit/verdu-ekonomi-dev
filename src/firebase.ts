@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, set, get } from 'firebase/database';
+import { getAuth, signInAnonymously } from 'firebase/auth';
 import type { FireSettings, Snapshot, EkonomiData, BudgetData, KvartalData, AvkastningData } from './types';
 
 const firebaseConfig = {
@@ -12,8 +13,16 @@ const firebaseConfig = {
   databaseURL:       import.meta.env.VITE_FB_DATABASE_URL,
 };
 
-const app = initializeApp(firebaseConfig);
-const db  = getDatabase(app);
+const app  = initializeApp(firebaseConfig);
+const db   = getDatabase(app);
+const auth = getAuth(app);
+
+/** Säkerställ att en anonym Firebase-session finns innan läs/skriv. */
+export async function ensureAuth(): Promise<void> {
+  if (!auth.currentUser) {
+    await signInAnonymously(auth);
+  }
+}
 
 // ── FIRE-inställningar ────────────────────────────────────────────────────────
 export async function pushFireSettings(s: FireSettings): Promise<void> {

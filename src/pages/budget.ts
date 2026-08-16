@@ -2,39 +2,16 @@ import '../../src/style.css';
 import { initAuth } from '../auth';
 import { budgetStore, ekStore } from '../store';
 import { renderTopnav, injectInfoBtn } from '../nav';
+import { INFO } from '../infoContent';
 import { initSyncWidget } from '../syncWidget';
+import { computeNV } from '../calculations';
 import type { BudgetData } from '../types';
 
 await initAuth();
 
 renderTopnav('budget.html');
 
-injectInfoBtn('📋 Budget', [
-  {
-    heading: 'Vad är det här?',
-    html: `<p>Månadsbudgeten visar inkomster, utgifter och sparande samlat på ett ställe. KPI-raden högst upp räknar ut saldo, sparkvot och totalt sparande automatiskt.</p>`,
-  },
-  {
-    heading: 'Vad behöver du göra?',
-    html: `<ul>
-      <li>Fyll i faktiska månadsbelopp för varje post.</li>
-      <li>Löneväxling räknas med i sparkvoten men syns inte som inkomst (det är ett bruttolöneavdrag).</li>
-      <li>Lysa N (ej avkastningsbärande) exkluderas från sparkvoten.</li>
-    </ul>`,
-  },
-  {
-    heading: 'Nyckeltal',
-    html: `<ul>
-      <li><strong>Saldo</strong>: inkomst − utgifter (löneväxling adderas tillbaka).</li>
-      <li><strong>Sparkvot</strong>: totalt sparande / (inkomst + löneväxling) × 100.</li>
-      <li><strong>Totalt sparande</strong>: summan av alla sparande-poster (exkl. Lysa N).</li>
-    </ul>`,
-  },
-  {
-    heading: 'Målet',
-    html: `<p>En <strong>sparkvot på 30–50 %</strong> är ett vanligt riktmärke för FIRE-planering. Saldo bör vara nära noll — stor positiv rest betyder att mer kan sparas.</p>`,
-  },
-]);
+injectInfoBtn(INFO.budget.title, INFO.budget.sections);
 
 const fmt  = (n: number) => Math.round(n).toLocaleString('sv-SE');
 const fmtM = (n: number) => (n / 1_000_000).toFixed(2) + ' MSEK';
@@ -195,9 +172,31 @@ if (!bd.lonevxl_mon) {
 const container = document.getElementById('budget-cards')!;
 container.innerHTML = GROUPS.map(g => renderCard(g, bd)).join('');
 
+// ── Ren KPI-beräkning (ingen DOM-åtkomst) ─────────────────────────────────────
+interface BudgetKPIs {
+  totalInk: number; totalUt: number; totalSpar: number;
+  saldo: number; sparkvot: number;
+}
+
+function computeBudgetKPIs(data: Record<keyof BudgetData, number>): BudgetKPIs {
+  const inkGroup  = GROUPS.find(g => g.isIncome)!;
+  const sparGroup = GROUPS.find(g => g.id === 'sparande')!;
+  const lonevxl   = data.lonevxl_mon ?? 0;
+  const totalInk  = groupTotal(inkGroup,  data);
+  const totalSpar = groupTotal(sparGroup, data);
+  const totalUt   = GROUPS.filter(g => !g.isIncome).reduce((s, g) => s + groupTotal(g, data), 0);
+  const saldo     = totalInk - totalUt + lonevxl;
+  const exclInk   = inkGroup.fields
+    .filter(f => f.exclSparkvot)
+    .reduce((s, f) => s + (data[f.id] ?? 0), 0);
+  const adjInk   = totalInk + lonevxl - exclInk;
+  const sparkvot = adjInk > 0 ? (totalSpar / adjInk) * 100 : 0;
+  return { totalInk, totalUt, totalSpar, saldo, sparkvot };
+}
+
+// ── DOM-render ─────────────────────────────────────────────────────────────────
 function recalc(): void {
   const cur = {} as Record<keyof BudgetData, number>;
-
   document.querySelectorAll<HTMLInputElement>('.bgt-inp').forEach(inp => {
     const field = inp.dataset.field as keyof BudgetData;
     cur[field] = parseFloat(inp.value) || 0;
@@ -212,21 +211,8 @@ function recalc(): void {
     if (el2) el2.textContent = fmt(tot);
   });
 
-  const inkGroup  = GROUPS.find(g => g.isIncome)!;
-  const sparGroup = GROUPS.find(g => g.id === 'sparande')!;
-
-  const lonevxl   = cur.lonevxl_mon ?? 0;
-  const totalInk  = groupTotal(inkGroup,  cur);
-  const totalSpar = groupTotal(sparGroup, cur);
-  const totalUt   = GROUPS.filter(g => !g.isIncome).reduce((s, g) => s + groupTotal(g, cur), 0);
-  const saldo     = totalInk - totalUt + lonevxl;  // löneväxling når aldrig kassan
-
-  // Exkludera fält märkta exclSparkvot (t.ex. Sparkonto) från sparkvotens nämnare
-  const exclInk   = inkGroup.fields
-    .filter(f => f.exclSparkvot)
-    .reduce((s, f) => s + (cur[f.id] ?? 0), 0);
-  const adjInk    = totalInk + lonevxl - exclInk;  // total ersättning inkl. pensionsavsättning
-  const sparkvot  = adjInk > 0 ? (totalSpar / adjInk) * 100 : 0;
+  const { totalInk, totalUt, saldo, sparkvot } = computeBudgetKPIs(cur);
+  const lonevxl = cur.lonevxl_mon ?? 0;
 
   function setKpi(id: string, val: string, color?: string) {
     const el = document.getElementById(id);
@@ -235,24 +221,11 @@ function recalc(): void {
     if (color) el.className = `kpi-value ${color}`;
   }
 
-  setKpi('kpi-ink',     `${fmt(totalInk)} kr`);
-  setKpi('kpi-ut',      `${fmt(totalUt - lonevxl)} kr`);
-  setKpi('kpi-saldo',   `${fmt(saldo)} kr`, saldo >= 0 ? 'green' : 'red');
-  setKpi('kpi-sparkvot',`${sparkvot.toFixed(0)} %`, sparkvot >= 25 ? 'green' : 'orange');
-
-  const ek = ekStore.get();
-  const nv =
-    ek.sparkonto_pv +
-    ek.ap_f + ek.ap_u +
-    (ek.nav_f_nok + ek.nav_u_nok) * (ek.nok_sek || 0.97) +
-    Math.max(0, ek.villa_varde - ek.villa_lan) +
-    Math.max(0, ek.lagenhet_varde - ek.lagenhet_lan) +
-    ek.lysa_f_pv + ek.lysa_u_pv + ek.buffert_u_pv +
-    ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pv + ek.kapan_pv + ek.tjp_u_pv +
-    ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv + ek.sb_u_pv + ek.dnb_u_pv +
-    ek.pp_f + ek.pp_u +
-    ek.norco_antal * ek.norco_kurs + ek.oncop_antal * ek.oncop_kurs;
-  setKpi('kpi-nv', fmtM(nv));
+  setKpi('kpi-ink',      `${fmt(totalInk)} kr`);
+  setKpi('kpi-ut',       `${fmt(totalUt - lonevxl)} kr`);
+  setKpi('kpi-saldo',    `${fmt(saldo)} kr`,         saldo    >= 0  ? 'green' : 'red');
+  setKpi('kpi-sparkvot', `${sparkvot.toFixed(0)} %`, sparkvot >= 25 ? 'green' : 'orange');
+  setKpi('kpi-nv', fmtM(computeNV(ekStore.get())));
 }
 
 document.querySelectorAll<HTMLInputElement>('.bgt-inp').forEach(inp => {

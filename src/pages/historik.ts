@@ -13,6 +13,7 @@ import {
 import { historikStore, ekStore } from '../store';
 import type { Snapshot, EkonomiData } from '../types';
 import { renderTopnav, injectInfoBtn } from '../nav';
+import { INFO } from '../infoContent';
 
 await initAuth();
 
@@ -20,31 +21,7 @@ Chart.register(LineController, CategoryScale, LinearScale, PointElement, LineEle
 
 renderTopnav('historik.html');
 
-injectInfoBtn('📈 Historik', [
-  {
-    heading: 'Vad är det här?',
-    html: `<p>Loggbok där du tar <strong>månatliga ögonblicksbilder</strong> (snapshots) av förmögenheten. Visar faktisk historik och en framåtblickande prognos mot FIRE-målet.</p>`,
-  },
-  {
-    heading: 'Vad behöver du göra?',
-    html: `<ul>
-      <li>Klicka <strong>"Spara snapshot"</strong> en gång i månaden (t.ex. sista vardagen) efter att du uppdaterat Ekonomi-fliken.</li>
-      <li>Snapshotet fångar alla balanser som de ser ut just nu.</li>
-    </ul>`,
-  },
-  {
-    heading: 'Historik-diagrammet',
-    html: `<p>Sex linjer: <strong>Privata fonder</strong> (Lysa + sparkonto + buffert), <strong>TjP & LöneVXL</strong>, <strong>TjP Norge</strong>, <strong>Allmänpension</strong> (AP + PP + NAV), <strong>Aktier</strong> och <strong>Totalt</strong>.</p>`,
-  },
-  {
-    heading: 'Prognos',
-    html: `<p>Extrapolerar totalt kapital framåt med 7 % avkastning + löpande sparande. Visar FIRE-tal (25× levnadskostnaden/år) och planerade FIRE-år som markeringar.</p>`,
-  },
-  {
-    heading: 'Mål',
-    html: `<p>Totalkurvan ska peka uppåt och prognosen ska nå FIRE-talet i tid. Identifiera månader med onormalt stort kapitalfall.</p>`,
-  },
-]);
+injectInfoBtn(INFO.historik.title, INFO.historik.sections);
 
 function fmtKr(n: number): string {
   return Math.round(n).toLocaleString('sv-SE') + ' kr';

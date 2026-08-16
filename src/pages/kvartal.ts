@@ -1,39 +1,15 @@
 import '../../src/style.css';
 import { initAuth } from '../auth';
-import { resultStore, ekStore } from '../store';
+import { resultStore, ekStore, kvartalStore } from '../store';
 import { renderTopnav, injectInfoBtn } from '../nav';
+import { INFO } from '../infoContent';
 import { initSyncWidget } from '../syncWidget';
 
 await initAuth();
 
 renderTopnav('kvartal.html');
 
-injectInfoBtn('📅 Kvartalsstrategi', [
-  {
-    heading: 'Vad är det här?',
-    html: `<p>En guided checklista inför varje kvartal baserad på <strong>Jespers uttagsstrategi</strong> (Rika tillsammans). Istället för att ta ut pengar automatiskt varje månad gör du en aktiv bedömning fyra gånger per år.</p>`,
-  },
-  {
-    heading: 'Vad behöver du göra?',
-    html: `<ul>
-      <li>Logga in på <strong>Lysa</strong> och läs av portföljens procentutveckling sedan förra kvartalet.</li>
-      <li>Ange din faktiska genomsnittliga månadsutgift (senaste 3 månaderna).</li>
-      <li>Kolla ditt buffertkontos saldo (t.ex. Borgo sparkonto).</li>
-      <li>Flytta slidern till rätt procentutveckling — appen visar sedan vad du ska göra.</li>
-    </ul>`,
-  },
-  {
-    heading: 'Målet',
-    html: `<p>Aldrig tvingas sälja fonder när marknaden är nere. Bufferten (1–1⅓ kvartalsbehov) absorberar nedgångar; uppgångar fylls på igen. Fyra reviewdatum per år: <strong>5 jan · 5 apr · 5 jul · 5 okt</strong>.</p>`,
-  },
-  {
-    heading: 'Nyckeltal',
-    html: `<ul>
-      <li><strong>Kvartalsbehov</strong> = (faktisk utgift − aktiva pensioner) × 3</li>
-      <li><strong>Buffertmål</strong> = 4/3 × kvartalsbehov (≈ ett kvartal + 33 % kudde)</li>
-    </ul>`,
-  },
-]);
+injectInfoBtn(INFO.kvartal.title, INFO.kvartal.sections);
 
 function fmt(n: number) { return Math.round(n).toLocaleString('sv-SE') + ' kr'; }
 
@@ -41,7 +17,7 @@ function fmt(n: number) { return Math.round(n).toLocaleString('sv-SE') + ' kr'; 
 function activePensionsMon(): number {
   const yr = new Date().getFullYear();
   let total = 0;
-  for (let i = 1; i <= 8; i++) {
+  for (let i = 1; i <= 10; i++) {
     const from = resultStore.getNum(`p${i}_from`);
     const to   = resultStore.getNum(`p${i}_to`, 9999);
     const mon  = resultStore.getNum(`p${i}_monthly`);
@@ -50,18 +26,10 @@ function activePensionsMon(): number {
   return total;
 }
 
-// ── localStorage ──────────────────────────────────────────────────────────────
-const LS = {
-  faktisk: 'vek_kv_faktisk_mon',
-  pension: 'vek_kv_pension_mon',
-  buffert: 'vek_kv_buffert',
-  rorelse: 'vek_kv_rorelse',
-};
-function getLS(key: string, fallback: number): number {
-  const v = localStorage.getItem(key);
-  return v !== null && !isNaN(parseFloat(v)) ? parseFloat(v) : fallback;
-}
+// ── Sparade värden ────────────────────────────────────────────────────────────
+const saved = kvartalStore.get();
 
+// Fallback-värden om ännu ej inmatade
 const defaultFaktisk = ekStore.getField('levnadskostnad');
 const defaultPension = activePensionsMon();
 const defaultBuffert = ekStore.getField('sparkonto_pv');
@@ -72,15 +40,15 @@ const inpPension = document.getElementById('inp-pension') as HTMLInputElement;
 const inpBuffert = document.getElementById('inp-buffert') as HTMLInputElement;
 const slRorelse  = document.getElementById('sl-rorelse')  as HTMLInputElement;
 
-inpFaktisk.value = String(getLS(LS.faktisk, defaultFaktisk));
-inpPension.value = String(getLS(LS.pension, defaultPension));
-inpBuffert.value = String(getLS(LS.buffert, defaultBuffert));
-slRorelse.value  = String(getLS(LS.rorelse, 0));
+inpFaktisk.value = String(saved.faktisk || defaultFaktisk);
+inpPension.value = String(saved.pension || defaultPension);
+inpBuffert.value = String(saved.buffert || defaultBuffert);
+slRorelse.value  = String(saved.rorelse);
 
-inpFaktisk.addEventListener('input', () => { localStorage.setItem(LS.faktisk, inpFaktisk.value); render(); });
-inpPension.addEventListener('input', () => { localStorage.setItem(LS.pension, inpPension.value); render(); });
-inpBuffert.addEventListener('input', () => { localStorage.setItem(LS.buffert, inpBuffert.value); render(); });
-slRorelse.addEventListener('input',  () => { localStorage.setItem(LS.rorelse, slRorelse.value);  render(); });
+inpFaktisk.addEventListener('input', () => { kvartalStore.setField('faktisk', parseFloat(inpFaktisk.value) || 0); render(); });
+inpPension.addEventListener('input', () => { kvartalStore.setField('pension', parseFloat(inpPension.value) || 0); render(); });
+inpBuffert.addEventListener('input', () => { kvartalStore.setField('buffert', parseFloat(inpBuffert.value) || 0); render(); });
+slRorelse.addEventListener('input',  () => { kvartalStore.setField('rorelse', parseFloat(slRorelse.value)  || 0); render(); });
 
 // ── Scenariologik (Jespers regler) ────────────────────────────────────────────
 type Scenario = {

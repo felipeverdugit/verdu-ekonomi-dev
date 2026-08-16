@@ -6,7 +6,7 @@
  * på ett ställe.
  */
 
-import type { EkonomiData, FireSettings, Snapshot, BudgetData } from './types';
+import type { EkonomiData, FireSettings, Snapshot, BudgetData, KvartalData, AvkastningData, AvkRow, AvkStartValues } from './types';
 import { SLIDER_DEFAULTS, ALLMAN_DEFAULTS } from './constants';
 
 // ── Nyckelprefix ──────────────────────────────────────────────────────────────
@@ -25,6 +25,20 @@ const K = {
 
   // Historik
   historik: 'vek_historik',
+
+  // Kvartalsinmatning
+  kv: {
+    faktisk: 'vek_kv_faktisk_mon',
+    pension: 'vek_kv_pension_mon',
+    buffert: 'vek_kv_buffert',
+    rorelse: 'vek_kv_rorelse',
+  },
+
+  // Avkastningslogg
+  avk: {
+    rows:  'vek_avk_rows',
+    start: 'vek_avk_start',
+  },
 } as const;
 
 // ── Hjälpfunktioner ────────────────────────────────────────────────────────────
@@ -70,7 +84,6 @@ const EK_DEFAULTS: EkonomiData = {
   norsk_u: ALLMAN_DEFAULTS.ulrikaUSE,
   levnadskostnad: 65_000, levnadskostnad2: 50_000,
   exp_switch_ar: 10,
-  exp_f: 0, exp_u: 0,
   villa_varde: 5_300_000, villa_lan: 3_569_946, villa_amor: 4_650,
   lagenhet_varde: 1_850_000, lagenhet_lan: 1_249_574, lagenhet_amor: 0,
 };
@@ -118,7 +131,6 @@ export const fireStore = {
       borgoRanta:   getNum(K.fire('borgoRanta'),    FIRE_DEFAULTS.borgoRanta),
       lonehojF:     getNum(K.fire('lonehojF'),      FIRE_DEFAULTS.lonehojF),
       lonehojU:     getNum(K.fire('lonehojU'),      FIRE_DEFAULTS.lonehojU),
-      sparandel:    getNum(K.fire('sparandel'),     FIRE_DEFAULTS.sparandel),
       fTjpAge:      getNum(K.fire('fTjpAge'),       FIRE_DEFAULTS.fTjpAge),
       fNorskTjpAge: getNum(K.fire('fNorskTjpAge'),  FIRE_DEFAULTS.fNorskTjpAge),
       uTjpAge:      getNum(K.fire('uTjpAge'),       FIRE_DEFAULTS.uTjpAge),
@@ -221,5 +233,58 @@ export const budgetStore = {
   },
   getField(field: keyof BudgetData): number {
     return getNum(K.bgt(field), BUDGET_DEFAULTS[field]);
+  },
+};
+
+// ── KvartalData ───────────────────────────────────────────────────────────────
+const KV_DEFAULTS: KvartalData = { faktisk: 0, pension: 0, buffert: 0, rorelse: 0 };
+
+export const kvartalStore = {
+  get(): KvartalData {
+    return {
+      faktisk: getNum(K.kv.faktisk, KV_DEFAULTS.faktisk),
+      pension: getNum(K.kv.pension, KV_DEFAULTS.pension),
+      buffert: getNum(K.kv.buffert, KV_DEFAULTS.buffert),
+      rorelse: getNum(K.kv.rorelse, KV_DEFAULTS.rorelse),
+    };
+  },
+  set(kv: KvartalData): void {
+    setNum(K.kv.faktisk, kv.faktisk);
+    setNum(K.kv.pension, kv.pension);
+    setNum(K.kv.buffert, kv.buffert);
+    setNum(K.kv.rorelse, kv.rorelse);
+  },
+  setField(field: keyof KvartalData, val: number): void {
+    setNum(K.kv[field], val);
+  },
+};
+
+// ── AvkastningData ────────────────────────────────────────────────────────────
+const AVK_START_DEFAULTS: AvkStartValues = {
+  year: new Date().getFullYear() - 1,
+  lysaKr: 0, tjpSveKr: 0, tjpNorKr: 0,
+};
+
+export const avkastningStore = {
+  getRows(): AvkRow[] {
+    try { return JSON.parse(localStorage.getItem(K.avk.rows) ?? '[]'); }
+    catch { return []; }
+  },
+  getStart(): AvkStartValues {
+    try { return JSON.parse(localStorage.getItem(K.avk.start) ?? 'null') ?? AVK_START_DEFAULTS; }
+    catch { return AVK_START_DEFAULTS; }
+  },
+  get(): AvkastningData {
+    return { rows: this.getRows(), start: this.getStart() };
+  },
+  saveRows(rows: AvkRow[]): void {
+    localStorage.setItem(K.avk.rows, JSON.stringify(rows));
+  },
+  saveStart(start: AvkStartValues): void {
+    localStorage.setItem(K.avk.start, JSON.stringify(start));
+  },
+  save(data: AvkastningData): void {
+    this.saveRows(data.rows);
+    this.saveStart(data.start);
   },
 };

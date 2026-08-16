@@ -1,9 +1,10 @@
 import '../../src/style.css';
 import { initAuth } from '../auth';
 import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend } from 'chart.js';
-import { computeFire } from '../calculations';
+import { computeFire, incomeTax } from '../calculations';
 import { ekStore, fireStore } from '../store';
 import { renderTopnav, injectInfoBtn } from '../nav';
+import { INFO } from '../infoContent';
 import { PEOPLE } from '../constants';
 
 await initAuth();
@@ -12,64 +13,9 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryS
 
 renderTopnav('skatt.html');
 
-injectInfoBtn('🧾 Skatteanalys', [
-  {
-    heading: 'Vad är det här?',
-    html: `<p>Jämför <strong>schablonmässig flat-skatt</strong> (din slider i Brygga) mot <strong>faktisk progressiv inkomstskatt</strong> för varje år från FIRE-start. Visar hur mycket du faktiskt betalar — och vad du sparar jämfört med ett förenklat antagande.</p>`,
-  },
-  {
-    heading: 'Tabellen & grafen',
-    html: `<ul>
-      <li>År-för-år-rad med Felipe och Ulrikas bruttopension, flat-skatt och progressiv skatt.</li>
-      <li>Progressiv beräkning inkluderar <strong>förhöjt grundavdrag</strong> för pensionärer 65+ (31 % kommunalskatt + 20 % statlig skatt över 615 300 kr/år).</li>
-      <li>Grafen visar effektiv skatteprocent över tid — jämfört med din flat-rate-slider.</li>
-      <li><strong>Besparing</strong> = total flat-skattepost minus total progressiv skatt (positivt = progressiv är lägre).</li>
-    </ul>`,
-  },
-  {
-    heading: 'ISK-schablonskatt',
-    html: `<ul>
-      <li>Lysa-konton beskattas med en schablonintäkt — justeras via ISK-slidern i Brygga (standard 1,25 %).</li>
-      <li>Betalas <strong>oavsett om du tar ut pengar eller inte</strong>.</li>
-      <li>Uttag från ISK räknas inte som inkomst → ingen extra inkomstskatt vid uttaget.</li>
-    </ul>`,
-  },
-  {
-    heading: 'Vad behöver du göra?',
-    html: `<p>Sätt flat-skatt-slidern i Brygga till din bästa uppskattning. Jämför sedan mot den progressiva kolumnen — om progressiv är lägre är din plan konservativt skatteberäknad (bra).</p>`,
-  },
-]);
+injectInfoBtn(INFO.skatt.title, INFO.skatt.sections);
 
-const KOMMUNAL       = 0.31;
-const STATLIG_GRANS  = 615_300;
-const STATLIG_RATE   = 0.20;
-
-// ── Skatteberäkning ────────────────────────────────────────────────────────────
-
-/** Förhöjt grundavdrag för pensionärer 65+ (approximation SKV 2024) */
-function fga65(annual: number): number {
-  if (annual <= 134_600) return annual;            // helt skattefritt
-  if (annual <= 220_000) return 134_600;
-  if (annual <= 450_000) return 134_600 + 0.08 * (annual - 220_000);
-  if (annual <= 615_300) return Math.max(85_000, 152_000 - 0.08 * (annual - 450_000));
-  return Math.max(75_000, 140_000 - 0.08 * (annual - 450_000));
-}
-
-/** Grundavdrag för ej-pensionärer (<65) */
-function ga(annual: number): number {
-  if (annual <= 134_600) return annual;
-  return 13_900; // förenkling för höga inkomster
-}
-
-/** Progressiv inkomstskatt — isPensioner = 65+ (förhöjt grundavdrag) */
-function pensionTax(annualGross: number, isPensioner: boolean): number {
-  if (annualGross <= 0) return 0;
-  const avdrag   = isPensioner ? fga65(annualGross) : ga(annualGross);
-  const taxable  = Math.max(0, annualGross - avdrag);
-  const kommunal = taxable * KOMMUNAL;
-  const statlig  = Math.max(0, annualGross - STATLIG_GRANS) * STATLIG_RATE;
-  return Math.round(kommunal + statlig);
-}
+// KOMMUNAL, STATLIG_GRANS, STATLIG_RATE och incomeTax importeras från calculations.ts
 
 function fmt(n: number)  { return Math.round(n).toLocaleString('sv-SE') + ' kr'; }
 function fmtM(n: number) { return (Math.abs(n) / 1e6).toFixed(2) + ' MSEK'; }
@@ -115,10 +61,10 @@ function render(): void {
       year: yr,
       fGrossAnn,
       fTax30:   Math.round(fGrossAnn * flatRate),
-      fTaxProg: pensionTax(fGrossAnn, fAge >= 65),
+      fTaxProg: incomeTax(fGrossAnn, fAge >= 65),
       uGrossAnn,
       uTax30:   Math.round(uGrossAnn * flatRate),
-      uTaxProg: pensionTax(uGrossAnn, uAge >= 65),
+      uTaxProg: incomeTax(uGrossAnn, uAge >= 65),
     });
   }
 

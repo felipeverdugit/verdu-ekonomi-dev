@@ -3,6 +3,7 @@ import { initAuth } from '../auth';
 import { ekStore } from '../store';
 import { KREDITKORT } from '../constants';
 import { renderTopnav, injectInfoBtn } from '../nav';
+import { INFO } from '../infoContent';
 import type { EkonomiData } from '../types';
 
 await initAuth();
@@ -10,33 +11,7 @@ await initAuth();
 // ── Navigation ─────────────────────────────────────────────────────────────────
 renderTopnav('hinkar.html');
 
-injectInfoBtn('🪣 Hink-strategi', [
-  {
-    heading: 'Vad är det här?',
-    html: `<p>Kapitalet delas upp i <strong>fyra hinkar</strong> efter risk och tidshorisont. Det gör det lättare att hantera marknadsrörelser utan panik — du vet alltid vilken hink du tar ifrån.</p>`,
-  },
-  {
-    heading: 'De fyra hinkarna',
-    html: `<ul>
-      <li>🟢 <strong>Hink 1 — Likviditet</strong>: Sparkonto/buffert. Täcker 3–6 månaders utgifter. Noll marknadsrisk. Det är härifrån du betalar räkningar.</li>
-      <li>🔵 <strong>Hink 2 — Trygghet</strong>: AP (inkomstpension), NAV (norsk pension), fastigheter (villa + lägenhet equity). Låg risk, ej likvida men stabila.</li>
-      <li>🟣 <strong>Hink 3 — Tillväxt</strong>: Lysa-fonder, TjP Sverige, TjP Norge, PP. Hög förväntad avkastning på lång sikt — rörs inte vid kortsiktiga nedgångar.</li>
-      <li>🎲 <strong>Hink 4 — Lek</strong>: Enskilda aktier (NorCo, OncoP). Spekulativt — max 10 % av hink 3. Förlust av hela beloppet ska inte påverka planen.</li>
-    </ul>`,
-  },
-  {
-    heading: 'Målet',
-    html: `<ul>
-      <li>Hink 1 täcker alltid <strong>minst 3 månaders</strong> utgifter (helst 6).</li>
-      <li>Hink 4 håller sig under <strong>10 % av hink 3</strong>.</li>
-      <li>Kvartalstrategin fyller på hink 1 från hink 3 vid uppgång och tär på hink 1 vid nedgång.</li>
-    </ul>`,
-  },
-  {
-    heading: 'Vad behöver du göra?',
-    html: `<p>Kontrollera att hink 1 är tillräckligt stor och att lek-andelen (hink 4) inte driftat för högt. Rikedomstrappan nedanför visar din ekonomiska nivå baserat på hinkarna.</p>`,
-  },
-]);
+injectInfoBtn(INFO.hinkar.title, INFO.hinkar.sections);
 
 // ── Formatering ────────────────────────────────────────────────────────────────
 function fmt(n: number)  { return Math.round(n).toLocaleString('sv-SE') + ' kr'; }

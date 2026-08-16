@@ -9,9 +9,7 @@ export const FAST_TJP_FELIPE = 2353; // KPA 334 + Alecta 1637 + Kåpan 382 kr/m�
 export const FAST_TJP_AGE    = 65;   // Livsvarig från 65 år
 
 // Norsk OTP (privat tjänstepension) betalas ut 62→77 år (15 år)
-export const NORSK_TJP_START_AGE = 62;
-export const NORSK_TJP_END_AGE   = 77;
-export const NORSK_TJP_PERIOD    = NORSK_TJP_END_AGE - NORSK_TJP_START_AGE; // 15 år
+export const NORSK_TJP_END_AGE = 77; // Norsk OTP betalas ut t.o.m. 77 år (start styrs av slider)
 
 // ── Allmänpension — default-estimat (skrivs över av calcAP) ──────────────────
 // Garantipension nollställs pga EES 883/2004-samordning med norsk garantipensjon
@@ -42,7 +40,6 @@ export const SLIDER_DEFAULTS = {
   borgoRanta:   2.3,   // Borgensränta / sparkonto %
   lonehojF:       0,   // Löneökning Felipe %
   lonehojU:       0,   // Löneökning Ulrika %
-  sparandel:    100,   // Andel av nettolön som sparas %
   fTjpAge:       65,   // Felipe: Svensk TjP startålder
   fNorskTjpAge:  62,   // Felipe: Norsk TjP startålder
   uTjpAge:       65,   // Ulrika: Svensk TjP startålder
@@ -62,7 +59,6 @@ export const SLIDER_RANGES = {
   borgoRanta:    { min: 0,  max: 6,  step: 0.1 },
   lonehojF:      { min: 0,  max: 10, step: 0.5 },
   lonehojU:      { min: 0,  max: 10, step: 0.5 },
-  sparandel:     { min: 10, max: 100,step: 5   },
   fTjpAge:       { min: 55, max: 70, step: 1   },
   fNorskTjpAge:  { min: 62, max: 70, step: 1   },
   uTjpAge:       { min: 55, max: 70, step: 1   },
@@ -126,6 +122,10 @@ export const KREDITKORT = [
   { label: 'MC — LF (#2)',    limit: 30_000 },
   { label: 'VISA — Norwegian', limit: 150_000 },
 ] as const;
+
+// ── Chart.js-färger (dark theme) ─────────────────────────────────────────────
+export const CHART_DARK_GRID = '#2d3348';
+export const CHART_DARK_TEXT = '#8892a4';
 
 // ── Sidonavigation ────────────────────────────────────────────────────────────
 export const NAV_LINKS = [
