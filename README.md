@@ -20,6 +20,7 @@ Personligt ekonomi- och FIRE-planeringsverktyg för familjen Verdu. Simulerar br
 ## Tech stack
 
 - **Vite** — MPA-byggverktyg (10 HTML-ingångspunkter)
+- **Svelte 5** — reaktiva komponenter (runes-läge: `$state`, `$derived`, `$effect`)
 - **TypeScript** — strikt typad källkod
 - **Chart.js** — diagram
 - **Firebase Realtime Database** — anonym auth, synk mellan enheter via `/verdu/*`
@@ -31,13 +32,19 @@ Personligt ekonomi- och FIRE-planeringsverktyg för familjen Verdu. Simulerar br
 ```
 src/
   calculations.ts   # Ren beräkningsmotor (fv, pmt, computeFire, simulateUttag, incomeTax)
-  store.ts          # Typad localStorage-wrapper (ekStore, fireStore, resultStore, ...)
+  store.ts          # Typad localStorage-wrapper (ekStore, fireStore, budgetStore, ...)
   types.ts          # Delade TypeScript-interfaces
   constants.ts      # Personkonstanter, slider-gränser, chart-färger
   infoContent.ts    # Centraliserat innehåll för info-modaler (alla 10 sidor)
-  nav.ts            # Topnav + info-knapp
+  nav.ts            # Topnav + info-knapp (renderTopnav, injectInfoBtn)
   auth.ts           # Firebase anonym auth
-  pages/            # En .ts per sida
+  pages/
+    *.svelte        # Svelte 5 komponent per sida (runes-läge, $state/$derived/$effect)
+    *.ts            # Tunn mount-script: mount(Component, { target: document.body })
+  components/
+    Topnav.svelte   # Navigationsfält (ej aktiv — renderTopnav() körs imperativt via nav.ts)
+    SliderRow.svelte
+    FormRow.svelte
   __tests__/        # Vitest-tester
 ```
 
@@ -45,11 +52,14 @@ src/
 
 ```
 ekonomi.html  →  ekStore (vek_ek_*)
-fire.html     →  fireStore (vek_fire_*) + resultStore (vek_res_p1..p10, kapital, ...)
-uttag.html    ←  resultStore (läses, simuleras)
-kvartal.html  ←  resultStore (läses)
+fire.html     →  fireStore (vek_fire_*)
+uttag.html    ←  computeFire(ekStore.get(), fireStore.get()) — direkt anrop, ingen mellanlagring
+kvartal.html  ←  computeFire() direkt
 skatt.html    ←  computeFire() direkt
 ```
+
+Tidigare lagrades beräknade resultat i `resultStore` (vek_res_*) och lästes av uttag/kvartal.
+Sedan v2 anropar alla sidor `computeFire()` direkt — ingen beroende av mellanlager.
 
 ### Skattberäkning
 
@@ -77,7 +87,7 @@ Ovanpå kommunalskatt (31 %) tillkommer 20 % statlig skatt på inkomst över 615
 | 9 | NAV (norsk statspension) | Ulrika | Ja |
 | 10 | NAV (norsk statspension) | Felipe | Ja |
 
-Belopp lagras i `resultStore` av `fire.html` vid varje omräkning och läses av `uttag.html` och `kvartal.html`.
+Belopp beräknas av `computeFire()` och används direkt av alla sidor utan mellanlager.
 
 ## Köra lokalt
 
@@ -95,7 +105,6 @@ npm run deploy    # Bygg + publicera till GitHub Pages
 |---|---|
 | `vek_ek_*` | EkonomiData (portföljvärden, löner) |
 | `vek_fire_*` | FireSettings (sliders, antaganden) |
-| `vek_res_*` | Beräknade resultat (pension-strömmar, kapital) |
 | `vek_bgt_*` | BudgetData |
 | `vek_kv_*` | KvartalData |
 | `vek_avk_*` | Avkastningslogg |

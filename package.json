@@ -18,7 +18,9 @@
     "vitest": "^4.1.10"
   },
   "dependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "chart.js": "^4.5.1",
-    "firebase": "^12.17.0"
+    "firebase": "^12.17.0",
+    "svelte": "^5.56.9"
   }
 }

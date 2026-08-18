@@ -8,7 +8,7 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-  fv, pmt, computeNV, computeFire, incomeTax, simulateUttag, STATLIG_GRANS, KOMMUNAL,
+  pmt, computeNV, computeFire, incomeTax, simulateUttag, STATLIG_GRANS, KOMMUNAL,
 } from '../calculations';
 import type { EkonomiData, FireSettings, PensionStream } from '../types';
 import { PEOPLE, ALLMAN_DEFAULTS, FAST_TJP_FELIPE, NORSK_TJP_END_AGE } from '../constants';

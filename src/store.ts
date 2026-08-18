@@ -20,9 +20,6 @@ const K = {
   // Budget (månadsöversikt)
   bgt: (field: keyof BudgetData) => `vek_bgt_${field}`,
 
-  // Beräknade resultat som uttag.html läser (skrivs av fire.html)
-  result: (field: string) => `vek_res_${field}`,
-
   // Historik
   historik: 'vek_historik',
 
@@ -149,20 +146,6 @@ export const fireStore = {
   },
 };
 
-// ── Resultat-export (fire.html → uttag.html) ──────────────────────────────────
-export const resultStore = {
-  write(fields: Record<string, number | string>): void {
-    Object.entries(fields).forEach(([k, v]) => localStorage.setItem(K.result(k), String(v)));
-  },
-  getNum(field: string, fallback = 0): number {
-    return getNum(K.result(field), fallback);
-  },
-  getString(field: string, fallback = ''): string {
-    return localStorage.getItem(K.result(field)) ?? fallback;
-  },
-  // Nyckeln uttag.html lyssnar på för att veta att data uppdaterats
-  TRIGGER_KEY: K.result('updated_at'),
-};
 
 // ── Historik ──────────────────────────────────────────────────────────────────
 export const historikStore = {
