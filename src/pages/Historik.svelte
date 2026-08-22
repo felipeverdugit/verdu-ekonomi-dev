@@ -101,8 +101,8 @@
   });
 
   // ── Charts ────────────────────────────────────────────────────────────────────
-  let histCanvas:    HTMLCanvasElement;
-  let prognosCanvas: HTMLCanvasElement;
+  let histCanvas    = $state<HTMLCanvasElement>(null!);
+  let prognosCanvas = $state<HTMLCanvasElement>(null!);
   let chartInst:     Chart | null = null;
   let prognosInst:   Chart | null = null;
 
@@ -165,7 +165,7 @@
   }
 
   $effect(() => {
-    void snaps;
+    void snaps; void histCanvas; void prognosCanvas;
     buildHistChart();
     buildPrognosChart();
   });

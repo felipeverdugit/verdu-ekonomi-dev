@@ -84,7 +84,7 @@
   }
 
   // ── Chart ─────────────────────────────────────────────────────────────────────
-  let chartCanvas: HTMLCanvasElement;
+  let chartCanvas = $state<HTMLCanvasElement>(null!);
   let nvChart: Chart | null = null;
 
   const NV_LABELS = [
@@ -117,7 +117,7 @@
     });
   }
 
-  $effect(() => { void data; buildChart(); });
+  $effect(() => { void data; void chartCanvas; buildChart(); });
 
   function onStorage(e: StorageEvent) {
     if (e.key?.startsWith('vek_')) { data = compute(); }
@@ -128,7 +128,6 @@
     renderTopnav('index.html');
     injectInfoBtn(INFO.index.title, INFO.index.sections);
     window.addEventListener('storage', onStorage);
-    buildChart();
   });
 
   onDestroy(() => {

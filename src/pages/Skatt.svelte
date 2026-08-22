@@ -64,7 +64,7 @@
   let data = $state(compute());
 
   // ── Canvas ────────────────────────────────────────────────────────────────────
-  let canvas: HTMLCanvasElement;
+  let canvas = $state<HTMLCanvasElement>(null!);
   let chart: Chart | null = null;
 
   function buildChart() {
@@ -96,8 +96,7 @@
   }
 
   $effect(() => {
-    // Reaktiv: bygg om chart när data ändras
-    void data;
+    void data; void canvas;
     buildChart();
   });
 

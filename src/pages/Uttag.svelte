@@ -95,7 +95,7 @@
   });
 
   // ── Chart ─────────────────────────────────────────────────────────────────────
-  let chartCanvas: HTMLCanvasElement;
+  let chartCanvas = $state<HTMLCanvasElement>(null!);
   let chart: Chart | null = null;
 
   function buildChart() {
@@ -125,7 +125,7 @@
     });
   }
 
-  $effect(() => { void data; buildChart(); });
+  $effect(() => { void data; void chartCanvas; buildChart(); });
 
   function onStorage(e: StorageEvent) {
     if (e.key?.startsWith('vek_ek_') || e.key?.startsWith('vek_fire_')) data = computeAll();

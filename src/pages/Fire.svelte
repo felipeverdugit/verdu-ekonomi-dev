@@ -62,8 +62,8 @@
   const today = new Date().getFullYear();
 
   // ── Charts ────────────────────────────────────────────────────────────────────
-  let pieCanvas:    HTMLCanvasElement;
-  let uttaksCanvas: HTMLCanvasElement;
+  let pieCanvas    = $state<HTMLCanvasElement>(null!);
+  let uttaksCanvas = $state<HTMLCanvasElement>(null!);
   let pieChart:     Chart | null = null;
   let uttaksChart:  Chart | null = null;
 
@@ -120,7 +120,7 @@
   }
 
   $effect(() => {
-    void r;
+    void r; void pieCanvas; void uttaksCanvas;
     buildPieChart(r);
     buildUttaksChart(r);
   });
