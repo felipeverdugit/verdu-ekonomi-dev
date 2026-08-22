@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Topnav from '../components/Topnav.svelte';
   import { onMount, onDestroy } from 'svelte';
   import {
     Chart, LineController, CategoryScale, LinearScale,
@@ -186,7 +187,6 @@
 
   onMount(async () => {
     await initAuth();
-    renderTopnav('historik.html');
     injectInfoBtn(INFO.historik.title, INFO.historik.sections);
     seedIfEmpty();
     loadSnaps();
@@ -201,7 +201,7 @@
 <svelte:head><title>Historik — Verdu Ekonomi</title></svelte:head>
 
 <div class="page">
-  <nav class="topnav" id="topnav"></nav>
+  <Topnav active="historik.html" />
 
   <h1>📊 Historik</h1>
   <p class="subtitle">Spara snapshot av nuläget · Se trenden över tid · Jämför mot prognos.</p>

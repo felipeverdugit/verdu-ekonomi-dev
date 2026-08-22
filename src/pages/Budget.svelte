@@ -1,9 +1,9 @@
 <script lang="ts">
+  import Topnav from '../components/Topnav.svelte';
   import { onMount } from 'svelte';
   import { initAuth } from '../auth';
   import { budgetStore, ekStore } from '../store';
   import { computeNV } from '../calculations';
-  import { initSyncWidget } from '../syncWidget';
   import { renderTopnav, injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
   import type { BudgetData } from '../types';
@@ -132,7 +132,6 @@
 
   onMount(async () => {
     await initAuth();
-    renderTopnav('budget.html');
     injectInfoBtn(INFO.budget.title, INFO.budget.sections);
   });
 </script>
@@ -142,7 +141,7 @@
 </svelte:head>
 
 <div class="page">
-  <nav class="topnav" id="topnav"></nav>
+  <Topnav active="budget.html" />
 
   <h1>📋 Budget</h1>
   <p class="subtitle">Månadsöversikt · Redigera värden direkt i tabellen · Sparas automatiskt</p>

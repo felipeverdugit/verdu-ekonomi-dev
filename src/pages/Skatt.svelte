@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Topnav from '../components/Topnav.svelte';
   import { onMount, onDestroy } from 'svelte';
   import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend } from 'chart.js';
   import { initAuth } from '../auth';
@@ -102,7 +103,6 @@
 
   onMount(async () => {
     await initAuth();
-    renderTopnav('skatt.html');
     injectInfoBtn(INFO.skatt.title, INFO.skatt.sections);
     buildChart();
     window.addEventListener('storage', onStorage);
@@ -121,7 +121,7 @@
 <svelte:head><title>Skatt-optimering — Verdu Ekonomi</title></svelte:head>
 
 <div class="page">
-  <nav class="topnav" id="topnav"></nav>
+  <Topnav active="skatt.html" />
 
   <h1>🧾 Skatt-optimering</h1>
   <p class="subtitle">Progressiv skatt per person vs. schablonmässig 30 % · Förhöjt grundavdrag 65+ · Kommunalskatt 31 % · Statlig skatt &gt;615 300 kr/år</p>

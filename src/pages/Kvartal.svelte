@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Topnav from '../components/Topnav.svelte';
   import { onMount } from 'svelte';
   import { initAuth } from '../auth';
   import { ekStore, fireStore, kvartalStore } from '../store';
@@ -147,7 +148,6 @@
 
   onMount(async () => {
     await initAuth();
-    renderTopnav('kvartal.html');
     injectInfoBtn(INFO.kvartal.title, INFO.kvartal.sections);
   });
 </script>
@@ -157,7 +157,7 @@
 </svelte:head>
 
 <div class="page">
-  <nav class="topnav" id="topnav"></nav>
+  <Topnav active="kvartal.html" />
 
   <h1>📅 Kvartalsstrategi</h1>
   <p class="subtitle">Inför varje kvartal — summera faktiska utgifter, ange börsutvecklingen, följ reglerna. Baserat på Jespers uttagsstrategi.</p>

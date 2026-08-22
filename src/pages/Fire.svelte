@@ -158,7 +158,7 @@
 <svelte:head><title>Brygga-simulator — Verdu Ekonomi</title></svelte:head>
 
 <div class="page">
-  <nav class="topnav" id="topnav"></nav>
+  <Topnav active="fire.html" onPull={() => { s = fireStore.get(); }} />
   <h1>🌉 Brygga-simulator</h1>
   <p class="subtitle">Genererad {new Date().toLocaleDateString('sv-SE')} · Levnadskostnad {fmt(ekStore.get().levnadskostnad)}/mån</p>
 

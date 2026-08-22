@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Topnav from '../components/Topnav.svelte';
   import { onMount, onDestroy } from 'svelte';
   import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
   import { initAuth } from '../auth';
@@ -125,7 +126,6 @@
 
   onMount(async () => {
     await initAuth();
-    renderTopnav('index.html');
     injectInfoBtn(INFO.index.title, INFO.index.sections);
     window.addEventListener('storage', onStorage);
   });
@@ -139,7 +139,7 @@
 <svelte:head><title>Dashboard — Verdu Ekonomi</title></svelte:head>
 
 <div class="page">
-  <nav class="topnav" id="topnav"></nav>
+  <Topnav active="index.html" />
 
   <h1>Verdu Ekonomi</h1>
   <p class="subtitle">Din brygga-plan i ett ögonkast.</p>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Topnav from '../components/Topnav.svelte';
   import { onMount, onDestroy } from 'svelte';
   import { initAuth } from '../auth';
   import { ekStore } from '../store';
@@ -171,7 +172,6 @@
 
   onMount(async () => {
     await initAuth();
-    renderTopnav('hinkar.html');
     injectInfoBtn(INFO.hinkar.title, INFO.hinkar.sections);
     window.addEventListener('storage', onStorage);
   });
@@ -182,7 +182,7 @@
 <svelte:head><title>Fyra Hinkar — Verdu Ekonomi</title></svelte:head>
 
 <div class="page">
-  <nav class="topnav" id="topnav"></nav>
+  <Topnav active="hinkar.html" />
 
   <h1>🪣 Fyra Hinkar</h1>
   <p class="subtitle">Nuläge per hink · Synkas automatiskt från Ekonomi-sidan.</p>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Topnav from '../components/Topnav.svelte';
   import { onMount, onDestroy } from 'svelte';
   import {
     Chart, BarController, BarElement, LineController, LineElement,
@@ -8,7 +9,6 @@
   import { fireStore, avkastningStore } from '../store';
   import { renderTopnav, injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
-  import { initSyncWidget } from '../syncWidget';
   import type { AvkRow, AvkStartValues } from '../types';
 
   Chart.register(BarController, BarElement, LineController, LineElement,
@@ -182,9 +182,7 @@
 
   onMount(async () => {
     await initAuth();
-    renderTopnav('avkastning.html');
     injectInfoBtn(INFO.avkastning.title, INFO.avkastning.sections);
-    initSyncWidget();
     window.addEventListener('storage', onStorage);
   });
 
@@ -200,7 +198,7 @@
 <svelte:head><title>Avkastning — Verdu Ekonomi</title></svelte:head>
 
 <div class="page">
-  <nav class="topnav" id="topnav"></nav>
+  <Topnav active="avkastning.html" />
 
   <h1>📈 Avkastning</h1>
   <p class="subtitle">Faktisk avkastning per år · Jämförelse mot antagen avkastning · Kr-simulation</p>

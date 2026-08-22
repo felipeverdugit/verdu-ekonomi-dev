@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Topnav from '../components/Topnav.svelte';
   import { onMount, onDestroy } from 'svelte';
   import {
     Chart, LineController, LineElement, PointElement,
@@ -133,7 +134,6 @@
 
   onMount(async () => {
     await initAuth();
-    renderTopnav('uttag.html');
     injectInfoBtn(INFO.uttag.title, INFO.uttag.sections);
     window.addEventListener('storage', onStorage);
     window.addEventListener('pageshow', (e) => { if (e.persisted) data = computeAll(); });
@@ -149,7 +149,7 @@
 <svelte:head><title>Uttagsstrategi — Verdu Ekonomi</title></svelte:head>
 
 <div class="page">
-  <nav class="topnav" id="topnav"></nav>
+  <Topnav active="uttag.html" />
 
   <h1>📤 Uttagsstrategi</h1>
   <p class="subtitle">Simulera hur länge kapitalet räcker · Skatteoptimering per år</p>

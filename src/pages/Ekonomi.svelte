@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Topnav from '../components/Topnav.svelte';
   import { onMount } from 'svelte';
   import { initAuth } from '../auth';
   import { ekStore, fireStore } from '../store';
@@ -81,7 +82,6 @@
 
   onMount(async () => {
     await initAuth();
-    renderTopnav('ekonomi.html');
     injectInfoBtn(INFO.ekonomi.title, INFO.ekonomi.sections);
 
     // Auto-sync om data saknas
@@ -97,7 +97,7 @@
 <svelte:head><title>Ekonomi — Verdu Ekonomi</title></svelte:head>
 
 <div class="page">
-  <nav class="topnav" id="topnav"></nav>
+  <Topnav active="ekonomi.html" />
 
   <h1>💰 Ekonomi</h1>
   <p class="subtitle">Mata in alla portföljvärden och inkomster. Sparas automatiskt i webbläsaren.</p>
