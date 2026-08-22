@@ -8,9 +8,9 @@
   import { computeFire, simulateUttag } from '../calculations';
   import { ekStore, fireStore } from '../store';
   import { SLIDER_RANGES, CHART_DARK_GRID, CHART_DARK_TEXT } from '../constants';
-  import { renderTopnav, injectInfoBtn } from '../nav';
+  import Topnav from '../components/Topnav.svelte';
+  import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
-  import { initSyncWidget } from '../syncWidget';
   import type { FireResult, FireSettings } from '../types';
 
   Chart.register(ArcElement, DoughnutController, LineController, LineElement,
@@ -142,9 +142,7 @@
 
   onMount(async () => {
     await initAuth();
-    renderTopnav('fire.html');
     injectInfoBtn(INFO.fire.title, INFO.fire.sections);
-    initSyncWidget(() => { s = fireStore.get(); });
     window.addEventListener('storage', onStorage);
   });
 
