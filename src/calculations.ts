@@ -80,7 +80,7 @@ export function computeNV(ek: EkonomiData): number {
   return (
     ek.sparkonto_pv +
     ek.ap_f + ek.ap_u +
-    (ek.nav_f_nok + ek.nav_u_nok) * (ek.nok_sek || 0.97) +
+    (ek.nav_f_nok + ek.nav_u_nok) * ek.nok_sek +
     Math.max(0, ek.villa_varde   - ek.villa_lan) +
     Math.max(0, ek.lagenhet_varde - ek.lagenhet_lan) +
     ek.lysa_f_pv + ek.lysa_u_pv + ek.buffert_u_pv +
@@ -321,6 +321,8 @@ export function simulateUttag(
   pensions: PensionStream[],
   monthlyUttag2 = 0,
   switchAfterYears = 0,
+  engBelopp = 0,
+  engYear = 0,       // absolut kalenderår för engångsuttag (0 = inaktivt)
 ): UttakResult {
   const rows: UttakRow[] = [];
   let cap = kapital;
@@ -331,6 +333,11 @@ export function simulateUttag(
   const switchYear     = switchAfterYears > 0 && monthlyUttag2 > 0 ? startYear + switchAfterYears : 9999;
 
   for (let yr = startYear; yr <= 2080; yr++) {
+    // Engångsuttag: dra av beloppet det angivna kalenderåret
+    if (engBelopp > 0 && engYear > 0 && yr === engYear) {
+      cap = Math.max(0, cap - engBelopp);
+    }
+
     const currentUttag = yr >= switchYear ? monthlyUttag2 : monthlyUttag;
     const pensionMon = pensions
       .filter(p => p.fromYear <= yr && yr <= p.toYear)

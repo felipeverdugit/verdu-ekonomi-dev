@@ -4,7 +4,7 @@
   import { initAuth } from '../auth';
   import { budgetStore, ekStore } from '../store';
   import { computeNV } from '../calculations';
-  import { renderTopnav, injectInfoBtn } from '../nav';
+  import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
   import type { BudgetData } from '../types';
 
@@ -71,11 +71,10 @@
       { id: 'amor_lag',         label: 'Amortering lägenhet' },
       { id: 'lysa_f_mon',       label: 'Lysa Felipe' },
       { id: 'lysa_u_mon',       label: 'Lysa Ulrika' },
-      { id: 'lysa_buffert_mon', label: 'Lysa Buffert (U+F)' },
       { id: 'lysa_n_mon',       label: 'Lysa N', skipTotal: true },
       { id: 'borgo_bank_mon',   label: 'Borgo Bank' },
       { id: 'resor_mon',        label: 'Resor (månadsspar)' },
-      { id: 'lonevxl_mon',      label: 'Löneväxling Felipe' },
+      { id: 'lonevxl_mon',      label: 'Löneväxling Felipe', skipTotal: true },
     ]},
     { id: 'ovriga', label: 'Övriga utgifter', icon: '💳', fields: [
       { id: 'mc_felipe', label: 'MC Felipe' },
@@ -111,10 +110,10 @@
     const totalSpar = groupTotal(sparGroup);
     const totalUt   = GROUPS.filter(g => !g.isIncome).reduce((s, g) => s + groupTotal(g), 0);
     const lonevxl   = bd.lonevxl_mon ?? 0;
-    const saldo     = totalInk - totalUt + lonevxl;
+    const saldo     = totalInk - totalUt;   // löneväxling är löneavdrag, inte utgift
     const exclInk   = inkGroup.fields.filter(f => f.exclSparkvot).reduce((s, f) => s + (bd[f.id] as number ?? 0), 0);
     const adjInk    = totalInk + lonevxl - exclInk;
-    const sparkvot  = adjInk > 0 ? (totalSpar / adjInk) * 100 : 0;
+    const sparkvot  = adjInk > 0 ? ((totalSpar + lonevxl) / adjInk) * 100 : 0; // löneväxling räknas som sparande
     const nv        = computeNV(ekStore.get());
     return { totalInk, totalUt, saldo, sparkvot, nv };
   })());
@@ -185,8 +184,8 @@
         <table class="bgt-tbl">
           <tbody>
             {#each g.fields as f}
-              <tr class:bgt-amor={f.isAmor} class:bgt-info={f.isInfo}>
-                <td>{f.label}</td>
+              <tr class:bgt-amor={f.isAmor} class:bgt-info={f.isInfo} class:bgt-excl={f.skipTotal && !f.isInfo}>
+                <td>{f.label}{f.skipTotal && !f.isInfo ? ' *' : ''}</td>
                 <td>
                   <input
                     type="number"
@@ -209,6 +208,9 @@
             </tr>
           </tfoot>
         </table>
+        {#if g.fields.some(f => f.skipTotal && !f.isInfo)}
+          <p class="bgt-excl-note">* Ingår ej i summan (löneavdrag/info)</p>
+        {/if}
       </div>
     {/each}
   </div>
@@ -236,6 +238,8 @@
   :global(.bgt-amor td) { color: var(--muted); font-size: .78rem; padding-top: 1px; }
   :global(.bgt-amor .bgt-inp) { font-size: .78rem; width: 80px; }
   :global(.bgt-info td) { color: var(--muted); }
+  :global(.bgt-excl td) { color: var(--muted); font-style: italic; }
+  :global(.bgt-excl-note) { font-size: .72rem; color: var(--muted); margin: 4px 0 0 0; padding: 0 4px; }
   :global(.bgt-sum-row td) { border-top: 1px solid var(--border, #444); font-weight: 600; padding-top: 8px; }
   .bgt-card-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
   .bgt-card-head h3 { margin: 0; font-size: 1rem; }

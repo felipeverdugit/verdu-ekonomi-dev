@@ -78,8 +78,6 @@ export const SHEETS_MAP: Record<string, string> = {
   ek_spar_lysaf:      'lysa_f_pmt',
   ek_bal_lysau:       'lysa_u_pv',
   ek_spar_lysau:      'lysa_u_pmt',
-  ek_bal_buffert:     'buffert_u_pv',
-  ek_spar_buffert:    'buffert_u_pmt',
   ek_bal_tjpf:        'tjp_f_pv',
   ek_bal_lonevxl:     'lonevxl_pv',
   ek_bal_tidligare:   'tidigare_pv',
@@ -139,4 +137,5 @@ export const NAV_LINKS = [
   { href: 'budget.html',   label: 'Budget',    icon: '📋' },
   { href: 'kvartal.html',    label: 'Kvartal',    icon: '📅' },
   { href: 'avkastning.html', label: 'Avkastning', icon: '🎯' },
+  { href: 'jobbyte.html',    label: 'Jobbyte',    icon: '💼' },
 ] as const;

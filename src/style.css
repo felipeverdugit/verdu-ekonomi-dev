@@ -94,6 +94,11 @@ h2 { font-size: 1.2rem; font-weight: 600; margin: 32px 0 14px; color: var(--text
 .kpi-value.orange { color: var(--orange); }
 .kpi-value.purple { color: var(--accent2); }
 
+/* ── KPI-grid (Hinkar) ───────────────────────────────────────────────────────── */
+.kpi-grid { display: grid; gap: 12px; margin-bottom: 28px; }
+.kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.kpi-sub { font-size: .75rem; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+
 /* ── Slider-panel ────────────────────────────────────────────────────────────── */
 .ctrl-panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 24px; }
 .ctrl-group { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }

@@ -8,7 +8,7 @@
   import { initAuth } from '../auth';
   import { computeFire, simulateUttag, incomeTax, STATLIG_GRANS } from '../calculations';
   import { ekStore, fireStore } from '../store';
-  import { renderTopnav, injectInfoBtn } from '../nav';
+  import { injectInfoBtn } from '../nav';
   import { CHART_DARK_GRID, CHART_DARK_TEXT } from '../constants';
   import { INFO } from '../infoContent';
   import type { PensionStream } from '../types';
@@ -26,7 +26,7 @@
   let uttag = $state(ekStore.getField('levnadskostnad') || 0);
 
   // ── Computed ──────────────────────────────────────────────────────────────────
-  type OptRow = { year: number; fGross: number; uGross: number; taxCur: number; taxOpt: number; saving: number };
+  type OptRow = { year: number; fNet: number; uNet: number; fGross: number; uGross: number; fTax: number; uTax: number; taxCur: number; taxOpt: number; saving: number };
 
   function computeAll() {
     const ek        = ekStore.get();
@@ -41,10 +41,9 @@
 
     // Skatteoptimering
     const optRows: OptRow[] = [];
-    for (let yr = r.fireYear; yr <= r.fireYear + 35; yr++) {
+    for (let yr = r.fireYear; yr <= 2080; yr++) {
       const fNet = pensions.filter(p => p.who === 'f' && yr >= p.fromYear && yr <= p.toYear).reduce((s, p) => s + p.monthly, 0);
       const uNet = pensions.filter(p => p.who === 'u' && yr >= p.fromYear && yr <= p.toYear).reduce((s, p) => s + p.monthly, 0);
-      if (fNet === 0 && uNet === 0) continue;
       const fGross  = skattFak > 0 ? fNet / skattFak : 0;
       const uGross  = skattFak > 0 ? uNet / skattFak : 0;
       const fAge    = yr - FELIPE;
@@ -53,8 +52,10 @@
       const uTaxCur = incomeTax(uGross * 12, uAge >= 65) / 12;
       const fTaxOpt = incomeTax(Math.min(fGross, STATLIG_MON) * 12, fAge >= 65) / 12;
       const uTaxOpt = incomeTax(Math.min(uGross, STATLIG_MON) * 12, uAge >= 65) / 12;
-      optRows.push({ year: yr, fGross, uGross, taxCur: fTaxCur + uTaxCur, taxOpt: fTaxOpt + uTaxOpt, saving: (fTaxCur + uTaxCur) - (fTaxOpt + uTaxOpt) });
+      optRows.push({ year: yr, fNet, uNet, fGross, uGross, fTax: fTaxCur, uTax: uTaxCur, taxCur: fTaxCur + uTaxCur, taxOpt: fTaxOpt + uTaxOpt, saving: (fTaxCur + uTaxCur) - (fTaxOpt + uTaxOpt) });
     }
+    // Snabb-lookup: år → skattedata för detaljsimuleringen
+    const taxByYear = new Map(optRows.map(o => [o.year, o]));
 
     // Simulering
     const uttag2   = ek.levnadskostnad2;
@@ -76,7 +77,7 @@
     if (totalSav > 1_000) bullets.push(`💡 Hypotetisk total besparing om pensionsinkomsten per person hålls under ${fmt(Math.round(STATLIG_MON))}/mån: ${fmtM(totalSav)}.`);
     else if (totalSav > 0) bullets.push(`💡 Progressiv skatt sparar ${fmtM(totalSav)} totalt vs schablon ${skattPct} % — ingen optimering krävs.`);
 
-    return { r, pensions, optRows, sim, bullets, uttag2, switchAr };
+    return { r, pensions, optRows, taxByYear, sim, bullets, uttag2, switchAr };
   }
 
   let data = $state(computeAll());
@@ -133,11 +134,11 @@
   }
 
   onMount(async () => {
-    await initAuth();
+    requestAnimationFrame(() => buildChart());
     injectInfoBtn(INFO.uttag.title, INFO.uttag.sections);
     window.addEventListener('storage', onStorage);
     window.addEventListener('pageshow', (e) => { if (e.persisted) data = computeAll(); });
-    buildChart();
+    await initAuth();
   });
 
   onDestroy(() => {
@@ -185,7 +186,7 @@
         <th style="text-align:right;padding:6px 8px">kr/mån (netto)</th>
       </tr></thead>
       <tbody>
-        {#each data.pensions as p}
+        {#each data.pensions.slice().sort((a, b) => a.fromYear - b.fromYear) as p}
           <tr style:color={p.livsvarig ? 'var(--green)' : undefined}>
             <td style="padding:5px 8px">{p.label}</td>
             <td style="text-align:center;padding:5px 8px">{p.fromYear}</td>
@@ -213,22 +214,35 @@
         <th style="padding:5px 8px">År</th>
         <th class="num">Kapital</th>
         <th class="num" style="color:var(--green)">Avkastning/år</th>
-        <th class="num" style="color:var(--orange)">Pension/mån</th>
+        <th class="num" style="color:#6ee7b7">Pension F/mån</th>
+        <th class="num" style="color:#a78bfa">Pension U/mån</th>
         <th class="num">Netto-uttag/mån</th>
         <th class="num">Δ kapital/år</th>
+        <th class="num" style="color:#6ee7b7">Skatt F/år</th>
+        <th class="num" style="color:#a78bfa">Skatt U/år</th>
+        <th class="num" style="color:#f87171">Skatt tot/år</th>
       </tr></thead>
       <tbody>
         {#each data.sim.rows as row}
-          {@const dep   = data.sim.depletedYear !== null && row.year >= data.sim.depletedYear}
+          {@const dep    = data.sim.depletedYear !== null && row.year >= data.sim.depletedYear}
           {@const fColor = row.delta >= 0 ? '#6ee7b7' : '#f87171'}
-          {@const sign  = row.delta >= 0 ? '+' : ''}
+          {@const sign   = row.delta >= 0 ? '+' : ''}
+          {@const tx     = data.taxByYear.get(row.year)}
+          {@const fTaxYr = tx ? tx.fTax * 12 : 0}
+          {@const uTaxYr = tx ? tx.uTax * 12 : 0}
+          {@const fOver  = tx ? tx.fGross > STATLIG_MON : false}
+          {@const uOver  = tx ? tx.uGross > STATLIG_MON : false}
           <tr style:opacity={dep ? 0.4 : undefined}>
             <td style="padding:4px 8px">{row.year}</td>
             <td class="num">{dep ? '—' : fmtM(row.capital)}</td>
             <td class="num" style="color:var(--green)">{fmt(row.returns)}</td>
-            <td class="num" style="color:var(--orange)">{row.pensionMon > 0 ? fmt(row.pensionMon) + '/mån' : '—'}</td>
+            <td class="num" style="color:#6ee7b7">{tx && tx.fNet > 0 ? fmt(Math.round(tx.fNet)) : '—'}</td>
+            <td class="num" style="color:#a78bfa">{tx && tx.uNet > 0 ? fmt(Math.round(tx.uNet)) : '—'}</td>
             <td class="num">{fmt(row.netUttag)}/mån</td>
             <td class="num" style:color={fColor}>{sign}{fmt(row.delta)}</td>
+            <td class="num" style:color={fOver ? '#f87171' : '#6ee7b7'}>{fTaxYr > 0 ? fmt(Math.round(fTaxYr)) : '—'}{fOver ? ' ▲' : ''}</td>
+            <td class="num" style:color={uOver ? '#f87171' : '#a78bfa'}>{uTaxYr > 0 ? fmt(Math.round(uTaxYr)) : '—'}{uOver ? ' ▲' : ''}</td>
+            <td class="num" style="color:#f87171">{fTaxYr + uTaxYr > 0 ? fmt(Math.round(fTaxYr + uTaxYr)) : '—'}</td>
           </tr>
         {/each}
       </tbody>
@@ -247,18 +261,28 @@
       <thead><tr style="color:var(--muted);font-size:.72rem">
         <th style="padding:5px 8px">År</th>
         <th class="num">Felipe brutto/mån</th>
+        <th class="num">Utrymme F</th>
         <th class="num">Ulrika brutto/mån</th>
+        <th class="num">Utrymme U</th>
         <th class="num" style="color:var(--red)">Skatt nuläge/mån</th>
         <th class="num" style="color:var(--orange)">Skatt optimerad/mån</th>
         <th class="num">Besparing/år</th>
       </tr></thead>
       <tbody>
-        {#each data.optRows as row}
-          {@const isOver = row.fGross > STATLIG_MON || row.uGross > STATLIG_MON}
+        {#each data.optRows.filter(o => o.fGross > 0 || o.uGross > 0) as row}
+          {@const isOver  = row.fGross > STATLIG_MON || row.uGross > STATLIG_MON}
+          {@const fRoom   = STATLIG_MON - row.fGross}
+          {@const uRoom   = STATLIG_MON - row.uGross}
           <tr style:background={isOver ? 'rgba(248,113,113,.05)' : undefined}>
             <td style="padding:5px 8px;color:var(--muted)">{row.year}</td>
             <td class="num">{row.fGross > 0 ? fmt(Math.round(row.fGross)) : '—'}{row.fGross > STATLIG_MON ? ' ▲' : ''}</td>
+            <td class="num" style:color={fRoom >= 0 ? '#6ee7b7' : '#f87171'}>
+              {row.fGross > 0 ? (fRoom >= 0 ? '+' : '') + fmt(Math.round(fRoom)) : '—'}
+            </td>
             <td class="num">{row.uGross > 0 ? fmt(Math.round(row.uGross)) : '—'}{row.uGross > STATLIG_MON ? ' ▲' : ''}</td>
+            <td class="num" style:color={uRoom >= 0 ? '#6ee7b7' : '#f87171'}>
+              {row.uGross > 0 ? (uRoom >= 0 ? '+' : '') + fmt(Math.round(uRoom)) : '—'}
+            </td>
             <td class="num" style="color:var(--red)">{fmt(Math.round(row.taxCur))}/mån</td>
             <td class="num" style="color:var(--orange)">{fmt(Math.round(row.taxOpt))}/mån</td>
             <td class="num">

@@ -4,7 +4,7 @@
   import { initAuth } from '../auth';
   import { ekStore } from '../store';
   import { KREDITKORT } from '../constants';
-  import { renderTopnav, injectInfoBtn } from '../nav';
+  import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
   import type { EkonomiData } from '../types';
 
@@ -24,7 +24,7 @@
   function computeHinkar(ek: EkonomiData): HinkarResult {
     const h1_borgo    = ek.sparkonto_pv;
     const h2_ip       = ek.ap_f + ek.ap_u;
-    const h2_nav      = (ek.nav_f_nok + ek.nav_u_nok) * (ek.nok_sek || 0.97);
+    const h2_nav      = (ek.nav_f_nok + ek.nav_u_nok) * ek.nok_sek;
     const h2_villa    = Math.max(0, (ek.villa_varde ?? 0) - (ek.villa_lan ?? 0));
     const h2_lagenhet = Math.max(0, (ek.lagenhet_varde ?? 0) - (ek.lagenhet_lan ?? 0));
     const h2_amor     = (ek.villa_amor ?? 0) + (ek.lagenhet_amor ?? 0);
@@ -49,7 +49,7 @@
     const h1_kredit = KREDITKORT.reduce((s, k) => s + k.limit, 0);
     const fireNum   = ek.levnadskostnad * 12 / 0.04;
     const maalPct   = fireNum > 0 ? totalAll / fireNum * 100 : 0;
-    const sparMon   = ek.lysa_f_pmt + ek.lysa_u_pmt + ek.buffert_u_pmt + ek.sparkonto_pmt;
+    const sparMon   = ek.lysa_f_pmt + ek.lysa_u_pmt + ek.sparkonto_pmt + ek.lonevxl_pmt;
     return {
       hink1, hink2, hink3, hink4,
       h1_borgo, h2_ip, h2_nav, h2_villa, h2_lagenhet, h2_amor,
@@ -187,13 +187,44 @@
   <h1>🪣 Fyra Hinkar</h1>
   <p class="subtitle">Nuläge per hink · Synkas automatiskt från Ekonomi-sidan.</p>
 
+  <!-- Konceptförklaring -->
+  <div class="card" style="margin-bottom:24px;font-size:.88rem;line-height:1.7;color:var(--muted)">
+    <p style="margin:0 0 6px"><strong style="color:var(--text)">Fyra hinkar</strong> är ett sätt att strukturera ekonomin efter <em>syfte</em>, inte produkt.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:10px">
+      <div><span style="color:#6ee7b7;font-weight:700">🛡 Hink 1 — Likviditet</span><br>Pengar du når direkt. Täcker 3–6 månaders utgifter utan att sälja något.</div>
+      <div><span style="color:#4f8ef7;font-weight:700">🏠 Hink 2 — Bevara värde</span><br>Kapital som är bundet men säkert: fastigheter (equity) och allmänpension.</div>
+      <div><span style="color:#a78bfa;font-weight:700">📈 Hink 3 — Tillväxt</span><br>Fonder och tjänstepension som ska växa långsiktigt. Grunden för FIRE.</div>
+      <div><span style="color:#f59e0b;font-weight:700">🎲 Hink 4 — Lek</span><br>Spekulativa innehav (enskilda aktier). Max 10 % av hink 3 — resten rebalansera.</div>
+    </div>
+  </div>
+
   <!-- KPI-rad -->
   <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:32px">
-    <div class="kpi-card"><div class="kpi-label">Totalt finansiellt</div><div class="kpi-value" style="color:var(--accent2)">{fmtM(h.totalFin)}</div><div class="kpi-sub">fonder + TjP + aktier</div></div>
-    <div class="kpi-card"><div class="kpi-label">Levnadskostnad</div><div class="kpi-value" style="color:var(--accent1)">{fmt(ek.levnadskostnad)}</div><div class="kpi-sub">kr/mån</div></div>
-    <div class="kpi-card"><div class="kpi-label">Buffert behov</div><div class="kpi-value" style="color:var(--orange)">{fmtK(h.buffMin)}–{fmtK(h.buffMax)}</div><div class="kpi-sub">3–6 månaders kostnader</div></div>
-    <div class="kpi-card"><div class="kpi-label">Lek-andel</div><div class="kpi-value" style="color:var(--red)">{pct(h.lekPct)}</div><div class="kpi-sub">av hink 3 (max 10 %)</div></div>
-    <div class="kpi-card"><div class="kpi-label">Månadsparande</div><div class="kpi-value" style="color:var(--accent1)">{fmt(h.sparMon)}/mån</div><div class="kpi-sub">privata fonder + sparkonto</div></div>
+    <div class="kpi-card">
+      <div class="kpi-label">Totalt finansiellt</div>
+      <div class="kpi-value" style="color:var(--accent2)">{fmtM(h.totalFin)}</div>
+      <div class="kpi-sub">hink 1 + 3 + 4 (fritt kapital)<br><span style="font-size:.7rem">exkl. fastigheter &amp; AP</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Levnadskostnad</div>
+      <div class="kpi-value" style="color:var(--accent1)">{fmt(ek.levnadskostnad)}</div>
+      <div class="kpi-sub">kr/mån · grund för buffert &amp; FIRE-tal</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Hink 1 — mål</div>
+      <div class="kpi-value" style="color:var(--orange)">{fmtK(h.buffMin)}–{fmtK(h.buffMax)}</div>
+      <div class="kpi-sub">3–6 månaders levnadskostnad<br>ska ligga på sparkonto</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Hink 4 — andel av hink 3</div>
+      <div class="kpi-value" style:color={h.lekPct <= 10 ? 'var(--green)' : 'var(--red)'}>{pct(h.lekPct)}</div>
+      <div class="kpi-sub">enskilda aktier vs fonder<br>max 10 % rekommenderas</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Månadsparande</div>
+      <div class="kpi-value" style="color:var(--accent1)">{fmt(h.sparMon)}/mån</div>
+      <div class="kpi-sub">Lysa (F+U) + Borgo + Löneväxling<br>till hink 1 &amp; 3</div>
+    </div>
   </div>
 
   <!-- Måluppfyllnad -->
@@ -243,6 +274,7 @@
   <!-- Hink 1 -->
   <div class="card" style="margin-bottom:16px;border-left:4px solid #6ee7b7">
     <h3 style="margin-top:0">🛡 Hink 1 — Likviditet &amp; buffert</h3>
+    <p style="font-size:.82rem;color:var(--muted);margin:0 0 12px">Pengar du når inom 1–2 dagar utan att sälja något. Ska täcka 3–6 månader om inkomsten faller bort.</p>
     <div class="form-row"><label>Borgo sparkonto</label><span class="num">{fmt(h.h1_borgo)}</span></div>
     <div class="form-row" style="font-weight:700"><label>Hink 1 totalt</label><span class="num">{fmt(h.hink1)}</span></div>
     <div class="form-row"><label style="color:var(--muted);font-size:.8rem">Mål: {fmt(h.buffMin)}–{fmt(h.buffMax)}</label>
@@ -265,6 +297,7 @@
   <!-- Hink 2 -->
   <div class="card" style="margin-bottom:16px;border-left:4px solid #4f8ef7">
     <h3 style="margin-top:0">🏠 Hink 2 — Bevara värde</h3>
+    <p style="font-size:.82rem;color:var(--muted);margin:0 0 12px">Kapital som är bundet och svårt att ta ut snabbt, men stabilt. Fastigheter räknas som nettovärde (marknadsvärde minus lån). Allmänpension betalas ut av staten från 63 år.</p>
     <div class="form-row"><label>Inkomstpension SE (IP)</label><span class="num">{fmtK(h.h2_ip)}</span></div>
     <div class="form-row"><label>NAV inntektspension NO</label><span class="num">{fmtK(h.h2_nav)}</span></div>
     <div class="form-row"><label>Villa (equity)</label><span class="num">{fmtK(h.h2_villa)}</span></div>
@@ -276,8 +309,8 @@
   <!-- Hink 3 -->
   <div class="card" style="margin-bottom:16px;border-left:4px solid #a78bfa">
     <h3 style="margin-top:0">📈 Hink 3 — Tillväxt</h3>
-    <div class="form-row"><label>Lysa (F+U)</label><span class="num">{fmtK(h.h3_lysa)}</span></div>
-    <div class="form-row"><label>Buffert Lysa</label><span class="num">{fmtK(h.h3_buffert)}</span></div>
+    <p style="font-size:.82rem;color:var(--muted);margin:0 0 12px">Det stora tillväxtkapitalet. Fonder och tjänstepension som investeras långsiktigt. Det är detta kapital som finansierar bryggan och pensionen — och som FIRE-talet jämförs mot.</p>
+    <div class="form-row"><label>Lysa (F+U) — ISK-fonder</label><span class="num">{fmtK(h.h3_lysa)}</span></div>
     <div class="form-row"><label>TjP Sverige</label><span class="num">{fmtK(h.h3_tjpSve)}</span></div>
     <div class="form-row"><label>TjP Norge</label><span class="num">{fmtK(h.h3_tjpNor)}</span></div>
     <div class="form-row"><label>Premiepension (AP7)</label><span class="num">{fmtK(h.h3_pp)}</span></div>
@@ -288,6 +321,7 @@
   <!-- Hink 4 -->
   <div class="card" style="margin-bottom:24px;border-left:4px solid #f59e0b">
     <h3 style="margin-top:0">🎲 Hink 4 — Lek (spekulativt)</h3>
+    <p style="font-size:.82rem;color:var(--muted);margin:0 0 12px">Enskilda aktier med högre risk — ok att hålla, men bör max vara 10 % av hink 3. Är andelen högre bör överskottet säljas och flyttas till hink 3 (breda fonder).</p>
     <div class="form-row"><label>Norconsult</label><span class="num">{fmtK(h.h4_norco)}</span></div>
     <div class="form-row"><label>Oncopeptides</label><span class="num">{fmtK(h.h4_oncop)}</span></div>
     <div class="form-row"><label style="color:var(--muted)">Max (10 % av hink 3)</label><span class="num" style="color:var(--muted)">{fmt(h.lekMax)}</span></div>

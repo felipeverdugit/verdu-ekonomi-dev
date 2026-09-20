@@ -93,7 +93,7 @@
     if (!uttaksCanvas) return;
     if (uttaksChart) uttaksChart.destroy();
     const ek = ekStore.get();
-    const sim = simulateUttag(res.kapital, res.uttakAvkPct, res.fireYear, ek.levnadskostnad, res.pensions, ek.levnadskostnad2, ek.exp_switch_ar);
+    const sim = simulateUttag(res.kapital, res.uttakAvkPct, res.fireYear, ek.levnadskostnad, res.pensions, ek.levnadskostnad2, ek.exp_switch_ar, engBelopp, engAr);
     const switchYear2 = ek.exp_switch_ar > 0 && ek.levnadskostnad2 > 0 ? res.fireYear + ek.exp_switch_ar : 9999;
     const levnadLinje = sim.rows.map(row => row.year >= switchYear2 ? ek.levnadskostnad2 : ek.levnadskostnad);
 
@@ -120,7 +120,7 @@
   }
 
   $effect(() => {
-    void r; void pieCanvas; void uttaksCanvas;
+    void r; void pieCanvas; void uttaksCanvas; void engBelopp; void engAr;
     buildPieChart(r);
     buildUttaksChart(r);
   });
@@ -141,9 +141,10 @@
   }
 
   onMount(async () => {
-    await initAuth();
+    requestAnimationFrame(() => { buildPieChart(r); buildUttaksChart(r); });
     injectInfoBtn(INFO.fire.title, INFO.fire.sections);
     window.addEventListener('storage', onStorage);
+    await initAuth();
   });
 
   onDestroy(() => {
@@ -216,8 +217,8 @@
                  oninput={e => { engBelopp = parseFloat((e.target as HTMLInputElement).value) || 0; fireStore.setField('engBelopp', engBelopp); }} />
         </div>
         <div class="form-row">
-          <label>År efter FIRE-start</label>
-          <input type="number" style="width:140px" value={engAr} step="1" min="0"
+          <label>Kalenderår</label>
+          <input type="number" style="width:140px" value={engAr} step="1" min="2025"
                  oninput={e => { engAr = parseFloat((e.target as HTMLInputElement).value) || 0; fireStore.setField('engAr', engAr); }} />
         </div>
       </div>
