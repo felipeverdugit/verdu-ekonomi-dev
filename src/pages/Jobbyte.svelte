@@ -1,22 +1,30 @@
 <script lang="ts">
   import Topnav from '../components/Topnav.svelte';
+  import { fireStore, ekStore } from '../store';
 
-  // ── Inmatning ─────────────────────────────────────────────────────────────────
-  let lonNu       = $state(67_300);
+  // ── Inmatning — initieras från sparade Brygga-inställningar ──────────────────
+  const _fs = fireStore.get();
+  const _ek = ekStore.get();
+
+  let lonNu       = $state(_ek.brutto_f  || 67_300);
   let lonNy       = $state(80_000);
-  let lvNu        = $state(11_000);
+  let lvNu        = $state(_ek.lonevxl_pmt || 11_000);
   let lvNy        = $state(23_000);
   let agBidragPct = $state(5.8);
   let ibb         = $state(82_800);   // IBB per år (2025)
-  let avkPct      = $state(6.0);
-  let arTillFire  = $state(7);
+  let avkPct      = $state(_fs.avkPct  || 6.0);
+  let arTillFire  = $state(_fs.antalAr || 7);
   let kommunalPct      = $state(31.0);
   let statligGrans     = $state(57_000);   // kr/mån brutto-gräns för löneväxlingsstrategi
   let nyJobbStart      = $state(2027);     // år nytt jobb börjar
   let itp2TidigareAr  = $state(2);        // befintliga ITP 2-tjänsteår (helttal)
   let itp2TidigareMon = $state(4);        // befintliga ITP 2-tjänstemånader
 
+  let livslangd = $state(85);  // antagen livslängd (år)
+
   const CURRENT_YEAR    = 2026;
+  const BIRTH_YEAR      = 1975;
+  const ITP2_START_AGE  = 65;
   const ITP2_FULL_YEARS = 37;  // 28→65 år = 37 tjänsteår för full ITP2
 
   // ── Formatering ────────────────────────────────────────────────────────────────
@@ -132,8 +140,20 @@
       const tax        = salaryTax(skattelön);
       const netto      = skattelön - tax;
       const lvFV       = fv(lvTot);
+
+      // Kapitalvärde av ITP 2-förmånen (PV av annuitet 65→livslängd)
+      const r          = avkPct / 100 / 12;
+      const nMon       = Math.max(0, livslangd - ITP2_START_AGE) * 12;
+      const pvAt65     = r > 0 ? prorated * (1 - Math.pow(1 + r, -nMon)) / r : prorated * nMon;
+      const ageAtFire  = fireYear - BIRTH_YEAR;
+      const monTo65    = Math.max(0, ITP2_START_AGE - ageAtFire) * 12;
+      const pvAtFire   = pvAt65 / Math.pow(1 + r, monTo65);
+      const nominalTot = prorated * 12 * Math.max(0, livslangd - ITP2_START_AGE);
+
       return { full: Math.round(full), prorated, totalItp2Yr, newJobYr, fireYear,
-               lvTot, agLvBidrag: agLvNy, skattelön, tax, netto, lvFV };
+               lvTot, agLvBidrag: agLvNy, skattelön, tax, netto, lvFV,
+               pvAt65: Math.round(pvAt65), pvAtFire: Math.round(pvAtFire),
+               nominalTot: Math.round(nominalTot), ageAtFire, monTo65: Math.round(monTo65 / 12) };
     })();
 
     const diffNetto1 = itp1.netto - akap.netto;
@@ -163,11 +183,9 @@
     <div class="card" style="border-left:4px solid #6ee7b7">
       <h3 style="margin-top:0;color:#6ee7b7">Nuläge — AKAP-KR</h3>
       <div class="form-row"><label>Bruttolön (kr/mån)</label>
-        <input type="number" class="bgt-inp" value={lonNu} step="100"
-          oninput={e => lonNu = +((e.target as HTMLInputElement).value) || 0} /></div>
+        <input type="number" class="bgt-inp" bind:value={lonNu} step="100" /></div>
       <div class="form-row"><label>Löneväxling (kr/mån)</label>
-        <input type="number" class="bgt-inp" value={lvNu} step="500"
-          oninput={e => lvNu = +((e.target as HTMLInputElement).value) || 0} /></div>
+        <input type="number" class="bgt-inp" bind:value={lvNu} step="500" /></div>
       <div class="form-row" style="font-size:.8rem;color:var(--muted)">
         <label>AG-bidrag löneväxling</label>
         <span>{fmt(Math.round(lvNu * agBidragPct / 100))}/mån</span>
@@ -178,11 +196,9 @@
     <div class="card" style="border-left:4px solid #4f8ef7">
       <h3 style="margin-top:0;color:#4f8ef7">Nytt jobb — ITP 1 / ITP 2</h3>
       <div class="form-row"><label>Ny bruttolön (kr/mån)</label>
-        <input type="number" class="bgt-inp" value={lonNy} step="100"
-          oninput={e => lonNy = +((e.target as HTMLInputElement).value) || 0} /></div>
+        <input type="number" class="bgt-inp" bind:value={lonNy} step="100" /></div>
       <div class="form-row"><label>Löneväxling (kr/mån)</label>
-        <input type="number" class="bgt-inp" value={lvNy} step="500"
-          oninput={e => lvNy = +((e.target as HTMLInputElement).value) || 0} /></div>
+        <input type="number" class="bgt-inp" bind:value={lvNy} step="500" /></div>
       <div class="form-row" style="font-size:.8rem;color:var(--muted)">
         <label>AG-bidrag löneväxling</label>
         <span>{fmt(Math.round(lvNy * agBidragPct / 100))}/mån</span>
@@ -190,14 +206,11 @@
       <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
         <div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;margin-bottom:8px">ITP 2 — tjänsteår</div>
         <div class="form-row"><label>Nytt jobb startar (år)</label>
-          <input type="number" class="bgt-inp" value={nyJobbStart} step="1" min="2024" max="2035"
-            oninput={e => nyJobbStart = +((e.target as HTMLInputElement).value) || 0} /></div>
+          <input type="number" class="bgt-inp" bind:value={nyJobbStart} step="1" min="2024" max="2035" /></div>
         <div class="form-row"><label>Befintliga år (tidig. anst.)</label>
-          <input type="number" class="bgt-inp" value={itp2TidigareAr} step="1" min="0"
-            oninput={e => itp2TidigareAr = +((e.target as HTMLInputElement).value) || 0} /></div>
+          <input type="number" class="bgt-inp" bind:value={itp2TidigareAr} step="1" min="0" /></div>
         <div class="form-row"><label>Befintliga månader</label>
-          <input type="number" class="bgt-inp" value={itp2TidigareMon} step="1" min="0" max="11"
-            oninput={e => itp2TidigareMon = +((e.target as HTMLInputElement).value) || 0} /></div>
+          <input type="number" class="bgt-inp" bind:value={itp2TidigareMon} step="1" min="0" max="11" /></div>
       </div>
     </div>
   </div>
@@ -207,23 +220,17 @@
     <summary style="cursor:pointer;font-size:.88rem;color:var(--muted)">⚙️ Avancerade inställningar</summary>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px">
       <div class="form-row"><label>AG-bidrag löneväxling (%)</label>
-        <input type="number" class="bgt-inp" value={agBidragPct} step="0.1"
-          oninput={e => agBidragPct = +((e.target as HTMLInputElement).value) || 0} /></div>
+        <input type="number" class="bgt-inp" bind:value={agBidragPct} step="0.1" /></div>
       <div class="form-row"><label>IBB per år (kr)</label>
-        <input type="number" class="bgt-inp" value={ibb} step="100"
-          oninput={e => ibb = +((e.target as HTMLInputElement).value) || 0} /></div>
+        <input type="number" class="bgt-inp" bind:value={ibb} step="100" /></div>
       <div class="form-row"><label>Avkastning (%/år)</label>
-        <input type="number" class="bgt-inp" value={avkPct} step="0.5"
-          oninput={e => avkPct = +((e.target as HTMLInputElement).value) || 0} /></div>
+        <input type="number" class="bgt-inp" bind:value={avkPct} step="0.5" /></div>
       <div class="form-row"><label>År till FIRE</label>
-        <input type="number" class="bgt-inp" value={arTillFire} step="1"
-          oninput={e => arTillFire = +((e.target as HTMLInputElement).value) || 0} /></div>
+        <input type="number" class="bgt-inp" bind:value={arTillFire} step="1" /></div>
       <div class="form-row"><label>Kommunalskatt (%)</label>
-        <input type="number" class="bgt-inp" value={kommunalPct} step="0.5"
-          oninput={e => kommunalPct = +((e.target as HTMLInputElement).value) || 0} /></div>
+        <input type="number" class="bgt-inp" bind:value={kommunalPct} step="0.5" /></div>
       <div class="form-row"><label>Statlig skattegräns (kr/mån)</label>
-        <input type="number" class="bgt-inp" value={statligGrans} step="500"
-          oninput={e => statligGrans = +((e.target as HTMLInputElement).value) || 0} /></div>
+        <input type="number" class="bgt-inp" bind:value={statligGrans} step="500" /></div>
     </div>
     <p style="font-size:.75rem;color:var(--muted);margin:10px 0 0">
       IBB 2025 = 82 800 kr · 7,5 IBB/mån = {fmt(Math.round(ibb * 7.5 / 12))} ·
@@ -370,10 +377,46 @@
       <div style="font-size:.8rem;color:var(--muted);margin-top:4px">{fmt(c.itp1.totPens)}/mån → pension</div>
     </div>
     <div class="card" style="border-left:4px solid #a78bfa">
-      <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-bottom:6px">ITP 2 — löneväxling</div>
+      <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-bottom:6px">ITP 2 — löneväxling (avgiftsb.)</div>
       <div style="font-size:1.6rem;font-weight:800;color:#a78bfa">{fmtM(c.itp2.lvFV)}</div>
       <div style="font-size:.8rem;color:var(--muted);margin-top:4px">{fmt(c.itp2.lvTot)}/mån lv + AG-bidrag</div>
-      <div style="font-size:.75rem;color:var(--muted);margin-top:2px">+ {fmt(c.itp2.prorated)}/mån garanterad pension vid 65</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:2px">+ {fmt(c.itp2.prorated)}/mån garanterad förmån vid 65</div>
+    </div>
+  </div>
+
+  <!-- ITP 2 kapitalvärde -->
+  <div class="card" style="margin-bottom:24px;border-left:4px solid #a78bfa">
+    <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+      <h3 style="margin:0;color:#a78bfa">ITP 2 — kapitalvärde av förmånspensionen</h3>
+      <div class="form-row" style="margin:0">
+        <label style="font-size:.8rem">Livslängd (år)</label>
+        <input type="number" class="bgt-inp" bind:value={livslangd} step="1" min="66" max="100"
+          style="width:70px" />
+      </div>
+    </div>
+    <p style="font-size:.82rem;color:var(--muted);margin:0 0 14px">
+      {fmt(c.itp2.prorated)}/mån × {livslangd - ITP2_START_AGE} år (65→{livslangd}) diskonterat med {avkPct} % avkastning.
+      Du är {c.itp2.ageAtFire} år vid FIRE ({CURRENT_YEAR + arTillFire}) — ITP 2 startar {c.itp2.monTo65} år senare.
+    </p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px">
+      <div>
+        <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Nominell total (65→{livslangd})</div>
+        <div style="font-size:1.3rem;font-weight:700;color:var(--muted)">{fmtM(c.itp2.nominalTot)}</div>
+      </div>
+      <div>
+        <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">PV vid 65 ({avkPct} % disk.)</div>
+        <div style="font-size:1.3rem;font-weight:700;color:#a78bfa">{fmtM(c.itp2.pvAt65)}</div>
+      </div>
+      <div>
+        <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">PV vid FIRE {CURRENT_YEAR + arTillFire}</div>
+        <div style="font-size:1.3rem;font-weight:700;color:#a78bfa">{fmtM(c.itp2.pvAtFire)}</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px">= jämförbart med ITP 1:s {fmtM(c.itp1.totFV)}</div>
+      </div>
+      <div>
+        <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">ITP 2 totalt vid FIRE</div>
+        <div style="font-size:1.3rem;font-weight:700;color:#a78bfa">{fmtM(c.itp2.lvFV + c.itp2.pvAtFire)}</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px">lv-kapital + förmånens PV</div>
+      </div>
     </div>
   </div>
 

@@ -70,7 +70,7 @@ const EK_DEFAULTS: EkonomiData = {
   sb_u_pv: 0, dnb_u_pv: 0,
   sparkonto_pv: 0, sparkonto_pmt: 2000,
   ap_f: 0, ap_u: 0,
-  nav_f_nok: 0, nav_u_nok: 0, nok_sek: 0.97,
+  nav_f_nok: 0, nav_u_nok: 0, nok_sek: 1.02,
   pp_f: 0, pp_u: 0,
   norco_antal: 0, norco_kurs: 0,
   oncop_antal: 0, oncop_kurs: 0,
@@ -271,3 +271,8 @@ export const avkastningStore = {
     this.saveStart(data.start);
   },
 };
+
+// ── Datamigration ─────────────────────────────────────────────────────────────
+// v2: Buffert Lysa utgår — nollställ gamla sparade värden
+localStorage.removeItem('vek_ek_buffert_u_pv');
+localStorage.removeItem('vek_ek_buffert_u_pmt');
