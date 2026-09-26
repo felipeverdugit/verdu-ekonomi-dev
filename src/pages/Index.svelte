@@ -5,7 +5,7 @@
   import { initAuth } from '../auth';
   import { computeFire, computeNV } from '../calculations';
   import { ekStore, fireStore } from '../store';
-  import { renderTopnav, injectInfoBtn } from '../nav';
+  import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
   import { AP_INDEX_RATE, AP_TAK, PP_RATE, CHART_DARK_GRID, CHART_DARK_TEXT } from '../constants';
 
@@ -56,17 +56,32 @@
     const norgeTotal = norgeKap * avk;
     const bostadMkt  = ek.villa_varde + ek.lagenhet_varde;
     const bostadTot  = bostadMkt * bAvk;
-    const lysaKap    = ek.lysa_f_pv + ek.lysa_u_pv + ek.buffert_u_pv;
-    const lysaTotal  = lysaKap * (avk - isk) + (ek.lysa_f_pmt + ek.lysa_u_pmt + ek.buffert_u_pmt) * 12;
+    const lysaKap    = ek.lysa_f_pv + ek.lysa_u_pv;
+    const lysaTotal  = lysaKap * (avk - isk) + (ek.lysa_f_pmt + ek.lysa_u_pmt) * 12;
     const borgoTotal = ek.sparkonto_pv * (s.borgoRanta / 100) + ek.sparkonto_pmt * 12;
     const total      = apTotal + ppTotal + tjpTotal + norgeTotal + bostadTot + lysaTotal + borgoTotal;
     const totalPct   = nv > 0 ? (total / nv) * 100 : 0;
 
     const isEmpty = ek.lysa_f_pv === 0 && ek.lysa_u_pv === 0 && ek.tjp_f_pv === 0 && ek.sparkonto_pv === 0 && ek.ap_f === 0;
 
+    // Portföljöversikt idag (aktuella balanser)
+    const pct = (v: number) => nv > 0 ? v / nv * 100 : 0;
+    const breakdown = [
+      { label: 'Privata fonder (Lysa)',  val: ek.lysa_f_pv + ek.lysa_u_pv,                                               color: '#4f8ef7' },
+      { label: 'TjP Sverige',            val: ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pv + ek.kapan_pv + ek.tjp_u_pv, color: '#6ee7b7' },
+      { label: 'TjP Norge',              val: ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv + ek.sb_u_pv + ek.dnb_u_pv,     color: '#f87171' },
+      { label: 'Allmänpension (AP)',      val: ek.ap_f + ek.ap_u,                                                          color: '#34d399' },
+      { label: 'NAV Norge',              val: (ek.nav_f_nok + ek.nav_u_nok) * ek.nok_sek,                      color: '#22d3ee' },
+      { label: 'Premiepension (PP)',      val: ek.pp_f + ek.pp_u,                                                          color: '#a78bfa' },
+      { label: 'Aktier',                 val: ek.norco_antal * ek.norco_kurs + ek.oncop_antal * ek.oncop_kurs,            color: '#f59e0b' },
+      { label: 'Sparkonto (Borgo)',       val: ek.sparkonto_pv,                                                             color: '#60a5fa' },
+      { label: 'Bostad (netto)',          val: Math.max(0, ek.villa_varde - ek.villa_lan) + Math.max(0, ek.lagenhet_varde - ek.lagenhet_lan), color: '#fb923c' },
+    ].filter(b => b.val > 0).map(b => ({ ...b, pct: pct(b.val) }));
+
     return {
       ek, s, r, nv, today, nextEv, isEmpty, total, totalPct,
       nvValues: [apTotal, ppTotal, tjpTotal, norgeTotal, bostadTot, lysaTotal, borgoTotal],
+      breakdown,
     };
   }
 
@@ -102,7 +117,8 @@
       type: 'bar',
       data: {
         labels: NV_LABELS,
-        datasets: [{ data: data.nvValues, backgroundColor: NV_COLORS, borderRadius: 4 }],
+        // Spread till vanlig array — Svelte 5 $state-proxy blockerar Chart.js Object.defineProperty
+        datasets: [{ data: [...data.nvValues], backgroundColor: NV_COLORS, borderRadius: 4 }],
       },
       options: {
         indexAxis: 'y',
@@ -125,9 +141,11 @@
   }
 
   onMount(async () => {
-    await initAuth();
+    // Bygg chart INNAN auth (popup kan blockera länge) — canvas har rätt dimensioner efter första frame
+    requestAnimationFrame(() => buildChart());
     injectInfoBtn(INFO.index.title, INFO.index.sections);
     window.addEventListener('storage', onStorage);
+    await initAuth();
   });
 
   onDestroy(() => {
@@ -155,12 +173,49 @@
     </div>
   {/if}
 
-  <!-- Hero NV -->
-  <div class="card" style="text-align:center;padding:28px 24px;margin-bottom:24px">
-    <div style="font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px">Netto förmögenhet idag</div>
-    <div style="font-size:3rem;font-weight:800;color:var(--accent1);letter-spacing:-.02em">{fmtM(data.nv)}</div>
-    <div style="font-size:.85rem;color:var(--muted);margin-top:4px">Totalt = {fmt(data.nv)} · Fritt FIRE-kapital {fmtM(data.r.kapital)}</div>
+  <!-- Hero: två kort sida vid sida — idag vs vid brygga-start -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+
+    <!-- Idag -->
+    <div class="card" style="text-align:center;padding:24px 20px">
+      <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px">Netto förmögenhet idag</div>
+      <div style="font-size:2.4rem;font-weight:800;color:var(--accent1);letter-spacing:-.02em">{fmtM(data.nv)}</div>
+      <div style="font-size:.8rem;color:var(--muted);margin-top:6px">Fritt kapital: {fmtM(data.r.kapital)}</div>
+    </div>
+
+    <!-- Vid brygga-start -->
+    <div class="card" style="text-align:center;padding:24px 20px;border-color:var(--orange)">
+      <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--orange);margin-bottom:6px">Vid brygga-start · {data.r.fireYear}</div>
+      <div style="font-size:2.4rem;font-weight:800;color:var(--accent2);letter-spacing:-.02em">{fmtM(data.r.totaltFV)}</div>
+      <div style="font-size:.8rem;color:var(--muted);margin-top:6px">
+        Fritt: {fmtM(data.r.kapital)} &nbsp;·&nbsp;
+        Täckning: <span style:color={data.r.bryggaTackning >= 100 ? 'var(--green)' : 'var(--orange)'}>{data.r.bryggaTackning.toFixed(0)} %</span>
+      </div>
+    </div>
+
   </div>
+
+  <!-- Portföljöversikt idag -->
+  {#if !data.isEmpty}
+  <div class="card" style="margin-bottom:24px;padding:20px 24px">
+    <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:14px">Portföljöversikt idag</div>
+    {#each data.breakdown as b}
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:10px;height:10px;border-radius:50%;background:{b.color};flex-shrink:0"></div>
+        <div style="flex:1;font-size:.88rem">{b.label}</div>
+        <div style="font-size:.88rem;font-weight:600;min-width:80px;text-align:right">{fmtM(b.val)}</div>
+        <div style="font-size:.75rem;color:var(--muted);min-width:42px;text-align:right">{b.pct.toFixed(1)} %</div>
+        <div style="width:80px;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;flex-shrink:0">
+          <div style="height:100%;background:{b.color};width:{Math.min(b.pct,100)}%;border-radius:3px"></div>
+        </div>
+      </div>
+    {/each}
+    <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;font-size:.88rem;font-weight:700">
+      <span>Totalt NV</span>
+      <span style="color:var(--accent1)">{fmtM(data.nv)}</span>
+    </div>
+  </div>
+  {/if}
 
   <!-- KPI-rad -->
   <div class="kpi-bar">
@@ -220,7 +275,7 @@
         <th style="text-align:right;padding:6px 8px">kr/mån</th>
       </tr></thead>
       <tbody>
-        {#each data.r.pensions as p}
+        {#each data.r.pensions.slice().sort((a, b) => a.fromYear - b.fromYear) as p}
           <tr style:color={p.livsvarig ? 'var(--green)' : undefined}>
             <td style="padding:5px 8px">{p.label}</td>
             <td style="text-align:center;padding:5px 8px">{p.fromYear}</td>

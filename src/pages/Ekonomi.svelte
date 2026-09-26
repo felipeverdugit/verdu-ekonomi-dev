@@ -4,7 +4,7 @@
   import { initAuth } from '../auth';
   import { ekStore, fireStore } from '../store';
   import { SHEETS_URL, SHEETS_MAP, EXCEL_PMTS, ALLMAN_DEFAULTS } from '../constants';
-  import { renderTopnav, injectInfoBtn } from '../nav';
+  import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
   import type { EkonomiData, FireSettings } from '../types';
 
@@ -120,8 +120,6 @@
     <div>
       <div class="form-row"><label>Lysa Ulrika — nuv. värde (kr)</label><input type="number" step="10000" value={v(ek.lysa_u_pv)} oninput={e => handleEk('lysa_u_pv', (e.target as HTMLInputElement).value)}></div>
       <div class="form-row"><label>Lysa Ulrika — månadsinsättning (kr)</label><input type="number" step="500" value={v(ek.lysa_u_pmt)} oninput={e => handleEk('lysa_u_pmt', (e.target as HTMLInputElement).value)}></div>
-      <div class="form-row"><label>Buffert Lysa (U+F) — nuv. värde (kr)</label><input type="number" step="10000" value={v(ek.buffert_u_pv)} oninput={e => handleEk('buffert_u_pv', (e.target as HTMLInputElement).value)}></div>
-      <div class="form-row"><label>Buffert Lysa (U+F) — månadsinsättning (kr)</label><input type="number" step="500" value={v(ek.buffert_u_pmt)} oninput={e => handleEk('buffert_u_pmt', (e.target as HTMLInputElement).value)}></div>
     </div>
   </div></div>
 

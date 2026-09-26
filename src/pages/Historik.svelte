@@ -8,7 +8,7 @@
   import { initAuth } from '../auth';
   import { historikStore, ekStore } from '../store';
   import type { Snapshot, EkonomiData } from '../types';
-  import { renderTopnav, injectInfoBtn } from '../nav';
+  import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
 
   Chart.register(LineController, CategoryScale, LinearScale, PointElement, LineElement, Legend, Tooltip);
@@ -18,8 +18,8 @@
   const fmtM  = (n: number) => (n / 1e6).toFixed(2) + ' MSEK';
 
   function buildSnapshot(ek: EkonomiData): Snapshot {
-    const nokSek = ek.nok_sek || 0.97;
-    const fonder = ek.lysa_f_pv + ek.lysa_u_pv + ek.buffert_u_pv + ek.sparkonto_pv;
+    const nokSek = ek.nok_sek;
+    const fonder = ek.lysa_f_pv + ek.lysa_u_pv + ek.sparkonto_pv;
     const tjp    = ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pv + ek.kapan_pv + ek.tjp_u_pv;
     const norge  = ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv + ek.sb_u_pv + ek.dnb_u_pv;
     const allman = ek.ap_f + ek.pp_f + ek.ap_u + ek.pp_u + (ek.nav_f_nok + ek.nav_u_nok) * nokSek;
@@ -29,7 +29,7 @@
   }
 
   function computeSparAr(ek: EkonomiData): number {
-    const monthly = ek.lysa_f_pmt + ek.lysa_u_pmt + ek.buffert_u_pmt + ek.sparkonto_pmt;
+    const monthly = ek.lysa_f_pmt + ek.lysa_u_pmt + ek.sparkonto_pmt;
     const fromQ   = (ek.tjp_f_pmt_q + ek.tjp_u_pmt_q) * 4;
     return monthly * 12 + fromQ;
   }
@@ -186,10 +186,11 @@
   }
 
   onMount(async () => {
-    await initAuth();
     injectInfoBtn(INFO.historik.title, INFO.historik.sections);
     seedIfEmpty();
     loadSnaps();
+    requestAnimationFrame(() => { buildHistChart(); buildPrognosChart(); });
+    await initAuth();
   });
 
   onDestroy(() => {

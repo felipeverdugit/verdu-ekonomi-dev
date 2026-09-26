@@ -1,6 +1,17 @@
 <script lang="ts">
+  import { onMount, onDestroy } from 'svelte';
+  import {
+    Chart, LineController, LineElement, PointElement,
+    LinearScale, CategoryScale, Tooltip, Legend, Filler,
+  } from 'chart.js';
   import Topnav from '../components/Topnav.svelte';
   import { fireStore, ekStore } from '../store';
+  import { simulateUttag } from '../calculations';
+  import { CHART_DARK_GRID, CHART_DARK_TEXT } from '../constants';
+  import type { PensionStream } from '../types';
+
+  Chart.register(LineController, LineElement, PointElement,
+    LinearScale, CategoryScale, Tooltip, Legend, Filler);
 
   // ── Inmatning — initieras från sparade Brygga-inställningar ──────────────────
   const _fs = fireStore.get();
@@ -20,7 +31,13 @@
   let itp2TidigareAr  = $state(2);        // befintliga ITP 2-tjänsteår (helttal)
   let itp2TidigareMon = $state(4);        // befintliga ITP 2-tjänstemånader
 
-  let livslangd = $state(85);  // antagen livslängd (år)
+  let livslangd       = $state(85);
+  let levnadskostnad  = $state(_ek.levnadskostnad || 65_000);
+  let uttakAvkPct     = $state(_fs.uttakAvkPct || 2.0);
+
+  // Chart
+  let uttaksCanvas = $state<HTMLCanvasElement | null>(null);
+  let uttaksChart: Chart | null = null;
 
   const CURRENT_YEAR    = 2026;
   const BIRTH_YEAR      = 1975;
@@ -166,6 +183,54 @@
   // ── Färghjälp ─────────────────────────────────────────────────────────────────
   const diffColor = (n: number) => n >= 0 ? 'var(--green)' : 'var(--red)';
   const sign = (n: number) => (n >= 0 ? '+' : '') + fmt(n);
+
+  // ── Uttakssimulator ───────────────────────────────────────────────────────────
+  function buildUttaksChart() {
+    if (!uttaksCanvas) return;
+    if (uttaksChart) { uttaksChart.destroy(); uttaksChart = null; }
+
+    const fireYear = CURRENT_YEAR + arTillFire;
+    const itp2Stream: PensionStream = {
+      id: 1, label: 'ITP 2 förmån', who: 'f',
+      fromYear: BIRTH_YEAR + ITP2_START_AGE,
+      toYear: 9999, monthly: c.itp2.prorated, livsvarig: true,
+    };
+
+    const simAkap = simulateUttag(c.akap.totFV, uttakAvkPct, fireYear, levnadskostnad, []);
+    const simItp1 = simulateUttag(c.itp1.totFV, uttakAvkPct, fireYear, levnadskostnad, []);
+    const simItp2 = simulateUttag(c.itp2.lvFV,  uttakAvkPct, fireYear, levnadskostnad, [itp2Stream]);
+
+    uttaksChart = new Chart(uttaksCanvas.getContext('2d')!, {
+      type: 'line',
+      data: {
+        labels: simAkap.rows.map(r => String(r.year)),
+        datasets: [
+          { label: 'AKAP-KR kapital (MSEK)',  data: simAkap.rows.map(r => r.capital / 1e6), borderColor: '#6ee7b7', backgroundColor: '#6ee7b718', fill: true,  tension: 0.3, pointRadius: 0, yAxisID: 'y' },
+          { label: 'ITP 1 kapital (MSEK)',    data: simItp1.rows.map(r => r.capital / 1e6), borderColor: '#4f8ef7', backgroundColor: '#4f8ef718', fill: true,  tension: 0.3, pointRadius: 0, yAxisID: 'y' },
+          { label: 'ITP 2 lv-kapital (MSEK)', data: simItp2.rows.map(r => r.capital / 1e6), borderColor: '#a78bfa', backgroundColor: 'transparent', fill: false, tension: 0.3, pointRadius: 0, yAxisID: 'y' },
+          { label: 'ITP 2 pension/mån (kr)',   data: simItp2.rows.map(r => r.pensionMon),   borderColor: '#a78bfa', backgroundColor: 'transparent', fill: false, tension: 0.3, pointRadius: 0, yAxisID: 'y1', borderDash: [4, 2] },
+          { label: 'Levnadskostnad/mån (kr)', data: simAkap.rows.map(() => levnadskostnad), borderColor: '#fb923c', backgroundColor: 'transparent', fill: false, tension: 0,   pointRadius: 0, yAxisID: 'y1', borderDash: [5, 3] },
+        ],
+      },
+      options: {
+        maintainAspectRatio: false,
+        scales: {
+          x:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, maxTicksLimit: 10 } },
+          y:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, callback: v => `${v} M` }, position: 'left' },
+          y1: { grid: { drawOnChartArea: false }, ticks: { color: '#fb923c', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
+        },
+        plugins: { legend: { labels: { color: CHART_DARK_TEXT } } },
+      },
+    });
+  }
+
+  $effect(() => {
+    void c; void uttaksCanvas; void levnadskostnad; void uttakAvkPct;
+    buildUttaksChart();
+  });
+
+  onMount(() => { requestAnimationFrame(() => buildUttaksChart()); });
+  onDestroy(() => { uttaksChart?.destroy(); });
 </script>
 
 <svelte:head><title>Jobbyte-analys — Verdu Ekonomi</title></svelte:head>
@@ -461,6 +526,23 @@
     <p style="font-size:.78rem;color:var(--muted);margin:10px 0 0">
       Skatteberäkningen är förenklad (kommunalskatt {fmtPct(kommunalPct)} + statlig 20 % + jobbskatteavdrag). Exakt netto beror på din kommun och övriga avdrag.
       AKAP-KR: 6 % upp till 7,5 IBB + 30 % däröver. ITP 1: 4,5 % upp till 7,5 IBB + 30 % däröver.
+    </p>
+  </div>
+
+  <h2>Uttakssimulator</h2>
+  <div class="card" style="margin-bottom:24px">
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;align-items:center">
+      <div class="form-row" style="margin:0"><label>Levnadskostnad (kr/mån)</label>
+        <input type="number" class="bgt-inp" bind:value={levnadskostnad} step="500" /></div>
+      <div class="form-row" style="margin:0"><label>Uttaksavkastning (%/år)</label>
+        <input type="number" class="bgt-inp" bind:value={uttakAvkPct} step="0.5" /></div>
+    </div>
+    <div style="position:relative;height:320px">
+      <canvas bind:this={uttaksCanvas}></canvas>
+    </div>
+    <p style="font-size:.75rem;color:var(--muted);margin:8px 0 0">
+      Visar enbart pensionskapital från det aktuella jobbet (AKAP-KR/ITP 1/ITP 2 löneväxling).
+      ITP 2 garanterad pension (lila streckad) startar {BIRTH_YEAR + ITP2_START_AGE}.
     </p>
   </div>
 

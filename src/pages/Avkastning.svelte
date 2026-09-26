@@ -7,7 +7,7 @@
   } from 'chart.js';
   import { initAuth } from '../auth';
   import { fireStore, avkastningStore } from '../store';
-  import { renderTopnav, injectInfoBtn } from '../nav';
+  import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
   import type { AvkRow, AvkStartValues } from '../types';
 
@@ -150,7 +150,7 @@
     });
   }
 
-  $effect(() => { void rows; void antaget; buildPctChart(); buildKrChart(); });
+  $effect(() => { void rows; void antaget; void pctCanvas; void krCanvas; buildPctChart(); buildKrChart(); });
 
   // ── Rad-hantering ─────────────────────────────────────────────────────────────
   function addRow() {
@@ -181,9 +181,10 @@
   }
 
   onMount(async () => {
-    await initAuth();
+    requestAnimationFrame(() => { buildPctChart(); buildKrChart(); });
     injectInfoBtn(INFO.avkastning.title, INFO.avkastning.sections);
     window.addEventListener('storage', onStorage);
+    await initAuth();
   });
 
   onDestroy(() => {

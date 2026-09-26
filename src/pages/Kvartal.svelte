@@ -4,7 +4,7 @@
   import { initAuth } from '../auth';
   import { ekStore, fireStore, kvartalStore } from '../store';
   import { computeFire } from '../calculations';
-  import { renderTopnav, injectInfoBtn } from '../nav';
+  import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
 
   // ── Aktiva pensioner beräknas direkt ─────────────────────────────────────────

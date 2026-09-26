@@ -16,10 +16,11 @@ Personligt ekonomi- och FIRE-planeringsverktyg för familjen Verdu. Simulerar br
 | 📋 Budget | Månadsöversikt inkomster och utgifter |
 | 📅 Kvartal | Kvartalsstrategi — buffert vs. fondförsäljning |
 | 🎯 Avkastning | Faktisk avkastning vs. Lysa-index |
+| 💼 Jobbyte | Jämför nuvarande AKAP-KR-jobb med nytt jobb (ITP 1/ITP 2) — lön, skatt, pensionskapital, uttakssimulator |
 
 ## Tech stack
 
-- **Vite** — MPA-byggverktyg (10 HTML-ingångspunkter)
+- **Vite** — MPA-byggverktyg (11 HTML-ingångspunkter)
 - **Svelte 5** — reaktiva komponenter (runes-läge: `$state`, `$derived`, `$effect`)
 - **TypeScript** — strikt typad källkod
 - **Chart.js** — diagram

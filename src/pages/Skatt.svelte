@@ -5,7 +5,7 @@
   import { initAuth } from '../auth';
   import { computeFire, incomeTax } from '../calculations';
   import { ekStore, fireStore } from '../store';
-  import { renderTopnav, injectInfoBtn } from '../nav';
+  import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
   import { PEOPLE } from '../constants';
 
@@ -102,10 +102,10 @@
   });
 
   onMount(async () => {
-    await initAuth();
+    requestAnimationFrame(() => buildChart());
     injectInfoBtn(INFO.skatt.title, INFO.skatt.sections);
-    buildChart();
     window.addEventListener('storage', onStorage);
+    await initAuth();
   });
 
   onDestroy(() => {
