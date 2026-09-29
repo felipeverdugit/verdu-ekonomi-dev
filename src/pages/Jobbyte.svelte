@@ -725,26 +725,24 @@
   <section style="margin-bottom:24px">
     <h3 style="margin-top:0">Kapital vid FIRE-start</h3>
     <div class="card">
-      <div style="display:grid;grid-template-columns:minmax(220px,320px) 1fr;gap:32px;align-items:center">
-        <div style="position:relative;height:260px">
-          <canvas bind:this={bryggaPieCanvas}></canvas>
+      <div style="position:relative;height:380px;max-width:480px;margin:0 auto">
+        <canvas bind:this={bryggaPieCanvas}></canvas>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+        <div>
+          <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">TjP Sverige (tidigare, fryst)</div>
+          <div style="font-size:1.4rem;font-weight:800;color:#f59e0b">{fmtM(itp1Breakdown.felipeGammalTjp + itp1Breakdown.ulrikaTjp)}</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:4px">AKAP-KR/Kåpan/tidigare löneväxling (F) + TjP (U) — inga nya inbetalningar</div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px">
-          <div>
-            <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">TjP Sverige (tidigare, fryst)</div>
-            <div style="font-size:1.4rem;font-weight:800;color:#f59e0b">{fmtM(itp1Breakdown.felipeGammalTjp + itp1Breakdown.ulrikaTjp)}</div>
-            <div style="font-size:.75rem;color:var(--muted);margin-top:4px">AKAP-KR/Kåpan/tidigare löneväxling (F) + TjP (U) — inga nya inbetalningar</div>
-          </div>
-          <div>
-            <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">ITP 1 (nytt jobb)</div>
-            <div style="font-size:1.4rem;font-weight:800;color:#22d3ee">{fmtM(itp1Breakdown.itp1Nytt)}</div>
-            <div style="font-size:.75rem;color:var(--muted);margin-top:4px">{fmt(itp1Contrib(lonNy) + lvNy)}/mån i {arTillFire} år</div>
-          </div>
-          <div>
-            <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Total förmögenhet vid start</div>
-            <div style="font-size:1.4rem;font-weight:800;color:#a78bfa">{fmtM(itp1Brygga.totaltFV)}</div>
-            <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Alla poster i diagrammet summerade</div>
-          </div>
+        <div>
+          <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">ITP 1 (nytt jobb)</div>
+          <div style="font-size:1.4rem;font-weight:800;color:#22d3ee">{fmtM(itp1Breakdown.itp1Nytt)}</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:4px">{fmt(itp1Contrib(lonNy) + lvNy)}/mån i {arTillFire} år</div>
+        </div>
+        <div>
+          <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Total förmögenhet vid start</div>
+          <div style="font-size:1.4rem;font-weight:800;color:#a78bfa">{fmtM(itp1Brygga.totaltFV)}</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Alla poster i diagrammet summerade</div>
         </div>
       </div>
     </div>
