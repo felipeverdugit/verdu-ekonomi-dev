@@ -49,7 +49,7 @@ function accountFV(
  * FV för ett konto där insättningen växer med growthPctAr per år (lönehöjning).
  * Använder formel för växande annuitet: PMT₁·[(1+r)ⁿ − (1+g)ⁿ]/(r−g)
  */
-function accountFVGrowing(
+export function accountFVGrowing(
   pv: number,
   pmt: number,
   freq: 'monthly' | 'quarterly',

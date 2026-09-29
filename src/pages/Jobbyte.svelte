@@ -6,7 +6,7 @@
   } from 'chart.js';
   import Topnav from '../components/Topnav.svelte';
   import { fireStore, ekStore } from '../store';
-  import { simulateUttag, computeFire } from '../calculations';
+  import { simulateUttag, computeFire, accountFVGrowing } from '../calculations';
   import { CHART_DARK_GRID, CHART_DARK_TEXT } from '../constants';
   import type { PensionStream, EkonomiData, FireSettings } from '../types';
 
@@ -202,6 +202,19 @@
     return computeFire(ekItp1, sItp1);
   });
 
+  // Bryter ut ITP 1-delen ur "TjP Sverige"-potten så den syns separat i diagrammet
+  let itp1Breakdown = $derived.by(() => {
+    const ek = bryggaEk;
+    const felipeGammalTjp =
+      accountFVGrowing(ek.tjp_f_pv,   0, 'quarterly', avkPct, 0, arTillFire, arTillFire) +
+      accountFVGrowing(ek.kapan_pv,   0, 'monthly',   avkPct, 0, arTillFire, arTillFire) +
+      accountFVGrowing(ek.tidigare_pv,0, 'monthly',   avkPct, 0, arTillFire, arTillFire) +
+      accountFVGrowing(ek.lonevxl_pv, 0, 'monthly',   avkPct, 0, arTillFire, arTillFire);
+    const ulrikaTjp = accountFVGrowing(ek.tjp_u_pv, ek.tjp_u_pmt_q, 'quarterly', avkPct, bryggaFs.lonehojU, arTillFire, arTillFire);
+    const itp1Nytt  = accountFVGrowing(0, itp1Contrib(lonNy) + lvNy, 'monthly', avkPct, bryggaFs.lonehojF, arTillFire, arTillFire);
+    return { felipeGammalTjp, ulrikaTjp, itp1Nytt };
+  });
+
   const FASE_COLORS = ['#4f8ef7','#6ee7b7','#f59e0b','#f87171','#a78bfa','#34d399','#60a5fa'];
   function badge(label: string, who: string): string {
     const isU    = who === 'u';
@@ -216,15 +229,16 @@
   let bryggaPieChart:    Chart | null = null;
   let bryggaUttaksChart: Chart | null = null;
 
-  const PIE_LABELS = ['Fonder', 'Sparkonto', 'TjP Sverige', 'TjP Norge', 'Premiepension', 'Inkomstpension'];
-  const PIE_COLORS = ['#4f8ef7','#6ee7b7','#f59e0b','#f87171','#a78bfa','#34d399'];
+  const PIE_LABELS = ['Fonder', 'Sparkonto', 'TjP Sverige (tidigare)', 'ITP 1 (nytt jobb)', 'TjP Norge', 'Premiepension', 'Inkomstpension'];
+  const PIE_COLORS = ['#4f8ef7','#6ee7b7','#f59e0b','#22d3ee','#f87171','#a78bfa','#34d399'];
 
   function buildBryggaPieChart() {
     if (!bryggaPieCanvas) return;
     if (bryggaPieChart) { bryggaPieChart.destroy(); bryggaPieChart = null; }
     const res = itp1Brygga;
+    const b   = itp1Breakdown;
     const labels = [...PIE_LABELS];
-    const data   = [res.fonder_fv, res.sparkonto_fv, res.tjp_fv, res.norge_fv, res.pp_fv, res.ap_fv];
+    const data   = [res.fonder_fv, res.sparkonto_fv, b.felipeGammalTjp + b.ulrikaTjp, b.itp1Nytt, res.norge_fv, res.pp_fv, res.ap_fv];
     const colors = [...PIE_COLORS];
     if (res.aktierIFire && res.aktierVal > 0) { labels.push('Aktier'); data.push(res.aktierVal); colors.push('#f97316'); }
     bryggaPieChart = new Chart(bryggaPieCanvas.getContext('2d')!, {
@@ -271,7 +285,7 @@
   }
 
   $effect(() => {
-    void itp1Brygga; void bryggaPieCanvas; void bryggaUttaksCanvas;
+    void itp1Brygga; void itp1Breakdown; void bryggaPieCanvas; void bryggaUttaksCanvas;
     buildBryggaPieChart();
     buildBryggaUttaksChart();
   });
@@ -713,6 +727,18 @@
       <h3 style="margin-top:0">Kapital vid FIRE-start</h3>
       <div class="card">
         <canvas bind:this={bryggaPieCanvas} height="240"></canvas>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+          <div>
+            <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">TjP Sverige (tidigare, fryst)</div>
+            <div style="font-size:1.15rem;font-weight:700;color:#f59e0b">{fmtM(itp1Breakdown.felipeGammalTjp + itp1Breakdown.ulrikaTjp)}</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:2px">AKAP-KR/Kåpan/tidigare löneväxling (F) + TjP (U) — inga nya inbetalningar</div>
+          </div>
+          <div>
+            <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">ITP 1 (nytt jobb)</div>
+            <div style="font-size:1.15rem;font-weight:700;color:#22d3ee">{fmtM(itp1Breakdown.itp1Nytt)}</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:2px">{fmt(itp1Contrib(lonNy) + lvNy)}/mån i {arTillFire} år</div>
+          </div>
+        </div>
       </div>
     </section>
   </div>
