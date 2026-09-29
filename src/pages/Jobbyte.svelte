@@ -274,12 +274,16 @@
       },
       options: {
         maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
         scales: {
           x:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, maxTicksLimit: 10 } },
           y:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, callback: v => `${v} M` }, position: 'left' },
           y1: { grid: { drawOnChartArea: false }, ticks: { color: '#6ee7b7', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
         },
-        plugins: { legend: { labels: { color: CHART_DARK_TEXT } } },
+        plugins: {
+          legend: { labels: { color: CHART_DARK_TEXT } },
+          tooltip: { mode: 'index', intersect: false },
+        },
       },
     });
   }
@@ -323,12 +327,16 @@
       },
       options: {
         maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
         scales: {
           x:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, maxTicksLimit: 10 } },
           y:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, callback: v => `${v} M` }, position: 'left' },
           y1: { grid: { drawOnChartArea: false }, ticks: { color: '#fb923c', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
         },
-        plugins: { legend: { labels: { color: CHART_DARK_TEXT } } },
+        plugins: {
+          legend: { labels: { color: CHART_DARK_TEXT } },
+          tooltip: { mode: 'index', intersect: false },
+        },
       },
     });
   }
