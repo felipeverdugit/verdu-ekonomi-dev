@@ -16,7 +16,7 @@ Personligt ekonomi- och FIRE-planeringsverktyg för familjen Verdu. Simulerar br
 | 📋 Budget | Månadsöversikt inkomster och utgifter |
 | 📅 Kvartal | Kvartalsstrategi — buffert vs. fondförsäljning |
 | 🎯 Avkastning | Faktisk avkastning vs. Lysa-index |
-| 💼 Jobbyte | Jämför nuvarande AKAP-KR-jobb med nytt jobb (ITP 1/ITP 2) — lön, skatt, pensionskapital, uttakssimulator |
+| 💼 Jobbyte | Jämför nuvarande AKAP-KR-jobb med nytt jobb (ITP 1/ITP 2) — lön, skatt, pensionskapital, uttakssimulator, samt full Brygga-simulator med ITP 1 |
 
 ## Tech stack
 

@@ -1,16 +1,16 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import {
-    Chart, LineController, LineElement, PointElement,
+    Chart, ArcElement, DoughnutController, LineController, LineElement, PointElement,
     LinearScale, CategoryScale, Tooltip, Legend, Filler,
   } from 'chart.js';
   import Topnav from '../components/Topnav.svelte';
   import { fireStore, ekStore } from '../store';
-  import { simulateUttag } from '../calculations';
+  import { simulateUttag, computeFire } from '../calculations';
   import { CHART_DARK_GRID, CHART_DARK_TEXT } from '../constants';
-  import type { PensionStream } from '../types';
+  import type { PensionStream, EkonomiData, FireSettings } from '../types';
 
-  Chart.register(LineController, LineElement, PointElement,
+  Chart.register(ArcElement, DoughnutController, LineController, LineElement, PointElement,
     LinearScale, CategoryScale, Tooltip, Legend, Filler);
 
   // ── Inmatning — initieras från sparade Brygga-inställningar ──────────────────
@@ -183,6 +183,101 @@
   // ── Färghjälp ─────────────────────────────────────────────────────────────────
   const diffColor = (n: number) => n >= 0 ? 'var(--green)' : 'var(--red)';
   const sign = (n: number) => (n >= 0 ? '+' : '') + fmt(n);
+
+  // ── Brygga-simulator med ITP 1 (hela familjens bild) ──────────────────────────
+  // Återanvänder computeFire() från Brygga, men ersätter Felipes AKAP-KR-inbetalningar
+  // (tjp_f_pmt_q) med ITP 1-avsättning + ny löneväxling. Alla övriga strömmar
+  // (Ulrika, Allmänpension, NAV, Fast TjP) hämtas oförändrade från Ekonomi-sidan.
+  const bryggaEk = ekStore.get();
+  const bryggaFs = fireStore.get();
+
+  let itp1Brygga = $derived.by(() => {
+    const ekItp1: EkonomiData = {
+      ...bryggaEk,
+      brutto_f:    lonNy,
+      tjp_f_pmt_q: 0,                              // AKAP-KR-inbetalningar upphör vid jobbyte
+      lonevxl_pmt: itp1Contrib(lonNy) + lvNy,       // ITP 1 AG-avsättning + ny löneväxling
+    };
+    const sItp1: FireSettings = { ...bryggaFs, avkPct, antalAr: arTillFire };
+    return computeFire(ekItp1, sItp1);
+  });
+
+  const FASE_COLORS = ['#4f8ef7','#6ee7b7','#f59e0b','#f87171','#a78bfa','#34d399','#60a5fa'];
+  function badge(label: string, who: string): string {
+    const isU    = who === 'u';
+    const isFire = label.includes('FIRE') || label.includes('Brygga');
+    const color  = isFire ? '#f59e0b' : isU ? '#a78bfa' : '#6ee7b7';
+    const short  = label.replace(/^(Felipe|Ulrika) \d+:\s*/, '').replace(' (redan aktiv)', '');
+    return `<span class="badge" style="background:${color}18;color:${color};border:1px solid ${color}40">${isU ? 'U: ' : isFire ? '' : 'F: '}${short}</span>`;
+  }
+
+  let bryggaPieCanvas    = $state<HTMLCanvasElement | null>(null);
+  let bryggaUttaksCanvas = $state<HTMLCanvasElement | null>(null);
+  let bryggaPieChart:    Chart | null = null;
+  let bryggaUttaksChart: Chart | null = null;
+
+  const PIE_LABELS = ['Fonder', 'Sparkonto', 'TjP Sverige', 'TjP Norge', 'Premiepension', 'Inkomstpension'];
+  const PIE_COLORS = ['#4f8ef7','#6ee7b7','#f59e0b','#f87171','#a78bfa','#34d399'];
+
+  function buildBryggaPieChart() {
+    if (!bryggaPieCanvas) return;
+    if (bryggaPieChart) { bryggaPieChart.destroy(); bryggaPieChart = null; }
+    const res = itp1Brygga;
+    const labels = [...PIE_LABELS];
+    const data   = [res.fonder_fv, res.sparkonto_fv, res.tjp_fv, res.norge_fv, res.pp_fv, res.ap_fv];
+    const colors = [...PIE_COLORS];
+    if (res.aktierIFire && res.aktierVal > 0) { labels.push('Aktier'); data.push(res.aktierVal); colors.push('#f97316'); }
+    bryggaPieChart = new Chart(bryggaPieCanvas.getContext('2d')!, {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#1a1d27' }] },
+      options: {
+        plugins: {
+          legend: { position: 'bottom', labels: { color: CHART_DARK_TEXT, font: { size: 11 } } },
+          tooltip: { callbacks: { label: (ctx) => ` ${fmtM(ctx.raw as number)}` } },
+        },
+      },
+    });
+  }
+
+  function buildBryggaUttaksChart() {
+    if (!bryggaUttaksCanvas) return;
+    if (bryggaUttaksChart) { bryggaUttaksChart.destroy(); bryggaUttaksChart = null; }
+    const res = itp1Brygga;
+    const ek  = bryggaEk;
+    const sim = simulateUttag(res.kapital, res.uttakAvkPct, res.fireYear, ek.levnadskostnad, res.pensions, ek.levnadskostnad2, ek.exp_switch_ar);
+    const switchYear2 = ek.exp_switch_ar > 0 && ek.levnadskostnad2 > 0 ? res.fireYear + ek.exp_switch_ar : 9999;
+    const levnadLinje = sim.rows.map(row => row.year >= switchYear2 ? ek.levnadskostnad2 : ek.levnadskostnad);
+
+    bryggaUttaksChart = new Chart(bryggaUttaksCanvas.getContext('2d')!, {
+      type: 'line',
+      data: {
+        labels: sim.rows.map(row => String(row.year)),
+        datasets: [
+          { label: 'Kapital (MSEK)', data: sim.rows.map(row => row.capital / 1e6), borderColor: '#4f8ef7', backgroundColor: '#4f8ef720', fill: true, tension: 0.3, pointRadius: 0, yAxisID: 'y' },
+          { label: 'Pension/mån (kr)', data: sim.rows.map(row => row.pensionMon), borderColor: '#6ee7b7', backgroundColor: 'transparent', tension: 0.3, pointRadius: 0, yAxisID: 'y1' },
+          { label: 'Levnadskostnad/mån (kr)', data: levnadLinje, borderColor: '#fb923c', backgroundColor: 'transparent', borderDash: [5, 3], tension: 0, pointRadius: 0, yAxisID: 'y1' },
+        ],
+      },
+      options: {
+        maintainAspectRatio: false,
+        scales: {
+          x:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, maxTicksLimit: 10 } },
+          y:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, callback: v => `${v} M` }, position: 'left' },
+          y1: { grid: { drawOnChartArea: false }, ticks: { color: '#6ee7b7', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
+        },
+        plugins: { legend: { labels: { color: CHART_DARK_TEXT } } },
+      },
+    });
+  }
+
+  $effect(() => {
+    void itp1Brygga; void bryggaPieCanvas; void bryggaUttaksCanvas;
+    buildBryggaPieChart();
+    buildBryggaUttaksChart();
+  });
+
+  onMount(() => { requestAnimationFrame(() => { buildBryggaPieChart(); buildBryggaUttaksChart(); }); });
+  onDestroy(() => { bryggaPieChart?.destroy(); bryggaUttaksChart?.destroy(); });
 
   // ── Uttakssimulator ───────────────────────────────────────────────────────────
   function buildUttaksChart() {
@@ -544,6 +639,87 @@
       Visar enbart pensionskapital från det aktuella jobbet (AKAP-KR/ITP 1/ITP 2 löneväxling).
       ITP 2 garanterad pension (lila streckad) startar {BIRTH_YEAR + ITP2_START_AGE}.
     </p>
+  </div>
+
+  <h2>🌉 Brygga-simulator med ITP 1 (hela familjens bild)</h2>
+  <p style="font-size:.82rem;color:var(--muted);margin:-8px 0 16px">
+    Samma vy som <a href="fire.html">Brygga-simulatorn</a>, men Felipes AKAP-KR-inbetalningar (nuvarande jobb)
+    är ersatta med ITP 1-avsättning + löneväxling {fmt(lvNy)}/mån på ny lön {fmt(lonNy)}/mån.
+    Ulrikas pensioner, Allmänpension, NAV och redan intjänad Fast TjP är oförändrade (från Ekonomi-sidan).
+    Avkastning {fmtPct(avkPct)} · {arTillFire} år till FIRE.
+  </p>
+
+  <div class="kpi-bar" style="margin-bottom:16px">
+    <div class="kpi"><div class="kpi-label">Brygga-startår</div><div class="kpi-value orange">{itp1Brygga.fireYear} (om {arTillFire} år)</div></div>
+    <div class="kpi">
+      <div class="kpi-label">Brygga-kapital</div>
+      <div class="kpi-value">{fmtM(itp1Brygga.bryggaKapital)}</div>
+      <div class="kpi-sub" style="font-size:.7rem;color:var(--muted)">PV av gap tills pension täcker allt</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Brygga-täckning</div>
+      <div class="kpi-value" style:color={itp1Brygga.bryggaTackning >= 100 ? 'var(--green)' : itp1Brygga.bryggaTackning >= 75 ? 'var(--orange)' : 'var(--red)'}>{itp1Brygga.bryggaTackning.toFixed(1)} %</div>
+      <div class="kpi-sub" style="font-size:.7rem;color:var(--muted)">Fritt kapital / brygga-kapital</div>
+    </div>
+    <div class="kpi"><div class="kpi-label">Fritt kapital vid start</div><div class="kpi-value">{fmtM(itp1Brygga.kapital)}</div></div>
+    <div class="kpi"><div class="kpi-label">Total förmögenhet vid start</div><div class="kpi-value purple">{fmtM(itp1Brygga.totaltFV)}</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;margin-bottom:24px">
+    <section>
+      <h3 style="margin-top:0">Pensionsinkomster per fas</h3>
+      <div class="card" style="overflow-x:auto">
+        <table class="fase-table">
+          <thead><tr>
+            <th>#</th><th>År</th><th>Ålder</th><th>Händelse</th>
+            <th class="num text-felipe">F/mån</th>
+            <th class="num text-ulrika">U/mån</th>
+            <th class="num">Tot/mån</th>
+            <th class="num">Gap</th>
+          </tr></thead>
+          <tbody>
+            {#each itp1Brygga.phases as ph, i}
+              {@const tot  = ph.incomeF + ph.incomeU}
+              {@const gap  = bryggaEk.levnadskostnad - tot}
+              {@const col  = FASE_COLORS[i] ?? '#8892a4'}
+              <tr>
+                <td><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:{col}22;color:{col};font-size:.72rem;font-weight:700">{ph.nr}</span></td>
+                <td class="text-muted">{ph.year}</td>
+                <td style="white-space:nowrap;font-size:.82rem"><span class="text-felipe">F:{ph.ageF}</span>&ensp;<span class="text-ulrika">U:{ph.ageU}</span></td>
+                <td>
+                  {#each ph.labels as lbl}
+                    {@const ev = itp1Brygga.events.find(e => e.label === lbl.replace(' (redan aktiv)', ''))}
+                    {@html badge(lbl, ev?.who ?? 'f')}
+                  {/each}
+                </td>
+                <td class="num text-felipe fw-bold">{fmt(ph.incomeF)}</td>
+                <td class="num text-ulrika fw-bold">{fmt(ph.incomeU)}</td>
+                <td class="num fw-bold">{fmt(tot)}</td>
+                <td class="num">
+                  {#if gap > 0}
+                    <span class="text-red fw-bold">-{fmt(Math.round(gap))}</span>
+                  {:else}
+                    <span class="text-green fw-bold">+{fmt(Math.round(-gap))}</span>
+                  {/if}
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h3 style="margin-top:0">Kapital vid FIRE-start</h3>
+      <div class="card">
+        <canvas bind:this={bryggaPieCanvas} height="240"></canvas>
+      </div>
+    </section>
+  </div>
+
+  <h3>Uttakssimulator — hela familjens bild</h3>
+  <div class="card" style="height:320px;margin-bottom:24px">
+    <canvas bind:this={bryggaUttaksCanvas} style="height:100%"></canvas>
   </div>
 
   <footer>Jobbyte-analys · Verdu Ekonomi</footer>
