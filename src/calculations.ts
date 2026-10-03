@@ -252,12 +252,16 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const fireYearF = Math.round(BASE_YEAR + (BASE_MONTH - 1) / 12 + antalArF);
   const fireYearU = Math.round(BASE_YEAR + (BASE_MONTH - 1) / 12 + antalArU);
 
+  // Om ni slutar jobba olika år: den som slutar tidigare får en egen fas,
+  // separat från Brygga-start (som alltid är den gemensamma/senare horisonten).
+  const earlyRetiree: { who: 'f' | 'u'; year: number; label: string } | null =
+    antalArF === antalArU ? null :
+    antalArF < antalArU
+      ? { who: 'f', year: fireYearF, label: `Felipe ${fireYearF - felipe.born}: Slutar jobba (Ulrika fortsätter ${antalArU - antalArF} år till)` }
+      : { who: 'u', year: fireYearU, label: `Ulrika ${fireYearU - ulrika.born}: Slutar jobba (Felipe fortsätter ${antalArF - antalArU} år till)` };
+
   const events: TimelineEvent[] = [
-    ...(antalArF !== antalArU ? [
-      antalArF < antalArU
-        ? { year: fireYearF, who: 'f' as const, type: 'slutar_jobba', label: `Felipe ${fireYearF - felipe.born}: Slutar jobba (Ulrika fortsätter ${antalArU - antalArF} år till)` }
-        : { year: fireYearU, who: 'u' as const, type: 'slutar_jobba', label: `Ulrika ${fireYearU - ulrika.born}: Slutar jobba (Felipe fortsätter ${antalArF - antalArU} år till)` },
-    ] : []),
+    ...(earlyRetiree ? [{ year: earlyRetiree.year, who: earlyRetiree.who, type: 'slutar_jobba', label: earlyRetiree.label }] : []),
     { year: YR_U_NORSK_TJP, who: 'u', type: 'norsk_tjp_start', label: `Ulrika ${s.uNorskTjpAge}: Norsk TjP startar (t.o.m. 77)` },
     { year: u_norsk_end,     who: 'u', type: 'norsk_tjp_end',   label: `Ulrika 77: Norsk TjP slutar` },
     { year: u_tjp_start,     who: 'u', type: 'tjp_start',       label: `Ulrika ${s.uTjpAge}: Svensk TjP startar (${s.tjpAr} år)` },
@@ -273,24 +277,40 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
 
   // ── Fasdata ────────────────────────────────────────────────────────────────
   const phases: Phase[] = [];
+  let faseNr = 1;
 
-  // Fas 1: FIRE-dag
+  // Fas 0 (om asymmetrisk): den som slutar jobba först
+  if (earlyRetiree) {
+    phases.push({
+      nr: String(faseNr++), year: earlyRetiree.year,
+      ageF: earlyRetiree.year - felipe.born,
+      ageU: earlyRetiree.year - ulrika.born,
+      labels: [earlyRetiree.label,
+        ...events.filter(e => e.type !== 'slutar_jobba' && e.year <= earlyRetiree.year).map(e => e.label + ' (redan aktiv)')],
+      incomeF: incomeF(earlyRetiree.year),
+      incomeU: incomeU(earlyRetiree.year),
+    });
+  }
+
+  // Fas: Brygga-start (gemensam/senare horisont — ingen av er har längre lön)
   phases.push({
-    nr: '1', year: fireYear,
+    nr: String(faseNr++), year: fireYear,
     ageF: fireYear - felipe.born,
     ageU: fireYear - ulrika.born,
     labels: ['Brygga-start — privata fonder täcker gapet',
-      ...events.filter(e => e.year <= fireYear).map(e => e.label + ' (redan aktiv)')],
+      ...events
+        .filter(e => e.year <= fireYear && e.year > (earlyRetiree?.year ?? -Infinity))
+        .map(e => e.label + ' (redan aktiv)')],
     incomeF: incomeF(fireYear),
     incomeU: incomeU(fireYear),
   });
 
-  // Framtida faser: en fas per unik händelseår efter FIRE
+  // Framtida faser: en fas per unik händelseår efter Brygga-start
   const futureYears = [...new Set(events.filter(e => e.year > fireYear).map(e => e.year))].sort((a, b) => a - b);
-  futureYears.forEach((yr, i) => {
+  futureYears.forEach(yr => {
     const yearEvents = events.filter(e => e.year === yr);
     phases.push({
-      nr: String(i + 2), year: yr,
+      nr: String(faseNr++), year: yr,
       ageF: yr - felipe.born,
       ageU: yr - ulrika.born,
       labels: yearEvents.map(e => e.label),
