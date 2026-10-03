@@ -254,11 +254,15 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
 
   // Om ni slutar jobba olika år: den som slutar tidigare får en egen fas,
   // separat från Brygga-start (som alltid är den gemensamma/senare horisonten).
-  const earlyRetiree: { who: 'f' | 'u'; year: number; label: string } | null =
+  // Den som fortfarande jobbar har kvar sin (nettoberäknade) lön i tabellen
+  // tills även hen slutar — annars ser gapet ut att vara större än det är.
+  const earlyRetiree: { who: 'f' | 'u'; year: number; label: string; workingSalaryNet: number } | null =
     antalArF === antalArU ? null :
     antalArF < antalArU
-      ? { who: 'f', year: fireYearF, label: `Felipe ${fireYearF - felipe.born}: Slutar jobba (Ulrika fortsätter ${antalArU - antalArF} år till)` }
-      : { who: 'u', year: fireYearU, label: `Ulrika ${fireYearU - ulrika.born}: Slutar jobba (Felipe fortsätter ${antalArF - antalArU} år till)` };
+      ? { who: 'f', year: fireYearF, workingSalaryNet: Math.round(ek.brutto_u * skattFaktor),
+          label: `Felipe ${fireYearF - felipe.born}: Slutar jobba (Ulrika jobbar ${antalArU - antalArF} år till — hennes lön täcker gapet)` }
+      : { who: 'u', year: fireYearU, workingSalaryNet: Math.round(ek.brutto_f * skattFaktor),
+          label: `Ulrika ${fireYearU - ulrika.born}: Slutar jobba (Felipe jobbar ${antalArF - antalArU} år till — hans lön täcker gapet)` };
 
   const events: TimelineEvent[] = [
     ...(earlyRetiree ? [{ year: earlyRetiree.year, who: earlyRetiree.who, type: 'slutar_jobba', label: earlyRetiree.label }] : []),
@@ -287,8 +291,8 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
       ageU: earlyRetiree.year - ulrika.born,
       labels: [earlyRetiree.label,
         ...events.filter(e => e.type !== 'slutar_jobba' && e.year <= earlyRetiree.year).map(e => e.label + ' (redan aktiv)')],
-      incomeF: incomeF(earlyRetiree.year),
-      incomeU: incomeU(earlyRetiree.year),
+      incomeF: incomeF(earlyRetiree.year) + (earlyRetiree.who === 'u' ? earlyRetiree.workingSalaryNet : 0),
+      incomeU: incomeU(earlyRetiree.year) + (earlyRetiree.who === 'f' ? earlyRetiree.workingSalaryNet : 0),
     });
   }
 
