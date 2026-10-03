@@ -197,8 +197,8 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   // Slutår
   const u_norsk_end = ulrika.born + NORSK_TJP_END_AGE;
   const f_norsk_end = felipe.born + NORSK_TJP_END_AGE;
-  const u_tjp_end   = u_tjp_start + s.tjpAr;
-  const f_tjp_end   = f_tjp_start + s.tjpAr;
+  const u_tjp_end   = u_tjp_start + s.tjpArU;
+  const f_tjp_end   = f_tjp_start + s.tjpArF;
 
   // PMT för norsk TjP: kapitalet växer från FIRE till startår, sedan dynamisk period (start→77)
   const u_norsk_extra  = Math.max(0, YR_U_NORSK_TJP - fireYear);
@@ -210,15 +210,15 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const u_norsk_mon    = Math.round(pmt(uttakAvkMon, u_norsk_period * 12, u_norsk_cap));
   const f_norsk_mon    = Math.round(pmt(uttakAvkMon, f_norsk_period * 12, f_norsk_cap));
 
-  // PMT för svensk TjP: kapitalet växer från FIRE till startår, sedan tjpAr-PMT
+  // PMT för svensk TjP: kapitalet växer från FIRE till startår, sedan tjpAr-PMT (per person)
   const u_tjp_extra    = Math.max(0, u_tjp_start - fireYear);
   const f_tjp_extra    = Math.max(0, f_tjp_start - fireYear);
   const u_tjp_cap      = grp_tjp_u   * Math.pow(1 + avkPct / 100, u_tjp_extra);
   const f_tjp_cap      = grp_tjp_f   * Math.pow(1 + avkPct / 100, f_tjp_extra);
   const f_lonevxl_cap  = grp_lonevxl * Math.pow(1 + avkPct / 100, f_tjp_extra);
-  const u_tjp_mon      = Math.round(pmt(uttakAvkMon, s.tjpAr * 12, u_tjp_cap));
-  const f_tjp_mon      = Math.round(pmt(uttakAvkMon, s.tjpAr * 12, f_tjp_cap));
-  const f_lonevxl_mon  = Math.round(pmt(uttakAvkMon, s.tjpAr * 12, f_lonevxl_cap));
+  const u_tjp_mon      = Math.round(pmt(uttakAvkMon, s.tjpArU * 12, u_tjp_cap));
+  const f_tjp_mon      = Math.round(pmt(uttakAvkMon, s.tjpArF * 12, f_tjp_cap));
+  const f_lonevxl_mon  = Math.round(pmt(uttakAvkMon, s.tjpArF * 12, f_lonevxl_cap));
 
   // Allmänpension (statlig SE) och NAV inntektspension — visas som separata rader
   const u_allman_se_mon = Math.round(ek.allman_se_u * skattFaktor);
@@ -268,11 +268,11 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
     ...(earlyRetiree ? [{ year: earlyRetiree.year, who: earlyRetiree.who, type: 'slutar_jobba', label: earlyRetiree.label }] : []),
     { year: YR_U_NORSK_TJP, who: 'u', type: 'norsk_tjp_start', label: `Ulrika ${s.uNorskTjpAge}: Norsk TjP startar (t.o.m. 77)` },
     { year: u_norsk_end,     who: 'u', type: 'norsk_tjp_end',   label: `Ulrika 77: Norsk TjP slutar` },
-    { year: u_tjp_start,     who: 'u', type: 'tjp_start',       label: `Ulrika ${s.uTjpAge}: Svensk TjP startar (${s.tjpAr} år)` },
+    { year: u_tjp_start,     who: 'u', type: 'tjp_start',       label: `Ulrika ${s.uTjpAge}: Svensk TjP startar (${s.tjpArU} år)` },
     { year: u_tjp_end,       who: 'u', type: 'tjp_end',         label: `Ulrika ${u_tjp_end - ulrika.born}: Svensk TjP slutar` },
     { year: YR_F_NORSK_TJP, who: 'f', type: 'norsk_tjp_start', label: `Felipe ${s.fNorskTjpAge}: Norsk TjP startar (t.o.m. 77)` },
     { year: f_norsk_end,     who: 'f', type: 'norsk_tjp_end',   label: `Felipe 77: Norsk TjP slutar` },
-    { year: f_tjp_start,     who: 'f', type: 'tjp_start',       label: `Felipe ${s.fTjpAge}: Svensk TjP startar (${s.tjpAr} år)` },
+    { year: f_tjp_start,     who: 'f', type: 'tjp_start',       label: `Felipe ${s.fTjpAge}: Svensk TjP startar (${s.tjpArF} år)` },
     { year: f_tjp_end,       who: 'f', type: 'tjp_end',         label: `Felipe ${f_tjp_end - felipe.born}: Svensk TjP slutar` },
     { year: YR_F_FAST_TJP,  who: 'f', type: 'fast_tjp',        label: `Felipe ${FAST_TJP_AGE}: Fast TjP (Alecta/KPA/Kåpan)` },
     { year: YR_U_ALLMAN,    who: 'u', type: 'allman',           label: `Ulrika ${s.uAllmanAge}: Allmänpension SE + NAV` },

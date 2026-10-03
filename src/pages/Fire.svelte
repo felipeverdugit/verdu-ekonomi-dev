@@ -23,7 +23,8 @@
     { key: 'antalArF',      label: 'Felipe: år till FIRE' },
     { key: 'antalArU',      label: 'Ulrika: år till FIRE' },
     { key: 'uttakAvkPct',   label: 'Uttaksavkastning' },
-    { key: 'tjpAr',         label: 'TjP uttaksperiod' },
+    { key: 'tjpArF',        label: 'Felipe: TjP uttaksperiod' },
+    { key: 'tjpArU',        label: 'Ulrika: TjP uttaksperiod' },
     { key: 'fTjpAge',       label: 'Felipe: Svensk TjP startålder' },
     { key: 'fNorskTjpAge',  label: 'Felipe: Norsk TjP startålder' },
     { key: 'uNorskTjpAge',  label: 'Ulrika: Norsk TjP startålder' },
@@ -34,7 +35,7 @@
   ];
 
   const SLIDER_UNITS: Partial<Record<SliderKey, string>> = {
-    avkPct: ' %', antalArF: ' år', antalArU: ' år', uttakAvkPct: ' %', tjpAr: ' år',
+    avkPct: ' %', antalArF: ' år', antalArU: ' år', uttakAvkPct: ' %', tjpArF: ' år', tjpArU: ' år',
     fTjpAge: ' år', fNorskTjpAge: ' år', uNorskTjpAge: ' år',
     uTjpAge: ' år', fAllmanAge: ' år', uAllmanAge: ' år', skattPct: ' %',
   };

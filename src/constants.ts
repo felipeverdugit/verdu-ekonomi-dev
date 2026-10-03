@@ -36,7 +36,8 @@ export const SLIDER_DEFAULTS = {
   antalArF:      10,   // Felipe: år till FIRE
   antalArU:      10,   // Ulrika: år till FIRE
   uttakAvkPct:    2,   // Uttaksavkastning %
-  tjpAr:         20,   // TjP uttaksperiod (år)
+  tjpArF:        20,   // Felipe: TjP uttaksperiod (år)
+  tjpArU:        20,   // Ulrika: TjP uttaksperiod (år)
   skattPct:       0,   // Skatt på pensionsinkomster %
   borgoRanta:   2.3,   // Borgensränta / sparkonto %
   lonehojF:       0,   // Löneökning Felipe %
@@ -56,7 +57,8 @@ export const SLIDER_RANGES = {
   antalArF:      { min: 1,  max: 20, step: 1   },
   antalArU:      { min: 1,  max: 20, step: 1   },
   uttakAvkPct:   { min: 0,  max: 8,  step: 0.5 },
-  tjpAr:         { min: 5,  max: 30, step: 1   },
+  tjpArF:        { min: 5,  max: 30, step: 1   },
+  tjpArU:        { min: 5,  max: 30, step: 1   },
   skattPct:      { min: 0,  max: 40, step: 1   },
   borgoRanta:    { min: 0,  max: 6,  step: 0.1 },
   lonehojF:      { min: 0,  max: 10, step: 0.5 },

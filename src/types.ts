@@ -118,7 +118,8 @@ export interface FireSettings {
   antalArF:      number;  // Felipe: år till FIRE (slutar jobba/kontribuera)
   antalArU:      number;  // Ulrika: år till FIRE
   uttakAvkPct:   number;
-  tjpAr:         number;
+  tjpArF:        number;  // Felipe: TjP uttaksperiod (år)
+  tjpArU:        number;  // Ulrika: TjP uttaksperiod (år)
   skattPct:      number;
   borgoRanta:    number;
   lonehojF:      number;
