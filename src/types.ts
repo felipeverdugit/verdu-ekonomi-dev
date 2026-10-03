@@ -115,7 +115,8 @@ export interface BudgetData {
 // ── FIRE-inställningar (sliders) ─────────────────────────────────────────────
 export interface FireSettings {
   avkPct:        number;
-  antalAr:       number;
+  antalArF:      number;  // Felipe: år till FIRE (slutar jobba/kontribuera)
+  antalArU:      number;  // Ulrika: år till FIRE
   uttakAvkPct:   number;
   tjpAr:         number;
   skattPct:      number;

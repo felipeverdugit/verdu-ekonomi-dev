@@ -89,12 +89,14 @@
 
   // ── Sliders (dashboard-scenario) ──────────────────────────────────────────────
   let avkPct   = $state(fireStore.get().avkPct);
-  let antalAr  = $state(fireStore.get().antalAr);
+  let antalArF = $state(fireStore.get().antalArF);
+  let antalArU = $state(fireStore.get().antalArU);
   let uttakAvk = $state(fireStore.get().uttakAvkPct);
 
   function syncSlider() {
     fireStore.setField('avkPct',      avkPct);
-    fireStore.setField('antalAr',     antalAr);
+    fireStore.setField('antalArF',    antalArF);
+    fireStore.setField('antalArU',    antalArU);
     fireStore.setField('uttakAvkPct', uttakAvk);
     data = compute();
   }
@@ -241,10 +243,16 @@
                oninput={e => { avkPct = parseFloat((e.target as HTMLInputElement).value); syncSlider(); }} />
       </div>
       <div class="slider-card">
-        <div class="slider-label">År till FIRE</div>
-        <span class="slider-val">{antalAr} år</span>
-        <input type="range" min="1" max="20" step="1" value={antalAr}
-               oninput={e => { antalAr = parseFloat((e.target as HTMLInputElement).value); syncSlider(); }} />
+        <div class="slider-label">Felipe: år till FIRE</div>
+        <span class="slider-val">{antalArF} år</span>
+        <input type="range" min="1" max="20" step="1" value={antalArF}
+               oninput={e => { antalArF = parseFloat((e.target as HTMLInputElement).value); syncSlider(); }} />
+      </div>
+      <div class="slider-card">
+        <div class="slider-label">Ulrika: år till FIRE</div>
+        <span class="slider-val">{antalArU} år</span>
+        <input type="range" min="1" max="20" step="1" value={antalArU}
+               oninput={e => { antalArU = parseFloat((e.target as HTMLInputElement).value); syncSlider(); }} />
       </div>
       <div class="slider-card">
         <div class="slider-label">Uttaksavkastning</div>

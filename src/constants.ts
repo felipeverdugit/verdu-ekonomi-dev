@@ -33,7 +33,8 @@ export const PP_RATE       = 0.025;  // 2,5 % av pensionsgrundande inkomst
 // ── Slider-defaultvärden ──────────────────────────────────────────────────────
 export const SLIDER_DEFAULTS = {
   avkPct:        10,   // Årsavkastning ackumuleringsfas %
-  antalAr:       10,   // År till FIRE
+  antalArF:      10,   // Felipe: år till FIRE
+  antalArU:      10,   // Ulrika: år till FIRE
   uttakAvkPct:    2,   // Uttaksavkastning %
   tjpAr:         20,   // TjP uttaksperiod (år)
   skattPct:       0,   // Skatt på pensionsinkomster %
@@ -52,7 +53,8 @@ export const SLIDER_DEFAULTS = {
 // ── Slider-gränser ────────────────────────────────────────────────────────────
 export const SLIDER_RANGES = {
   avkPct:        { min: 0,  max: 15, step: 0.5 },
-  antalAr:       { min: 1,  max: 20, step: 1   },
+  antalArF:      { min: 1,  max: 20, step: 1   },
+  antalArU:      { min: 1,  max: 20, step: 1   },
   uttakAvkPct:   { min: 0,  max: 8,  step: 0.5 },
   tjpAr:         { min: 5,  max: 30, step: 1   },
   skattPct:      { min: 0,  max: 40, step: 1   },

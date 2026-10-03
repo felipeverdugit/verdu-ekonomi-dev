@@ -20,7 +20,8 @@
   type SliderKey = keyof typeof SLIDER_RANGES;
   const SLIDER_DEFS: { key: SliderKey; label: string }[] = [
     { key: 'avkPct',        label: 'Årsavkastning (ackumulering)' },
-    { key: 'antalAr',       label: 'År till FIRE' },
+    { key: 'antalArF',      label: 'Felipe: år till FIRE' },
+    { key: 'antalArU',      label: 'Ulrika: år till FIRE' },
     { key: 'uttakAvkPct',   label: 'Uttaksavkastning' },
     { key: 'tjpAr',         label: 'TjP uttaksperiod' },
     { key: 'fTjpAge',       label: 'Felipe: Svensk TjP startålder' },
@@ -33,7 +34,7 @@
   ];
 
   const SLIDER_UNITS: Partial<Record<SliderKey, string>> = {
-    avkPct: ' %', antalAr: ' år', uttakAvkPct: ' %', tjpAr: ' år',
+    avkPct: ' %', antalArF: ' år', antalArU: ' år', uttakAvkPct: ' %', tjpAr: ' år',
     fTjpAge: ' år', fNorskTjpAge: ' år', uNorskTjpAge: ' år',
     uTjpAge: ' år', fAllmanAge: ' år', uAllmanAge: ' år', skattPct: ' %',
   };
@@ -189,7 +190,7 @@
     <section>
       <h2>Avkastning &amp; horisont</h2>
       <div class="ctrl-panel" style="grid-template-columns:1fr">
-        {#each SLIDER_DEFS.slice(0, 3) as def}
+        {#each SLIDER_DEFS.slice(0, 4) as def}
           {@const range = SLIDER_RANGES[def.key]}
           <div class="ctrl-group">
             <label>{def.label}</label>
@@ -202,7 +203,7 @@
 
       <h2>Pension</h2>
       <div class="ctrl-panel" style="grid-template-columns:1fr">
-        {#each SLIDER_DEFS.slice(3) as def}
+        {#each SLIDER_DEFS.slice(4) as def}
           {@const range = SLIDER_RANGES[def.key]}
           <div class="ctrl-group">
             <label>{def.label}</label>

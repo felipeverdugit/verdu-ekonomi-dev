@@ -24,7 +24,7 @@
   let agBidragPct = $state(5.8);
   let ibb         = $state(82_800);   // IBB per år (2025)
   let avkPct      = $state(_fs.avkPct  || 6.0);
-  let arTillFire  = $state(_fs.antalAr || 7);
+  let arTillFire  = $state(_fs.antalArF || 7);
   let kommunalPct      = $state(31.0);
   let statligGrans     = $state(57_000);   // kr/mån brutto-gräns för löneväxlingsstrategi
   let nyJobbStart      = $state(2027);     // år nytt jobb börjar
@@ -198,7 +198,7 @@
       tjp_f_pmt_q: 0,                              // AKAP-KR-inbetalningar upphör vid jobbyte
       lonevxl_pmt: itp1Contrib(lonNy) + lvNy,       // ITP 1 AG-avsättning + ny löneväxling
     };
-    const sItp1: FireSettings = { ...bryggaFs, avkPct, antalAr: arTillFire };
+    const sItp1: FireSettings = { ...bryggaFs, avkPct, antalArF: arTillFire };
     return computeFire(ekItp1, sItp1);
   });
 

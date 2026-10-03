@@ -96,7 +96,13 @@ export function computeNV(ek: EkonomiData): number {
 export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const { felipe, ulrika } = PEOPLE;
   const avkPct     = s.avkPct;
-  const antalAr    = s.antalAr;
+  // Felipe och Ulrika kan sluta jobba/kontribuera olika år. "FIRE" (brygga-start)
+  // inträffar när BÅDA har slutat — den som slutar tidigare behåller sin lön i
+  // modellen (ingen bryggkapital-förbrukning) tills den andra också slutar; dennes
+  // egna konton slutar bara få nya insättningar men fortsätter växa med avkastning.
+  const antalArF   = s.antalArF;
+  const antalArU   = s.antalArU;
+  const antalAr    = Math.max(antalArF, antalArU); // gemensam horisont för kapital-snapshot
   const skattFaktor = 1 - s.skattPct / 100;
   const uttakAvkMon = s.uttakAvkPct / 100 / 12;
 
@@ -106,45 +112,49 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
 
   // Privata fonder (ISK — avkastning reduceras med schablonskatt)
   const iskAvkPct    = Math.max(0, avkPct - s.iskPct);
-  const lysa_f_fv    = accountFV(ek.lysa_f_pv,    ek.lysa_f_pmt,    'monthly',   iskAvkPct, antalAr, antalAr);
-  const lysa_u_fv    = accountFV(ek.lysa_u_pv,    ek.lysa_u_pmt,    'monthly',   iskAvkPct, antalAr, antalAr);
-  const buffert_u_fv = accountFV(ek.buffert_u_pv,  ek.buffert_u_pmt, 'monthly',   iskAvkPct, antalAr, antalAr);
+  const lysa_f_fv    = accountFV(ek.lysa_f_pv,    ek.lysa_f_pmt,    'monthly',   iskAvkPct, antalArF, antalAr);
+  const lysa_u_fv    = accountFV(ek.lysa_u_pv,    ek.lysa_u_pmt,    'monthly',   iskAvkPct, antalArU, antalAr);
+  const buffert_u_fv = accountFV(ek.buffert_u_pv,  ek.buffert_u_pmt, 'monthly',   iskAvkPct, antalAr,  antalAr);
 
-  // Tjänstepension Sverige (insättningar slutar vid FIRE, växer med lönehöjning)
-  const tjp_f_fv     = accountFVGrowing(ek.tjp_f_pv,   ek.tjp_f_pmt_q,  'quarterly', avkPct, s.lonehojF, antalAr, antalAr);
-  const lonevxl_fv   = accountFVGrowing(ek.lonevxl_pv, ek.lonevxl_pmt,  'monthly',   avkPct, s.lonehojF, antalAr, antalAr);
-  const tidigare_fv  = accountFV(ek.tidigare_pv,  0,                     'monthly',   avkPct, antalAr, antalAr);
-  const kapan_fv     = accountFV(ek.kapan_pv,     0,                     'monthly',   avkPct, antalAr, antalAr);
-  const tjp_u_fv     = accountFVGrowing(ek.tjp_u_pv,   ek.tjp_u_pmt_q,  'quarterly', avkPct, s.lonehojU, antalAr, antalAr);
+  // Tjänstepension Sverige (insättningar slutar när resp. person slutar jobba, växer med lönehöjning)
+  const tjp_f_fv     = accountFVGrowing(ek.tjp_f_pv,   ek.tjp_f_pmt_q,  'quarterly', avkPct, s.lonehojF, antalArF, antalAr);
+  const lonevxl_fv   = accountFVGrowing(ek.lonevxl_pv, ek.lonevxl_pmt,  'monthly',   avkPct, s.lonehojF, antalArF, antalAr);
+  const tidigare_fv  = accountFV(ek.tidigare_pv,  0,                     'monthly',   avkPct, antalArF, antalAr);
+  const kapan_fv     = accountFV(ek.kapan_pv,     0,                     'monthly',   avkPct, antalArF, antalAr);
+  const tjp_u_fv     = accountFVGrowing(ek.tjp_u_pv,   ek.tjp_u_pmt_q,  'quarterly', avkPct, s.lonehojU, antalArU, antalAr);
 
-  // TjP Norge (ingen pmt — kapitalbaserat)
-  const norge_f_fv   = accountFV(ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv, 0, 'monthly', avkPct, antalAr, antalAr);
-  const norge_u_fv   = accountFV(ek.sb_u_pv + ek.dnb_u_pv,                  0, 'monthly', avkPct, antalAr, antalAr);
+  // TjP Norge (ingen pmt — kapitalbaserat, frekvens/aktiv-period påverkar inte resultatet)
+  const norge_f_fv   = accountFV(ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv, 0, 'monthly', avkPct, antalArF, antalAr);
+  const norge_u_fv   = accountFV(ek.sb_u_pv + ek.dnb_u_pv,                  0, 'monthly', avkPct, antalArU, antalAr);
 
-  // Sparkonto (växter med borgaRanta, ej avkPct)
+  // Sparkonto (hushållsgemensamt, växer med borgaRanta, ej avkPct)
   // Notera: fv() hanterar nollränta korrekt (undviker 0/0)
   const r_sp_mon = Math.pow(1 + s.borgoRanta / 100, 1 / 12) - 1;
   const sparkonto_fv = fv(r_sp_mon, antalAr * 12, -ek.sparkonto_pmt, -ek.sparkonto_pv);
 
-  // Premiepension (AP7, ingen insättning — växer med avkPct)
+  // Premiepension (AP7, ingen insättning — växer med avkPct oavsett arbetsstatus)
   const pp_fv = (ek.pp_f + ek.pp_u) * Math.pow(1 + avkPct / 100, antalAr);
 
-  // Inkomstpension — kapital indexeras med AP_INDEX_RATE, avsättningar växer med lön
+  // Inkomstpension — kapital indexeras med AP_INDEX_RATE (oavsett arbetsstatus),
+  // avsättningar görs bara medan resp. person jobbar och växer sedan vidare till fireYear
   const ap_brutto_f   = Math.min(ek.brutto_f * 12, AP_TAK);
   const ap_brutto_u   = Math.min(ek.brutto_u * 12, AP_TAK);
   const ap_annual_f   = ap_brutto_f * 0.16;
   const ap_annual_u   = ap_brutto_u * 0.16;
   const apIndexR      = AP_INDEX_RATE;
 
-  function apGrowingContrib(annualPmt: number, salaryGrowth: number): number {
+  function apGrowingContrib(annualPmt: number, salaryGrowth: number, contribYears: number): number {
     const g = salaryGrowth / 100;
-    if (Math.abs(apIndexR - g) < 1e-12) return annualPmt * antalAr * Math.pow(1 + apIndexR, antalAr - 1);
-    return annualPmt * (Math.pow(1 + apIndexR, antalAr) - Math.pow(1 + g, antalAr)) / (apIndexR - g);
+    const fvAtRetire = Math.abs(apIndexR - g) < 1e-12
+      ? annualPmt * contribYears * Math.pow(1 + apIndexR, contribYears - 1)
+      : annualPmt * (Math.pow(1 + apIndexR, contribYears) - Math.pow(1 + g, contribYears)) / (apIndexR - g);
+    const restYears = antalAr - contribYears;
+    return restYears > 0 ? fvAtRetire * Math.pow(1 + apIndexR, restYears) : fvAtRetire;
   }
 
-  const ap_fv = (ek.ap_f + ek.ap_u) * Math.pow(1 + apIndexR, antalAr)
-    + apGrowingContrib(ap_annual_f, s.lonehojF)
-    + apGrowingContrib(ap_annual_u, s.lonehojU);
+  const ap_fv = ek.ap_f * Math.pow(1 + apIndexR, antalAr) + ek.ap_u * Math.pow(1 + apIndexR, antalAr)
+    + apGrowingContrib(ap_annual_f, s.lonehojF, antalArF)
+    + apGrowingContrib(ap_annual_u, s.lonehojU, antalArU);
 
   // NAV (norsk statspension) — nuv. kapital i SEK
   const nav_sek = (ek.nav_f_nok + ek.nav_u_nok) * ek.nok_sek;
@@ -239,7 +249,15 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   }
 
   // ── Tidslinje-händelser ────────────────────────────────────────────────────
+  const fireYearF = Math.round(BASE_YEAR + (BASE_MONTH - 1) / 12 + antalArF);
+  const fireYearU = Math.round(BASE_YEAR + (BASE_MONTH - 1) / 12 + antalArU);
+
   const events: TimelineEvent[] = [
+    ...(antalArF !== antalArU ? [
+      antalArF < antalArU
+        ? { year: fireYearF, who: 'f' as const, type: 'slutar_jobba', label: `Felipe ${fireYearF - felipe.born}: Slutar jobba (Ulrika fortsätter ${antalArU - antalArF} år till)` }
+        : { year: fireYearU, who: 'u' as const, type: 'slutar_jobba', label: `Ulrika ${fireYearU - ulrika.born}: Slutar jobba (Felipe fortsätter ${antalArF - antalArU} år till)` },
+    ] : []),
     { year: YR_U_NORSK_TJP, who: 'u', type: 'norsk_tjp_start', label: `Ulrika ${s.uNorskTjpAge}: Norsk TjP startar (t.o.m. 77)` },
     { year: u_norsk_end,     who: 'u', type: 'norsk_tjp_end',   label: `Ulrika 77: Norsk TjP slutar` },
     { year: u_tjp_start,     who: 'u', type: 'tjp_start',       label: `Ulrika ${s.uTjpAge}: Svensk TjP startar (${s.tjpAr} år)` },

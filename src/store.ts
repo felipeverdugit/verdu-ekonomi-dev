@@ -119,9 +119,13 @@ const FIRE_DEFAULTS: FireSettings = {
 
 export const fireStore = {
   get(): FireSettings {
+    // Migrering: gamla delade "antalAr" används som startvärde för båda
+    // tills användaren sätter dem var för sig under sina nya nycklar.
+    const legacyAntalAr = getNum('vek_fire_antalAr', FIRE_DEFAULTS.antalArF);
     return {
       avkPct:       getNum(K.fire('avkPct'),       FIRE_DEFAULTS.avkPct),
-      antalAr:      getNum(K.fire('antalAr'),       FIRE_DEFAULTS.antalAr),
+      antalArF:     getNum(K.fire('antalArF'),      legacyAntalAr),
+      antalArU:     getNum(K.fire('antalArU'),      legacyAntalAr),
       uttakAvkPct:  getNum(K.fire('uttakAvkPct'),   FIRE_DEFAULTS.uttakAvkPct),
       tjpAr:        getNum(K.fire('tjpAr'),         FIRE_DEFAULTS.tjpAr),
       skattPct:     getNum(K.fire('skattPct'),      FIRE_DEFAULTS.skattPct),

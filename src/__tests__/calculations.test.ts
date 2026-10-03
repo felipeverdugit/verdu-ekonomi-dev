@@ -23,7 +23,7 @@ const EMPTY_EK: EkonomiData = {
 };
 
 const FIRE_S: FireSettings = {
-  avkPct: 8, antalAr: 10, uttakAvkPct: 2, tjpAr: 20,
+  avkPct: 8, antalArF: 10, antalArU: 10, uttakAvkPct: 2, tjpAr: 20,
   skattPct: 0, borgoRanta: 2.3, lonehojF: 0, lonehojU: 0,
   fTjpAge: 65, fNorskTjpAge: 62, uTjpAge: 65,
   uNorskTjpAge: 62, fAllmanAge: 67, uAllmanAge: 68,
