@@ -180,6 +180,10 @@ export interface FireResult {
 
   // Tidslinjehändelser
   events: TimelineEvent[];
+
+  // Asymmetrisk pensionering (olika antalArF/antalArU) — null om samma år
+  earlyRetiree: { who: 'f' | 'u'; year: number; workingSalaryNet: number } | null;
+  earlyKapital: number | null;  // Fritt kapital vid earlyRetiree.year (för uttakssimulatorn)
 }
 
 export interface Phase {

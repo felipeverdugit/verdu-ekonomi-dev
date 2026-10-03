@@ -258,7 +258,19 @@
     if (bryggaUttaksChart) { bryggaUttaksChart.destroy(); bryggaUttaksChart = null; }
     const res = itp1Brygga;
     const ek  = bryggaEk;
-    const sim = simulateUttag(res.kapital, res.uttakAvkPct, res.fireYear, ek.levnadskostnad, res.pensions, ek.levnadskostnad2, ek.exp_switch_ar);
+
+    const startYear    = res.earlyRetiree ? res.earlyRetiree.year : res.fireYear;
+    const startKapital = res.earlyRetiree ? res.earlyKapital! : res.kapital;
+    const simPensions  = res.earlyRetiree
+      ? [...res.pensions, {
+          id: 99, label: 'Lön (kvarvarande arbete)',
+          who: res.earlyRetiree.who === 'f' ? 'u' as const : 'f' as const,
+          fromYear: res.earlyRetiree.year, toYear: res.fireYear - 1,
+          monthly: res.earlyRetiree.workingSalaryNet, livsvarig: false,
+        }]
+      : res.pensions;
+
+    const sim = simulateUttag(startKapital, res.uttakAvkPct, startYear, ek.levnadskostnad, simPensions, ek.levnadskostnad2, ek.exp_switch_ar);
     const switchYear2 = ek.exp_switch_ar > 0 && ek.levnadskostnad2 > 0 ? res.fireYear + ek.exp_switch_ar : 9999;
     const levnadLinje = sim.rows.map(row => row.year >= switchYear2 ? ek.levnadskostnad2 : ek.levnadskostnad);
 

@@ -345,12 +345,20 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
 
   const iskKapital = lysa_f_fv + lysa_u_fv + buffert_u_fv;
 
+  // Fritt kapital vid earlyRetiree.year — samma formler men med den tidigare
+  // (gemensamma) horisonten, eftersom ingen hunnit göra fler insättningar än så än.
+  const earlyKapital = earlyRetiree
+    ? computeFire(ek, { ...s, antalArF: Math.min(antalArF, antalArU), antalArU: Math.min(antalArF, antalArU) }).kapital
+    : null;
+
   return {
     fireYear, fireNumber, firePct, bryggaKapital, bryggaTackning, kapital, totaltFV,
     uttakAvkPct: s.uttakAvkPct, skattFaktor,
     fonder_fv, aktierVal, aktierIFire: s.aktierIFire, iskKapital, iskPct: s.iskPct, sparkonto_fv, tjp_fv: tjp_fv_tot,
     norge_fv, pp_fv, ap_fv,
     pensions, phases, events,
+    earlyRetiree: earlyRetiree ? { who: earlyRetiree.who, year: earlyRetiree.year, workingSalaryNet: earlyRetiree.workingSalaryNet } : null,
+    earlyKapital,
   };
 }
 
