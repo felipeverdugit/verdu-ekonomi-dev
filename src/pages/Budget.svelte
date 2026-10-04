@@ -177,6 +177,44 @@
     </div>
   </div>
 
+  {#if variant === 'budget-fire'}
+    <div class="card rekreation-card" style="margin-bottom:18px">
+      <div class="bgt-card-head">
+        <h3>🎉 Rekreation</h3>
+        <span class="bgt-card-total" style:color={kpis.saldo >= 0 ? 'var(--green)' : 'var(--red)'}>{fmt(kpis.saldo)} kr/mån</span>
+      </div>
+      <table class="bgt-tbl">
+        <tbody>
+          <tr>
+            <td>Saldo (inkomster − utgifter)</td>
+            <td>{fmt(kpis.saldo)}</td>
+            <td>kr/mån</td>
+          </tr>
+          <tr>
+            <td>Saldo per år</td>
+            <td>{fmt(kpis.saldo * 12)}</td>
+            <td>kr/år</td>
+          </tr>
+          <tr>
+            <td>Planerad rekreation</td>
+            <td>
+              <input type="number" class="bgt-inp" value={bd.rekreation_mon} step="100" min="0"
+                     oninput={e => handleInput('rekreation_mon', (e.target as HTMLInputElement).value)} />
+            </td>
+            <td>kr/mån</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="bgt-sum-row">
+            <td>Kvar efter rekreation</td>
+            <td style:color={kpis.saldo - bd.rekreation_mon >= 0 ? 'var(--green)' : 'var(--red)'}>{fmt(kpis.saldo - bd.rekreation_mon)}</td>
+            <td>kr/mån</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  {/if}
+
   <div class="budget-cards">
     {#each GROUPS as g}
       {@const tot = groupTotal(g)}

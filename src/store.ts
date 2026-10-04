@@ -202,6 +202,7 @@ const BUDGET_DEFAULTS: BudgetData = {
   lysa_n_mon: 750, borgo_bank_mon: 2_000, resor_mon: 1_000, lonevxl_mon: 0,
   mc_felipe: 11_750, mc_ulrika: 10_000,
   nextory: 269, anthropic: 253, spotify: 219, misc_prenums: 0,
+  rekreation_mon: 0,
 };
 
 function makeBudgetStore(prefix: string) {

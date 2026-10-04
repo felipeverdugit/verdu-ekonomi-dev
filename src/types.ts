@@ -108,6 +108,8 @@ export interface BudgetData {
   mc_felipe: number; mc_ulrika: number;
   // Prenumerationer (via MC Felipe)
   nextory: number; anthropic: number; spotify: number; misc_prenums: number;
+  // Rekreation (endast Budget-fire)
+  rekreation_mon: number;
 }
 
 // ── FIRE-inställningar (sliders) ─────────────────────────────────────────────
