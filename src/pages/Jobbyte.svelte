@@ -273,6 +273,7 @@
     const sim = simulateUttag(startKapital, res.uttakAvkPct, startYear, ek.levnadskostnad, simPensions, ek.levnadskostnad2, ek.exp_switch_ar);
     const switchYear2 = ek.exp_switch_ar > 0 && ek.levnadskostnad2 > 0 ? res.fireYear + ek.exp_switch_ar : 9999;
     const levnadLinje = sim.rows.map(row => row.year >= switchYear2 ? ek.levnadskostnad2 : ek.levnadskostnad);
+    const laonMon = (year: number) => res.earlyRetiree && year < res.fireYear ? res.earlyRetiree.workingSalaryNet : 0;
 
     bryggaUttaksChart = new Chart(bryggaUttaksCanvas.getContext('2d')!, {
       type: 'line',
@@ -280,7 +281,8 @@
         labels: sim.rows.map(row => String(row.year)),
         datasets: [
           { label: 'Kapital (MSEK)', data: sim.rows.map(row => row.capital / 1e6), borderColor: '#4f8ef7', backgroundColor: '#4f8ef720', fill: true, tension: 0.3, pointRadius: 0, yAxisID: 'y' },
-          { label: 'Pension/mån (kr)', data: sim.rows.map(row => row.pensionMon), borderColor: '#6ee7b7', backgroundColor: 'transparent', tension: 0.3, pointRadius: 0, yAxisID: 'y1' },
+          { label: 'Pension/mån (kr)', data: sim.rows.map(row => row.pensionMon - laonMon(row.year)), borderColor: '#6ee7b7', backgroundColor: 'transparent', tension: 0.3, pointRadius: 0, yAxisID: 'y1' },
+          ...(res.earlyRetiree ? [{ label: 'Lön/mån (kvarvarande)', data: sim.rows.map(row => laonMon(row.year)), borderColor: '#f59e0b', backgroundColor: 'transparent', tension: 0, pointRadius: 0, yAxisID: 'y1', borderDash: [2, 2] }] : []),
           { label: 'Levnadskostnad/mån (kr)', data: levnadLinje, borderColor: '#fb923c', backgroundColor: 'transparent', borderDash: [5, 3], tension: 0, pointRadius: 0, yAxisID: 'y1' },
         ],
       },
