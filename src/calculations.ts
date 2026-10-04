@@ -128,9 +128,12 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const norge_u_fv   = accountFV(ek.sb_u_pv + ek.dnb_u_pv,                  0, 'monthly', avkPct, antalArU, antalAr);
 
   // Sparkonto (hushållsgemensamt, växer med borgaRanta, ej avkPct)
+  // Full insättning tills den första slutat jobba, sedan halva tills även den andra gjort det
   // Notera: fv() hanterar nollränta korrekt (undviker 0/0)
-  const r_sp_mon = Math.pow(1 + s.borgoRanta / 100, 1 / 12) - 1;
-  const sparkonto_fv = fv(r_sp_mon, antalAr * 12, -ek.sparkonto_pmt, -ek.sparkonto_pv);
+  const r_sp_mon       = Math.pow(1 + s.borgoRanta / 100, 1 / 12) - 1;
+  const earlyAr        = Math.min(antalArF, antalArU);
+  const sparkonto_early = fv(r_sp_mon, earlyAr * 12, -ek.sparkonto_pmt, -ek.sparkonto_pv);
+  const sparkonto_fv   = fv(r_sp_mon, (antalAr - earlyAr) * 12, -ek.sparkonto_pmt / 2, -sparkonto_early);
 
   // Premiepension (AP7, ingen insättning — växer med avkPct oavsett arbetsstatus)
   const pp_fv = (ek.pp_f + ek.pp_u) * Math.pow(1 + avkPct / 100, antalAr);
