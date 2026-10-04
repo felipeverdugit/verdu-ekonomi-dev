@@ -61,7 +61,6 @@ function setBool(key: string, val: boolean): void {
 const EK_DEFAULTS: EkonomiData = {
   lysa_f_pv: 0, lysa_f_pmt: 0,
   lysa_u_pv: 0, lysa_u_pmt: 0,
-  buffert_u_pv: 0, buffert_u_pmt: 0,
   tjp_f_pv: 0, tjp_f_pmt_q: 0,
   lonevxl_pv: 0, lonevxl_pmt: 0,
   tidigare_pv: 0, kapan_pv: 0,

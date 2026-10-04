@@ -12,7 +12,7 @@
   interface HinkarResult {
     hink1: number; hink2: number; hink3: number; hink4: number;
     h1_borgo: number; h2_ip: number; h2_nav: number;
-    h3_lysa: number; h3_buffert: number; h3_tjpSve: number; h3_tjpNor: number; h3_pp: number;
+    h3_lysa: number; h3_tjpSve: number; h3_tjpNor: number; h3_pp: number;
     h4_norco: number; h4_oncop: number;
     totalFin: number; totalAll: number;
     lekMax: number; lekPct: number; lekExcess: number;
@@ -29,7 +29,6 @@
     const h2_lagenhet = Math.max(0, (ek.lagenhet_varde ?? 0) - (ek.lagenhet_lan ?? 0));
     const h2_amor     = (ek.villa_amor ?? 0) + (ek.lagenhet_amor ?? 0);
     const h3_lysa     = ek.lysa_f_pv + ek.lysa_u_pv;
-    const h3_buffert  = ek.buffert_u_pv;
     const h3_tjpSve   = ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pv + ek.kapan_pv + ek.tjp_u_pv;
     const h3_tjpNor   = ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv + ek.sb_u_pv + ek.dnb_u_pv;
     const h3_pp       = ek.pp_f + ek.pp_u;
@@ -37,7 +36,7 @@
     const h4_oncop    = ek.oncop_antal * ek.oncop_kurs;
     const hink1  = h1_borgo;
     const hink2  = h2_ip + h2_nav + h2_villa + h2_lagenhet;
-    const hink3  = h3_lysa + h3_buffert + h3_tjpSve + h3_tjpNor + h3_pp;
+    const hink3  = h3_lysa + h3_tjpSve + h3_tjpNor + h3_pp;
     const hink4  = h4_norco + h4_oncop;
     const totalFin  = hink1 + hink3 + hink4;
     const totalAll  = hink1 + hink2 + hink3 + hink4;
@@ -53,7 +52,7 @@
     return {
       hink1, hink2, hink3, hink4,
       h1_borgo, h2_ip, h2_nav, h2_villa, h2_lagenhet, h2_amor,
-      h3_lysa, h3_buffert, h3_tjpSve, h3_tjpNor, h3_pp,
+      h3_lysa, h3_tjpSve, h3_tjpNor, h3_pp,
       h4_norco, h4_oncop,
       totalFin, totalAll, lekMax, lekPct, lekExcess,
       buffMin, buffMax, h1_kredit, fireNum, maalPct, sparMon,

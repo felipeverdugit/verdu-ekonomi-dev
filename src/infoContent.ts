@@ -62,7 +62,7 @@ export const INFO: Record<string, PageInfo> = {
       {
         heading: 'Viktiga fält',
         html: `<ul>
-          <li><strong>Lysa F/U/Buffert</strong>: fria fondkonton (ISK) — grunden i brygga-kapitalet.</li>
+          <li><strong>Lysa F/U</strong>: fria fondkonton (ISK) — grunden i brygga-kapitalet.</li>
           <li><strong>AP (inkomstpension)</strong>: hämta intjänad behållning från minpension.se.</li>
           <li><strong>NAV (Norge)</strong>: norsk statlig pension i NOK.</li>
           <li><strong>Levnadskostnad</strong>: din planerade månadskostnad i FIRE — påverkar alla simulatorer.</li>
@@ -213,7 +213,7 @@ export const INFO: Record<string, PageInfo> = {
       },
       {
         heading: 'Historik-diagrammet',
-        html: `<p>Sex linjer: <strong>Privata fonder</strong> (Lysa + sparkonto + buffert), <strong>TjP & LöneVXL</strong>, <strong>TjP Norge</strong>, <strong>Allmänpension</strong> (AP + PP + NAV), <strong>Aktier</strong> och <strong>Totalt</strong>.</p>`,
+        html: `<p>Sex linjer: <strong>Privata fonder</strong> (Lysa + sparkonto), <strong>TjP & LöneVXL</strong>, <strong>TjP Norge</strong>, <strong>Allmänpension</strong> (AP + PP + NAV), <strong>Aktier</strong> och <strong>Totalt</strong>.</p>`,
       },
       {
         heading: 'Prognos',

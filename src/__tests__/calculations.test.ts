@@ -7,7 +7,7 @@ import type { EkonomiData, FireSettings } from '../types';
 
 const EMPTY_EK: EkonomiData = {
   lysa_f_pv: 0, lysa_f_pmt: 0, lysa_u_pv: 0, lysa_u_pmt: 0,
-  buffert_u_pv: 0, buffert_u_pmt: 0,
+
   tjp_f_pv: 0, tjp_f_pmt_q: 0, lonevxl_pv: 0, lonevxl_pmt: 0,
   tidigare_pv: 0, kapan_pv: 0, tjp_u_pv: 0, tjp_u_pmt_q: 0,
   norge_f_pv: 0, dnb_f_pv: 0, sb_f_pv: 0, sb_u_pv: 0, dnb_u_pv: 0,

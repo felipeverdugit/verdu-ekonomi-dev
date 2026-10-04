@@ -83,7 +83,7 @@ export function computeNV(ek: EkonomiData): number {
     (ek.nav_f_nok + ek.nav_u_nok) * ek.nok_sek +
     Math.max(0, ek.villa_varde   - ek.villa_lan) +
     Math.max(0, ek.lagenhet_varde - ek.lagenhet_lan) +
-    ek.lysa_f_pv + ek.lysa_u_pv + ek.buffert_u_pv +
+    ek.lysa_f_pv + ek.lysa_u_pv +
     ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pv + ek.kapan_pv + ek.tjp_u_pv +
     ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv + ek.sb_u_pv + ek.dnb_u_pv +
     ek.pp_f + ek.pp_u +
@@ -114,7 +114,6 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const iskAvkPct    = Math.max(0, avkPct - s.iskPct);
   const lysa_f_fv    = accountFV(ek.lysa_f_pv,    ek.lysa_f_pmt,    'monthly',   iskAvkPct, antalArF, antalAr);
   const lysa_u_fv    = accountFV(ek.lysa_u_pv,    ek.lysa_u_pmt,    'monthly',   iskAvkPct, antalArU, antalAr);
-  const buffert_u_fv = accountFV(ek.buffert_u_pv,  ek.buffert_u_pmt, 'monthly',   iskAvkPct, antalAr,  antalAr);
 
   // Tjänstepension Sverige (insättningar slutar när resp. person slutar jobba, växer med lönehöjning)
   const tjp_f_fv     = accountFVGrowing(ek.tjp_f_pv,   ek.tjp_f_pmt_q,  'quarterly', avkPct, s.lonehojF, antalArF, antalAr);
@@ -172,7 +171,7 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
 
   // Grupperade totaler
   const grp_fonder_f = lysa_f_fv;
-  const grp_fonder_u = lysa_u_fv + buffert_u_fv;
+  const grp_fonder_u = lysa_u_fv;
   const grp_tjp_f    = tjp_f_fv + kapan_fv;
   const grp_lonevxl  = lonevxl_fv + tidigare_fv;
   const grp_tjp_u    = tjp_u_fv;
@@ -346,7 +345,7 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   // bryggaKapital = 0 innebär att pensioner täcker allt från FIRE-dag → inget bryggebehov
   const bryggaTackning = bryggaKapital > 0 ? (kapital / bryggaKapital) * 100 : 100;
 
-  const iskKapital = lysa_f_fv + lysa_u_fv + buffert_u_fv;
+  const iskKapital = lysa_f_fv + lysa_u_fv;
 
   // Fritt kapital vid earlyRetiree.year — samma formler men med den tidigare
   // (gemensamma) horisonten, eftersom ingen hunnit göra fler insättningar än så än.

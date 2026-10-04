@@ -17,7 +17,7 @@ import { PEOPLE, ALLMAN_DEFAULTS, FAST_TJP_FELIPE, NORSK_TJP_END_AGE } from '../
 
 const EMPTY_EK: EkonomiData = {
   lysa_f_pv: 0, lysa_f_pmt: 0, lysa_u_pv: 0, lysa_u_pmt: 0,
-  buffert_u_pv: 0, buffert_u_pmt: 0,
+
   tjp_f_pv: 0, tjp_f_pmt_q: 0, lonevxl_pv: 0, lonevxl_pmt: 0,
   tidigare_pv: 0, kapan_pv: 0, tjp_u_pv: 0, tjp_u_pmt_q: 0,
   norge_f_pv: 0, dnb_f_pv: 0, sb_f_pv: 0, sb_u_pv: 0, dnb_u_pv: 0,
@@ -40,7 +40,7 @@ const REALISTIC_EK: EkonomiData = {
   ...EMPTY_EK,
   lysa_f_pv:  1_500_000, lysa_f_pmt: 5_000,
   lysa_u_pv:    500_000,
-  buffert_u_pv: 200_000,
+
   tjp_f_pv:   1_200_000, tjp_f_pmt_q: 25_000,
   lonevxl_pv:   400_000, lonevxl_pmt: 11_638,
   tjp_u_pv:     300_000, tjp_u_pmt_q: 6_500,
@@ -525,7 +525,7 @@ describe('computeNV() — nettovärde', () => {
   it('realistisk portfölj summerar korrekt', () => {
     const ek = {
       ...EMPTY_EK,
-      lysa_f_pv: 1_500_000, lysa_u_pv: 500_000, buffert_u_pv: 200_000,
+      lysa_f_pv: 1_500_000, lysa_u_pv: 500_000,
       sparkonto_pv: 100_000,
       tjp_f_pv: 1_200_000, lonevxl_pv: 400_000, tjp_u_pv: 300_000,
       norge_f_pv: 800_000, dnb_f_pv: 200_000, sb_u_pv: 400_000,
@@ -533,7 +533,7 @@ describe('computeNV() — nettovärde', () => {
     };
     const nv = computeNV(ek);
     const expected =
-      1_500_000 + 500_000 + 200_000 + 100_000 +  // fonder
+      1_500_000 + 500_000 + 100_000 +  // fonder
       1_200_000 + 400_000 + 300_000 +              // tjp
       800_000 + 200_000 + 400_000 +                // norge
       (5_300_000 - 3_569_946);                     // villa

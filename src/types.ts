@@ -15,8 +15,6 @@ export interface EkonomiData {
   lysa_f_pmt:      number;  // Lysa Felipe, månadsinsättning
   lysa_u_pv:       number;
   lysa_u_pmt:      number;
-  buffert_u_pv:    number;  // Buffert Lysa (U+F)
-  buffert_u_pmt:   number;
 
   // Tjänstepension Sverige
   tjp_f_pv:        number;  // TjP Kommun Felipe, nuv. värde
