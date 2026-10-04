@@ -17,9 +17,6 @@ const K = {
   // FIRE-inställningar (sliders i fire.html)
   fire: (field: keyof FireSettings) => `vek_fire_${field}`,
 
-  // Budget (månadsöversikt)
-  bgt: (field: keyof BudgetData) => `vek_bgt_${field}`,
-
   // Historik
   historik: 'vek_historik',
 
@@ -207,21 +204,27 @@ const BUDGET_DEFAULTS: BudgetData = {
   nextory: 269, anthropic: 253, spotify: 219, misc_prenums: 0,
 };
 
-export const budgetStore = {
-  get(): BudgetData {
-    const d = { ...BUDGET_DEFAULTS };
-    (Object.keys(d) as (keyof BudgetData)[]).forEach(field => {
-      d[field] = getNum(K.bgt(field), d[field]);
-    });
-    return d;
-  },
-  setField(field: keyof BudgetData, val: number): void {
-    setNum(K.bgt(field), val);
-  },
-  getField(field: keyof BudgetData): number {
-    return getNum(K.bgt(field), BUDGET_DEFAULTS[field]);
-  },
-};
+function makeBudgetStore(prefix: string) {
+  const key = (field: keyof BudgetData) => `${prefix}${field}`;
+  return {
+    get(): BudgetData {
+      const d = { ...BUDGET_DEFAULTS };
+      (Object.keys(d) as (keyof BudgetData)[]).forEach(field => {
+        d[field] = getNum(key(field), d[field]);
+      });
+      return d;
+    },
+    setField(field: keyof BudgetData, val: number): void {
+      setNum(key(field), val);
+    },
+    getField(field: keyof BudgetData): number {
+      return getNum(key(field), BUDGET_DEFAULTS[field]);
+    },
+  };
+}
+
+export const budgetStore     = makeBudgetStore('vek_bgt_');
+export const budgetFireStore = makeBudgetStore('vek_bgtfire_');
 
 // ── KvartalData ───────────────────────────────────────────────────────────────
 const KV_DEFAULTS: KvartalData = { faktisk: 0, pension: 0, buffert: 0, rorelse: 0 };

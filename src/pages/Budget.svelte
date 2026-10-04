@@ -2,11 +2,15 @@
   import Topnav from '../components/Topnav.svelte';
   import { onMount } from 'svelte';
   import { initAuth } from '../auth';
-  import { budgetStore, ekStore } from '../store';
+  import { budgetStore, budgetFireStore, ekStore } from '../store';
   import { computeNV } from '../calculations';
   import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
   import type { BudgetData } from '../types';
+
+  let { variant = 'budget' }: { variant?: 'budget' | 'budget-fire' } = $props();
+  const store = variant === 'budget-fire' ? budgetFireStore : budgetStore;
+  const pageTitle = variant === 'budget-fire' ? 'Budget-fire' : 'Budget';
 
   // ── Gruppdefinitioner (identiska med budget.ts) ──────────────────────────────
 
@@ -91,7 +95,7 @@
   // ── State ─────────────────────────────────────────────────────────────────────
 
   let bd = $state<BudgetData>((() => {
-    const data = budgetStore.get();
+    const data = store.get();
     if (!data.lonevxl_mon) data.lonevxl_mon = ekStore.getField('lonevxl_pmt');
     return data;
   })());
@@ -126,7 +130,7 @@
   function handleInput(field: keyof BudgetData, raw: string) {
     const v = parseFloat(raw) || 0;
     (bd as Record<string, number>)[field] = v;
-    budgetStore.setField(field, v);
+    store.setField(field, v);
   }
 
   onMount(async () => {
@@ -136,13 +140,13 @@
 </script>
 
 <svelte:head>
-  <title>Budget — Verdu Ekonomi</title>
+  <title>{pageTitle} — Verdu Ekonomi</title>
 </svelte:head>
 
 <div class="page">
-  <Topnav active="budget.html" />
+  <Topnav active={variant === 'budget-fire' ? 'budget-fire.html' : 'budget.html'} />
 
-  <h1>📋 Budget</h1>
+  <h1>📋 {pageTitle}</h1>
   <p class="subtitle">Månadsöversikt · Redigera värden direkt i tabellen · Sparas automatiskt</p>
 
   <div class="kpi-bar">

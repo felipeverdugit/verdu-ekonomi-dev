@@ -14,13 +14,14 @@ Personligt ekonomi- och FIRE-planeringsverktyg för familjen Verdu. Simulerar br
 | 🪣 Hinkar | Hinkstrategi (konsumera / bevara / tillväxt) |
 | 📈 Historik | Nettovärdes-snapshots över tid |
 | 📋 Budget | Månadsöversikt inkomster och utgifter |
+| 🔥 Budget-fire | Kopia av Budget med eget lagringsutrymme (lokalt, synkas inte) — för egna scenarier |
 | 📅 Kvartal | Kvartalsstrategi — buffert vs. fondförsäljning |
 | 🎯 Avkastning | Faktisk avkastning vs. Lysa-index |
 | 💼 Jobbyte | Jämför nuvarande AKAP-KR-jobb med nytt jobb (ITP 1/ITP 2) — lön, skatt, pensionskapital, uttakssimulator, samt full Brygga-simulator med ITP 1 |
 
 ## Tech stack
 
-- **Vite** — MPA-byggverktyg (11 HTML-ingångspunkter)
+- **Vite** — MPA-byggverktyg (12 HTML-ingångspunkter)
 - **Svelte 5** — reaktiva komponenter (runes-läge: `$state`, `$derived`, `$effect`)
 - **TypeScript** — strikt typad källkod
 - **Chart.js** — diagram
@@ -107,6 +108,7 @@ npm run deploy    # Bygg + publicera till GitHub Pages
 | `vek_ek_*` | EkonomiData (portföljvärden, löner) |
 | `vek_fire_*` | FireSettings (sliders, antaganden) |
 | `vek_bgt_*` | BudgetData |
+| `vek_bgtfire_*` | BudgetData för Budget-fire (separat kopia) |
 | `vek_kv_*` | KvartalData |
 | `vek_avk_*` | Avkastningslogg |
 | `vek_historik` | Nettovärdes-snapshots (JSON) |

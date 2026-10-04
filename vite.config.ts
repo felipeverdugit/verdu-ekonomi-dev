@@ -17,6 +17,7 @@ export default defineConfig({
         historik: resolve(import.meta.dirname, 'historik.html'),
         skatt:    resolve(import.meta.dirname, 'skatt.html'),
         budget:   resolve(import.meta.dirname, 'budget.html'),
+        'budget-fire': resolve(import.meta.dirname, 'budget-fire.html'),
         kvartal:    resolve(import.meta.dirname, 'kvartal.html'),
         avkastning: resolve(import.meta.dirname, 'avkastning.html'),
         jobbyte:    resolve(import.meta.dirname, 'jobbyte.html'),
