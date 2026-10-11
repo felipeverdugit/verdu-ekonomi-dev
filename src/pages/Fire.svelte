@@ -20,8 +20,8 @@
   type SliderKey = keyof typeof SLIDER_RANGES;
   const SLIDER_DEFS: { key: SliderKey; label: string }[] = [
     { key: 'avkPct',        label: 'Årsavkastning (ackumulering)' },
-    { key: 'antalArF',      label: 'Felipe: år till FIRE' },
-    { key: 'antalArU',      label: 'Ulrika: år till FIRE' },
+    { key: 'fireYearF',     label: 'Felipe: FIRE-år' },
+    { key: 'fireYearU',     label: 'Ulrika: FIRE-år' },
     { key: 'uttakAvkPct',   label: 'Uttaksavkastning' },
     { key: 'tjpArF',        label: 'Felipe: TjP uttaksperiod' },
     { key: 'tjpArU',        label: 'Ulrika: TjP uttaksperiod' },
@@ -35,7 +35,7 @@
   ];
 
   const SLIDER_UNITS: Partial<Record<SliderKey, string>> = {
-    avkPct: ' %', antalArF: ' år', antalArU: ' år', uttakAvkPct: ' %', tjpArF: ' år', tjpArU: ' år',
+    avkPct: ' %', uttakAvkPct: ' %', tjpArF: ' år', tjpArU: ' år',
     fTjpAge: ' år', fNorskTjpAge: ' år', uNorskTjpAge: ' år',
     uTjpAge: ' år', fAllmanAge: ' år', uAllmanAge: ' år', skattPct: ' %',
   };

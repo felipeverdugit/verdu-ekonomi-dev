@@ -7,7 +7,7 @@
   import { ekStore, fireStore } from '../store';
   import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
-  import { AP_INDEX_RATE, AP_TAK, PP_RATE, CHART_DARK_GRID, CHART_DARK_TEXT } from '../constants';
+  import { AP_INDEX_RATE, AP_TAK, PP_RATE, CHART_DARK_GRID, CHART_DARK_TEXT, SLIDER_RANGES } from '../constants';
 
   Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -88,15 +88,15 @@
   let data = $state(compute());
 
   // ── Sliders (dashboard-scenario) ──────────────────────────────────────────────
-  let avkPct   = $state(fireStore.get().avkPct);
-  let antalArF = $state(fireStore.get().antalArF);
-  let antalArU = $state(fireStore.get().antalArU);
-  let uttakAvk = $state(fireStore.get().uttakAvkPct);
+  let avkPct    = $state(fireStore.get().avkPct);
+  let fireYearF = $state(fireStore.get().fireYearF);
+  let fireYearU = $state(fireStore.get().fireYearU);
+  let uttakAvk  = $state(fireStore.get().uttakAvkPct);
 
   function syncSlider() {
     fireStore.setField('avkPct',      avkPct);
-    fireStore.setField('antalArF',    antalArF);
-    fireStore.setField('antalArU',    antalArU);
+    fireStore.setField('fireYearF',   fireYearF);
+    fireStore.setField('fireYearU',   fireYearU);
     fireStore.setField('uttakAvkPct', uttakAvk);
     data = compute();
   }
@@ -243,16 +243,16 @@
                oninput={e => { avkPct = parseFloat((e.target as HTMLInputElement).value); syncSlider(); }} />
       </div>
       <div class="slider-card">
-        <div class="slider-label">Felipe: år till FIRE</div>
-        <span class="slider-val">{antalArF} år</span>
-        <input type="range" min="1" max="20" step="1" value={antalArF}
-               oninput={e => { antalArF = parseFloat((e.target as HTMLInputElement).value); syncSlider(); }} />
+        <div class="slider-label">Felipe: FIRE-år</div>
+        <span class="slider-val">{fireYearF}</span>
+        <input type="range" min={SLIDER_RANGES.fireYearF.min} max={SLIDER_RANGES.fireYearF.max} step="1" value={fireYearF}
+               oninput={e => { fireYearF = parseFloat((e.target as HTMLInputElement).value); syncSlider(); }} />
       </div>
       <div class="slider-card">
-        <div class="slider-label">Ulrika: år till FIRE</div>
-        <span class="slider-val">{antalArU} år</span>
-        <input type="range" min="1" max="20" step="1" value={antalArU}
-               oninput={e => { antalArU = parseFloat((e.target as HTMLInputElement).value); syncSlider(); }} />
+        <div class="slider-label">Ulrika: FIRE-år</div>
+        <span class="slider-val">{fireYearU}</span>
+        <input type="range" min={SLIDER_RANGES.fireYearU.min} max={SLIDER_RANGES.fireYearU.max} step="1" value={fireYearU}
+               oninput={e => { fireYearU = parseFloat((e.target as HTMLInputElement).value); syncSlider(); }} />
       </div>
       <div class="slider-card">
         <div class="slider-label">Uttaksavkastning</div>

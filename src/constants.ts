@@ -31,10 +31,12 @@ export const AP_TAK        = 7.5 * AP_IBB; // 672 600 kr/år = 56 050 kr/mån
 export const PP_RATE       = 0.025;  // 2,5 % av pensionsgrundande inkomst
 
 // ── Slider-defaultvärden ──────────────────────────────────────────────────────
+const CURRENT_YEAR = new Date().getFullYear();
+
 export const SLIDER_DEFAULTS = {
   avkPct:        10,   // Årsavkastning ackumuleringsfas %
-  antalArF:      10,   // Felipe: år till FIRE
-  antalArU:      10,   // Ulrika: år till FIRE
+  fireYearF:     CURRENT_YEAR + 10,   // Felipe: kalenderår FIRE startar
+  fireYearU:     CURRENT_YEAR + 10,   // Ulrika: kalenderår FIRE startar
   uttakAvkPct:    2,   // Uttaksavkastning %
   tjpArF:        20,   // Felipe: TjP uttaksperiod (år)
   tjpArU:        20,   // Ulrika: TjP uttaksperiod (år)
@@ -54,8 +56,8 @@ export const SLIDER_DEFAULTS = {
 // ── Slider-gränser ────────────────────────────────────────────────────────────
 export const SLIDER_RANGES = {
   avkPct:        { min: 0,  max: 15, step: 0.5 },
-  antalArF:      { min: 1,  max: 20, step: 1   },
-  antalArU:      { min: 1,  max: 20, step: 1   },
+  fireYearF:     { min: CURRENT_YEAR + 1, max: CURRENT_YEAR + 30, step: 1 },
+  fireYearU:     { min: CURRENT_YEAR + 1, max: CURRENT_YEAR + 30, step: 1 },
   uttakAvkPct:   { min: 0,  max: 8,  step: 0.5 },
   tjpArF:        { min: 5,  max: 30, step: 1   },
   tjpArU:        { min: 5,  max: 30, step: 1   },

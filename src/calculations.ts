@@ -96,17 +96,18 @@ export function computeNV(ek: EkonomiData): number {
 export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const { felipe, ulrika } = PEOPLE;
   const avkPct     = s.avkPct;
-  // Felipe och Ulrika kan sluta jobba/kontribuera olika år. "FIRE" (brygga-start)
-  // inträffar när BÅDA har slutat — den som slutar tidigare behåller sin lön i
-  // modellen (ingen bryggkapital-förbrukning) tills den andra också slutar; dennes
-  // egna konton slutar bara få nya insättningar men fortsätter växa med avkastning.
-  const antalArF   = s.antalArF;
-  const antalArU   = s.antalArU;
+  // Felipe och Ulrika väljer varsitt kalenderår att sluta jobba/kontribuera (fireYearF/U).
+  // "FIRE" (brygga-start) inträffar när BÅDA har slutat — den som slutar tidigare
+  // behåller sin lön i modellen (ingen bryggkapital-förbrukning) tills den andra också
+  // slutar; dennes egna konton slutar bara få nya insättningar men fortsätter växa.
+  const nowFrac    = BASE_YEAR + (BASE_MONTH - 1) / 12;
+  const antalArF   = s.fireYearF - nowFrac; // år kvar till Felipes FIRE-år, räknat från idag
+  const antalArU   = s.fireYearU - nowFrac;
   const antalAr    = Math.max(antalArF, antalArU); // gemensam horisont för kapital-snapshot
   const skattFaktor = 1 - s.skattPct / 100;
   const uttakAvkMon = s.uttakAvkPct / 100 / 12;
 
-  const fireYear = Math.round(BASE_YEAR + (BASE_MONTH - 1) / 12 + antalAr);
+  const fireYear = Math.max(s.fireYearF, s.fireYearU);
 
   // ── Portföljvärden vid FIRE ────────────────────────────────────────────────
 
@@ -251,8 +252,8 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   }
 
   // ── Tidslinje-händelser ────────────────────────────────────────────────────
-  const fireYearF = Math.round(BASE_YEAR + (BASE_MONTH - 1) / 12 + antalArF);
-  const fireYearU = Math.round(BASE_YEAR + (BASE_MONTH - 1) / 12 + antalArU);
+  const fireYearF = s.fireYearF;
+  const fireYearU = s.fireYearU;
 
   // Om ni slutar jobba olika år: den som slutar tidigare får en egen fas,
   // separat från Brygga-start (som alltid är den gemensamma/senare horisonten).
@@ -350,7 +351,7 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   // Fritt kapital vid earlyRetiree.year — samma formler men med den tidigare
   // (gemensamma) horisonten, eftersom ingen hunnit göra fler insättningar än så än.
   const earlyKapital = earlyRetiree
-    ? computeFire(ek, { ...s, antalArF: Math.min(antalArF, antalArU), antalArU: Math.min(antalArF, antalArU) }).kapital
+    ? computeFire(ek, { ...s, fireYearF: Math.min(s.fireYearF, s.fireYearU), fireYearU: Math.min(s.fireYearF, s.fireYearU) }).kapital
     : null;
 
   return {

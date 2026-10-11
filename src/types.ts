@@ -115,8 +115,8 @@ export interface BudgetData {
 // ── FIRE-inställningar (sliders) ─────────────────────────────────────────────
 export interface FireSettings {
   avkPct:        number;
-  antalArF:      number;  // Felipe: år till FIRE (slutar jobba/kontribuera)
-  antalArU:      number;  // Ulrika: år till FIRE
+  fireYearF:     number;  // Felipe: kalenderår FIRE startar (slutar jobba/kontribuera)
+  fireYearU:     number;  // Ulrika: kalenderår FIRE startar
   uttakAvkPct:   number;
   tjpArF:        number;  // Felipe: TjP uttaksperiod (år)
   tjpArU:        number;  // Ulrika: TjP uttaksperiod (år)
@@ -182,7 +182,7 @@ export interface FireResult {
   // Tidslinjehändelser
   events: TimelineEvent[];
 
-  // Asymmetrisk pensionering (olika antalArF/antalArU) — null om samma år
+  // Asymmetrisk pensionering (olika fireYearF/fireYearU) — null om samma år
   earlyRetiree: { who: 'f' | 'u'; year: number; workingSalaryNet: number } | null;
   earlyKapital: number | null;  // Fritt kapital vid earlyRetiree.year (för uttakssimulatorn)
 }

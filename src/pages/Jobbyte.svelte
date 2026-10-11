@@ -13,6 +13,11 @@
   Chart.register(ArcElement, DoughnutController, LineController, LineElement, PointElement,
     LinearScale, CategoryScale, Tooltip, Legend, Filler);
 
+  const CURRENT_YEAR    = 2026;
+  const BIRTH_YEAR      = 1975;
+  const ITP2_START_AGE  = 65;
+  const ITP2_FULL_YEARS = 37;  // 28→65 år = 37 tjänsteår för full ITP2
+
   // ── Inmatning — initieras från sparade Brygga-inställningar ──────────────────
   const _fs = fireStore.get();
   const _ek = ekStore.get();
@@ -24,7 +29,7 @@
   let agBidragPct = $state(5.8);
   let ibb         = $state(82_800);   // IBB per år (2025)
   let avkPct      = $state(_fs.avkPct  || 6.0);
-  let arTillFire  = $state(_fs.antalArF || 7);
+  let arTillFire  = $state(_fs.fireYearF ? _fs.fireYearF - CURRENT_YEAR : 7);
   let kommunalPct      = $state(31.0);
   let statligGrans     = $state(57_000);   // kr/mån brutto-gräns för löneväxlingsstrategi
   let nyJobbStart      = $state(2027);     // år nytt jobb börjar
@@ -38,11 +43,6 @@
   // Chart
   let uttaksCanvas = $state<HTMLCanvasElement | null>(null);
   let uttaksChart: Chart | null = null;
-
-  const CURRENT_YEAR    = 2026;
-  const BIRTH_YEAR      = 1975;
-  const ITP2_START_AGE  = 65;
-  const ITP2_FULL_YEARS = 37;  // 28→65 år = 37 tjänsteår för full ITP2
 
   // ── Formatering ────────────────────────────────────────────────────────────────
   const fmt  = (n: number) => Math.round(n).toLocaleString('sv-SE') + ' kr';
@@ -198,7 +198,7 @@
       tjp_f_pmt_q: 0,                              // AKAP-KR-inbetalningar upphör vid jobbyte
       lonevxl_pmt: itp1Contrib(lonNy) + lvNy,       // ITP 1 AG-avsättning + ny löneväxling
     };
-    const sItp1: FireSettings = { ...bryggaFs, avkPct, antalArF: arTillFire };
+    const sItp1: FireSettings = { ...bryggaFs, avkPct, fireYearF: CURRENT_YEAR + arTillFire };
     return computeFire(ekItp1, sItp1);
   });
 

@@ -22,8 +22,10 @@ const EMPTY_EK: EkonomiData = {
   levnadskostnad: 30_000, levnadskostnad2: 0, exp_switch_ar: 0,
 };
 
+const TEST_YEAR = new Date().getFullYear();
+
 const FIRE_S: FireSettings = {
-  avkPct: 8, antalArF: 10, antalArU: 10, uttakAvkPct: 2, tjpArF: 20, tjpArU: 20,
+  avkPct: 8, fireYearF: TEST_YEAR + 10, fireYearU: TEST_YEAR + 10, uttakAvkPct: 2, tjpArF: 20, tjpArU: 20,
   skattPct: 0, borgoRanta: 2.3, lonehojF: 0, lonehojU: 0,
   fTjpAge: 65, fNorskTjpAge: 62, uTjpAge: 65,
   uNorskTjpAge: 62, fAllmanAge: 67, uAllmanAge: 68,

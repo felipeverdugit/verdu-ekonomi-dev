@@ -115,13 +115,16 @@ const FIRE_DEFAULTS: FireSettings = {
 
 export const fireStore = {
   get(): FireSettings {
-    // Migrering: gamla delade "antalAr" används som startvärde för båda
-    // tills användaren sätter dem var för sig under sina nya nycklar.
-    const legacyAntalAr = getNum('vek_fire_antalAr', FIRE_DEFAULTS.antalArF);
+    // Migrering: äldre versioner sparade "år till FIRE" (relativt), inte kalenderår.
+    // Om inget nytt fireYearF/fireYearU finns, härled det från det gamla värdet.
+    const CURRENT_YEAR  = new Date().getFullYear();
+    const legacyAntalAr = getNum('vek_fire_antalAr', SLIDER_DEFAULTS.fireYearF - CURRENT_YEAR);
+    const legacyFireYearF = getNum('vek_fire_antalArF', legacyAntalAr) + CURRENT_YEAR;
+    const legacyFireYearU = getNum('vek_fire_antalArU', legacyAntalAr) + CURRENT_YEAR;
     return {
       avkPct:       getNum(K.fire('avkPct'),       FIRE_DEFAULTS.avkPct),
-      antalArF:     getNum(K.fire('antalArF'),      legacyAntalAr),
-      antalArU:     getNum(K.fire('antalArU'),      legacyAntalAr),
+      fireYearF:    getNum(K.fire('fireYearF'),     legacyFireYearF),
+      fireYearU:    getNum(K.fire('fireYearU'),     legacyFireYearU),
       uttakAvkPct:  getNum(K.fire('uttakAvkPct'),   FIRE_DEFAULTS.uttakAvkPct),
       tjpArF:       getNum(K.fire('tjpArF'),        getNum('vek_fire_tjpAr', FIRE_DEFAULTS.tjpArF)),
       tjpArU:       getNum(K.fire('tjpArU'),        getNum('vek_fire_tjpAr', FIRE_DEFAULTS.tjpArU)),
