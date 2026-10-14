@@ -1,22 +1,15 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import {
-    Chart, ArcElement, DoughnutController, LineController, LineElement,
-    PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler,
-  } from 'chart.js';
   import { initAuth } from '../auth';
   import { computeFire, simulateUttag } from '../calculations';
   import { ekStore, fireStore } from '../store';
-  import { SLIDER_RANGES, CHART_DARK_GRID, CHART_DARK_TEXT } from '../constants';
+  import { SLIDER_RANGES } from '../constants';
   import Topnav from '../components/Topnav.svelte';
+  import BridgeChart, { type ChartSeries, type ChartMarker } from '../components/BridgeChart.svelte';
+  import DonutChart, { type DonutSlice } from '../components/DonutChart.svelte';
   import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
-  import { applyChartTheme } from '../chartTheme';
-  import type { FireResult, FireSettings } from '../types';
-
-  Chart.register(ArcElement, DoughnutController, LineController, LineElement,
-    PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler);
-  applyChartTheme();
+  import type { FireSettings } from '../types';
 
   // ── Slider-config ─────────────────────────────────────────────────────────────
   type SliderKey = keyof typeof SLIDER_RANGES;
@@ -65,41 +58,27 @@
 
   const today = new Date().getFullYear();
 
-  // ── Charts ────────────────────────────────────────────────────────────────────
-  let pieCanvas    = $state<HTMLCanvasElement>(null!);
-  let uttaksCanvas = $state<HTMLCanvasElement>(null!);
-  let pieChart:     Chart | null = null;
-  let uttaksChart:  Chart | null = null;
+  // ── Kapital-donut ─────────────────────────────────────────────────────────────
+  const donutSlices = $derived.by(() => {
+    const res = r;
+    const slices: DonutSlice[] = [
+      { label: 'Fonder',          value: res.fonder_fv, color: '#5db3dd' },
+      { label: 'Sparkonto',       value: res.sparkonto_fv, color: '#6bbd85' },
+      { label: 'TjP Sverige',     value: res.tjp_fv,    color: '#d7ab57' },
+      { label: 'TjP Norge',       value: res.norge_fv,  color: '#e2726c' },
+      { label: 'Premiepension',   value: res.pp_fv,     color: '#e08a4f' },
+      { label: 'Inkomstpension',  value: res.ap_fv,     color: '#3f9e3f' },
+    ];
+    if (res.aktierIFire && res.aktierVal > 0) slices.push({ label: 'Aktier', value: res.aktierVal, color: '#b8650f' });
+    return slices;
+  });
 
-  const PIE_LABELS = ['Fonder', 'Sparkonto', 'TjP Sverige', 'TjP Norge', 'Premiepension', 'Inkomstpension'];
-  const PIE_COLORS = ['#5db3dd','#6bbd85','#d7ab57','#e2726c','#e08a4f','#3f9e3f'];
-
-  function buildPieChart(res: FireResult) {
-    if (!pieCanvas) return;
-    if (pieChart) pieChart.destroy();
-    const labels = [...PIE_LABELS];
-    const data   = [res.fonder_fv, res.sparkonto_fv, res.tjp_fv, res.norge_fv, res.pp_fv, res.ap_fv];
-    const colors = [...PIE_COLORS];
-    if (res.aktierIFire && res.aktierVal > 0) { labels.push('Aktier'); data.push(res.aktierVal); colors.push('#b8650f'); }
-    pieChart = new Chart(pieCanvas.getContext('2d')!, {
-      type: 'doughnut',
-      data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#1c1813' }] },
-      options: {
-        plugins: {
-          legend: { position: 'bottom', labels: { color: CHART_DARK_TEXT, font: { size: 11 } } },
-          tooltip: { callbacks: { label: (c) => ` ${fmtM(c.raw as number)}` } },
-        },
-      },
-    });
-  }
-
-  function buildUttaksChart(res: FireResult) {
-    if (!uttaksCanvas) return;
-    if (uttaksChart) uttaksChart.destroy();
+  // ── Bryggan — uttakssimulator ───────────────────────────────────────────────────
+  // Om ni slutar jobba olika år: starta diagrammet redan när den första slutar,
+  // med den kvarvarande partnerns lön som extra "pensionsström" fram till Brygga-start.
+  const bridge = $derived.by(() => {
+    const res = r;
     const ek = ekStore.get();
-
-    // Om ni slutar jobba olika år: starta diagrammet redan när den första slutar,
-    // med den kvarvarande partnerns lön som extra "pensionsström" fram till Brygga-start.
     const startYear    = res.earlyRetiree ? res.earlyRetiree.year : res.fireYear;
     const startKapital = res.earlyRetiree ? res.earlyKapital! : res.kapital;
     const simPensions  = res.earlyRetiree
@@ -113,40 +92,37 @@
 
     const sim = simulateUttag(startKapital, res.uttakAvkPct, startYear, ek.levnadskostnad, simPensions, ek.levnadskostnad2, ek.exp_switch_ar, engBelopp, engAr);
     const switchYear2 = ek.exp_switch_ar > 0 && ek.levnadskostnad2 > 0 ? res.fireYear + ek.exp_switch_ar : 9999;
-    const levnadLinje = sim.rows.map(row => row.year >= switchYear2 ? ek.levnadskostnad2 : ek.levnadskostnad);
     const laonMon = (year: number) => res.earlyRetiree && year < res.fireYear ? res.earlyRetiree.workingSalaryNet : 0;
 
-    uttaksChart = new Chart(uttaksCanvas.getContext('2d')!, {
-      type: 'line',
-      data: {
-        labels: sim.rows.map(row => String(row.year)),
-        datasets: [
-          { label: 'Kapital (MSEK)', data: sim.rows.map(row => row.capital / 1e6), borderColor: '#5db3dd', backgroundColor: '#5db3dd20', fill: true, tension: 0.3, pointRadius: 0, yAxisID: 'y' },
-          { label: 'Pension/mån (kr)', data: sim.rows.map(row => row.pensionMon - laonMon(row.year)), borderColor: '#6bbd85', backgroundColor: 'transparent', tension: 0.3, pointRadius: 0, yAxisID: 'y1' },
-          ...(res.earlyRetiree ? [{ label: 'Lön/mån (kvarvarande)', data: sim.rows.map(row => laonMon(row.year)), borderColor: '#d7ab57', backgroundColor: 'transparent', tension: 0, pointRadius: 0, yAxisID: 'y1', borderDash: [2, 2] }] : []),
-          { label: 'Levnadskostnad/mån (kr)', data: levnadLinje, borderColor: '#c98500', backgroundColor: 'transparent', borderDash: [5, 3], tension: 0, pointRadius: 0, yAxisID: 'y1' },
-        ],
-      },
-      options: {
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        scales: {
-          x:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, maxTicksLimit: 10 } },
-          y:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, callback: v => `${v} M` }, position: 'left' },
-          y1: { grid: { drawOnChartArea: false }, ticks: { color: '#6bbd85', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
-        },
-        plugins: {
-          legend: { labels: { color: CHART_DARK_TEXT } },
-          tooltip: { mode: 'index', intersect: false },
-        },
-      },
-    });
-  }
+    const years: number[] = sim.rows.map(row => row.year);
+    const series: ChartSeries[] = [
+      { key: 'kapital', label: 'Kapital (MSEK)', color: '#5db3dd', axis: 'left', area: true,
+        data: sim.rows.map(row => row.capital / 1e6) },
+      { key: 'pension', label: 'Pension/mån (kr)', color: '#6bbd85', axis: 'right',
+        data: sim.rows.map(row => row.pensionMon - laonMon(row.year)) },
+      ...(res.earlyRetiree ? [{ key: 'lon', label: 'Lön/mån (kvarvarande)', color: '#d7ab57', axis: 'right' as const, dashed: true,
+        data: sim.rows.map(row => laonMon(row.year)) }] : []),
+      { key: 'levnad', label: 'Levnadskostnad/mån (kr)', color: '#c98500', axis: 'right', dashed: true,
+        data: sim.rows.map(row => row.year >= switchYear2 ? ek.levnadskostnad2 : ek.levnadskostnad) },
+    ];
+    const markers: ChartMarker[] = res.earlyRetiree
+      ? [{ year: res.fireYear, label: 'Brygga-start', color: '#c98500' }]
+      : [];
+    return { years, series, markers };
+  });
 
-  $effect(() => {
-    void r; void pieCanvas; void uttaksCanvas; void engBelopp; void engAr;
-    buildPieChart(r);
-    buildUttaksChart(r);
+  // ── Timeline: vem slutar när ────────────────────────────────────────────────────
+  const timeline = $derived.by(() => {
+    const felipeYear = s.fireYearF, ulrikaYear = s.fireYearU;
+    const bryggaYear = Math.max(felipeYear, ulrikaYear);
+    const minYear    = Math.min(felipeYear, ulrikaYear);
+    const span       = bryggaYear - minYear;
+    const pos = (yr: number) => span === 0 ? 50 : (yr - minYear) / span * 100;
+    const points = [
+      { who: 'Felipe', year: felipeYear, color: 'var(--accent1)' },
+      { who: 'Ulrika', year: ulrikaYear, color: 'var(--accent2)' },
+    ].sort((a, b) => a.year - b.year);
+    return { points, pos, minYear, bryggaYear, span };
   });
 
   // ── Fas-badge ─────────────────────────────────────────────────────────────────
@@ -165,15 +141,12 @@
   }
 
   onMount(async () => {
-    requestAnimationFrame(() => { buildPieChart(r); buildUttaksChart(r); });
     injectInfoBtn(INFO.fire.title, INFO.fire.sections);
     window.addEventListener('storage', onStorage);
     await initAuth();
   });
 
   onDestroy(() => {
-    pieChart?.destroy();
-    uttaksChart?.destroy();
     window.removeEventListener('storage', onStorage);
   });
 </script>
@@ -185,23 +158,56 @@
   <h1>🌉 Brygga-simulator</h1>
   <p class="subtitle">Genererad {new Date().toLocaleDateString('sv-SE')} · Levnadskostnad {fmt(ekStore.get().levnadskostnad)}/mån</p>
 
-  <!-- KPI -->
+  <!-- Hero -->
+  <section class="hero-verdict">
+    <div class="hero-figure">
+      <div class="label">Brygga-startår</div>
+      <div class="value mono">{r.fireYear}</div>
+      <div class="sub">om {r.fireYear - today} år</div>
+    </div>
+    <div class="kpi-rail">
+      <div class="kpi">
+        <div class="k-label">Brygga-kapital</div>
+        <div class="k-value">{fmtM(r.bryggaKapital)}</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Brygga-täckning</div>
+        <div class="k-value" style:color={r.bryggaTackning >= 100 ? 'var(--green)' : r.bryggaTackning >= 75 ? 'var(--orange)' : 'var(--red)'}>{r.bryggaTackning.toFixed(1)} %</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Total förmögenhet</div>
+        <div class="k-value" style="color:var(--accent2)">{fmtM(r.totaltFV)}</div>
+      </div>
+    </div>
+  </section>
+
   <div class="kpi-bar">
-    <div class="kpi"><div class="kpi-label">Brygga-startår</div><div class="kpi-value orange">{r.fireYear} (om {r.fireYear - today} år)</div></div>
-    <div class="kpi">
-      <div class="kpi-label">Brygga-kapital</div>
-      <div class="kpi-value">{fmtM(r.bryggaKapital)}</div>
-      <div class="kpi-sub" style="font-size:.7rem;color:var(--muted)">PV av gap tills pension täcker allt</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Brygga-täckning</div>
-      <div class="kpi-value" style:color={r.bryggaTackning >= 100 ? 'var(--green)' : r.bryggaTackning >= 75 ? 'var(--orange)' : 'var(--red)'}>{r.bryggaTackning.toFixed(1)} %</div>
-      <div class="kpi-sub" style="font-size:.7rem;color:var(--muted)">Fritt kapital / brygga-kapital</div>
-    </div>
     <div class="kpi"><div class="kpi-label">Fritt kapital vid start</div><div class="kpi-value">{fmtM(r.kapital)}</div></div>
-    <div class="kpi"><div class="kpi-label">Total förmögenhet vid start</div><div class="kpi-value purple">{fmtM(r.totaltFV)}</div></div>
     <div class="kpi"><div class="kpi-label">ISK-skatt/år (Lysa)</div><div class="kpi-value orange">{fmt(Math.round(r.iskKapital * r.iskPct / 100))}</div><div class="kpi-sub" style="font-size:.7rem;color:var(--muted)">schablonbeskattning ISK-konton</div></div>
   </div>
+
+  {#if timeline.span > 0}
+    <h2>Vem slutar när</h2>
+    <div class="card timeline-card">
+      <div class="timeline-track">
+        <div class="timeline-pin" style="left:{timeline.pos(timeline.points[0].year)}%;background:{timeline.points[0].color}"></div>
+        <div class="timeline-label" style="left:{timeline.pos(timeline.points[0].year)}%">
+          <div class="who" style="color:{timeline.points[0].color}">{timeline.points[0].who} slutar{timeline.points[0].year === timeline.bryggaYear ? ' · Brygga-start' : ''}</div>
+          <div class="yr">{timeline.points[0].year}</div>
+        </div>
+        <div class="timeline-pin" style="left:{timeline.pos(timeline.points[1].year)}%;background:{timeline.points[1].year === timeline.bryggaYear ? 'var(--orange)' : timeline.points[1].color}"></div>
+        <div class="timeline-label" style="left:{timeline.pos(timeline.points[1].year)}%">
+          <div class="who" style="color:{timeline.points[1].year === timeline.bryggaYear ? 'var(--orange)' : timeline.points[1].color}">{timeline.points[1].who} slutar{timeline.points[1].year === timeline.bryggaYear ? ' · Brygga-start' : ''}</div>
+          <div class="yr">{timeline.points[1].year}</div>
+        </div>
+      </div>
+      <div class="timeline-foot"><span>idag · {today}</span><span>+ {timeline.bryggaYear - today} år</span></div>
+      <p class="timeline-note">
+        {timeline.points[0].who} slutar <strong>{timeline.bryggaYear - timeline.points[0].year} år före</strong> {timeline.points[1].who}.
+        Brygga-start är alltid samma år som den av er som slutar <strong>sist</strong>.
+      </p>
+    </div>
+  {/if}
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
 
@@ -291,18 +297,19 @@
         </table>
       </div>
 
-      <!-- Kapital-doughnut -->
+      <!-- Kapital-donut -->
       <h2 style="margin-top:24px">Kapital vid FIRE-start</h2>
       <div class="card">
-        <canvas bind:this={pieCanvas} height="240"></canvas>
+        <DonutChart slices={donutSlices} centerValue={fmtM(r.totaltFV)} fmt={fmtM} />
       </div>
     </section>
   </div>
 
   <!-- Uttakssimulator -->
   <h2>Uttakssimulator</h2>
-  <div class="card" style="height:320px">
-    <canvas bind:this={uttaksCanvas} style="height:100%"></canvas>
+  <div class="card">
+    <BridgeChart years={bridge.years} series={bridge.series} markers={bridge.markers}
+                 leftFormat={v => v.toFixed(1) + ' M'} rightFormat={v => Math.round(v / 1000) + 'k'} />
   </div>
 
   <footer>Brygga-simulator · Verdu Ekonomi</footer>
