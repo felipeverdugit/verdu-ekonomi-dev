@@ -16,10 +16,15 @@ export function applyChartTheme(): void {
   Chart.defaults.font.family = "'Source Sans 3', system-ui, sans-serif";
   Chart.defaults.font.size = 12;
 
-  Chart.defaults.scale.ticks.font = { family: "'IBM Plex Mono', ui-monospace, monospace", size: 11 };
+  if (Chart.defaults.scale) {
+    Chart.defaults.scale.ticks.font = { family: "'IBM Plex Mono', ui-monospace, monospace", size: 11 };
+  }
 
-  Chart.defaults.elements.line.borderCapStyle = 'round';
-  Chart.defaults.elements.line.borderJoinStyle = 'round';
+  // Bar-only sidor registrerar inte LineElement — elements.line finns då inte.
+  if (Chart.defaults.elements.line) {
+    Chart.defaults.elements.line.borderCapStyle = 'round';
+    Chart.defaults.elements.line.borderJoinStyle = 'round';
+  }
 
   Chart.defaults.plugins.legend.labels.usePointStyle = true;
   Chart.defaults.plugins.legend.labels.boxWidth = 16;
