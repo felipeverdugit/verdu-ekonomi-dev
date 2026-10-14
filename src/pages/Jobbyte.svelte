@@ -1,19 +1,10 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
-  import {
-    Chart, ArcElement, DoughnutController, LineController, LineElement, PointElement,
-    LinearScale, CategoryScale, Tooltip, Legend, Filler,
-  } from 'chart.js';
   import Topnav from '../components/Topnav.svelte';
+  import BridgeChart, { type ChartSeries, type ChartMarker } from '../components/BridgeChart.svelte';
+  import DonutChart, { type DonutSlice } from '../components/DonutChart.svelte';
   import { fireStore, ekStore } from '../store';
   import { simulateUttag, computeFire, accountFVGrowing } from '../calculations';
-  import { CHART_DARK_GRID, CHART_DARK_TEXT } from '../constants';
-  import { applyChartTheme } from '../chartTheme';
   import type { PensionStream, EkonomiData, FireSettings } from '../types';
-
-  Chart.register(ArcElement, DoughnutController, LineController, LineElement, PointElement,
-    LinearScale, CategoryScale, Tooltip, Legend, Filler);
-  applyChartTheme();
 
   const CURRENT_YEAR    = 2026;
   const BIRTH_YEAR      = 1975;
@@ -42,9 +33,6 @@
   let levnadskostnad  = $state(_ek.levnadskostnad || 65_000);
   let uttakAvkPct     = $state(_fs.uttakAvkPct || 2.0);
 
-  // Chart
-  let uttaksCanvas = $state<HTMLCanvasElement | null>(null);
-  let uttaksChart: Chart | null = null;
 
   // ── Formatering ────────────────────────────────────────────────────────────────
   const fmt  = (n: number) => Math.round(n).toLocaleString('sv-SE') + ' kr';
@@ -226,41 +214,27 @@
     return `<span class="badge" style="background:${color}18;color:${color};border:1px solid ${color}40">${isU ? 'U: ' : isFire ? '' : 'F: '}${short}</span>`;
   }
 
-  let bryggaPieCanvas    = $state<HTMLCanvasElement | null>(null);
-  let bryggaUttaksCanvas = $state<HTMLCanvasElement | null>(null);
-  let bryggaPieChart:    Chart | null = null;
-  let bryggaUttaksChart: Chart | null = null;
-
-  const PIE_LABELS = ['Fonder', 'Sparkonto', 'TjP Sverige (tidigare)', 'ITP 1 (nytt jobb)', 'TjP Norge', 'Premiepension', 'Inkomstpension'];
-  const PIE_COLORS = ['#5db3dd','#6bbd85','#d7ab57','#199e70','#e2726c','#e08a4f','#3f9e3f'];
-
-  function buildBryggaPieChart() {
-    if (!bryggaPieCanvas) return;
-    if (bryggaPieChart) { bryggaPieChart.destroy(); bryggaPieChart = null; }
+  // ── Kapital vid FIRE-start (donut) ─────────────────────────────────────────────
+  const donutSlices = $derived.by(() => {
     const res = itp1Brygga;
     const b   = itp1Breakdown;
-    const labels = [...PIE_LABELS];
-    const data   = [res.fonder_fv, res.sparkonto_fv, b.felipeGammalTjp + b.ulrikaTjp, b.itp1Nytt, res.norge_fv, res.pp_fv, res.ap_fv];
-    const colors = [...PIE_COLORS];
-    if (res.aktierIFire && res.aktierVal > 0) { labels.push('Aktier'); data.push(res.aktierVal); colors.push('#b8650f'); }
-    bryggaPieChart = new Chart(bryggaPieCanvas.getContext('2d')!, {
-      type: 'doughnut',
-      data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#1c1813' }] },
-      options: {
-        plugins: {
-          legend: { position: 'bottom', labels: { color: CHART_DARK_TEXT, font: { size: 11 } } },
-          tooltip: { callbacks: { label: (ctx) => ` ${fmtM(ctx.raw as number)}` } },
-        },
-      },
-    });
-  }
+    const slices: DonutSlice[] = [
+      { label: 'Fonder',                  value: res.fonder_fv,                      color: '#5db3dd' },
+      { label: 'Sparkonto',                value: res.sparkonto_fv,                   color: '#6bbd85' },
+      { label: 'TjP Sverige (tidigare)',   value: b.felipeGammalTjp + b.ulrikaTjp,    color: '#d7ab57' },
+      { label: 'ITP 1 (nytt jobb)',        value: b.itp1Nytt,                         color: '#199e70' },
+      { label: 'TjP Norge',                value: res.norge_fv,                       color: '#e2726c' },
+      { label: 'Premiepension',            value: res.pp_fv,                          color: '#e08a4f' },
+      { label: 'Inkomstpension',           value: res.ap_fv,                          color: '#3f9e3f' },
+    ];
+    if (res.aktierIFire && res.aktierVal > 0) slices.push({ label: 'Aktier', value: res.aktierVal, color: '#b8650f' });
+    return slices;
+  });
 
-  function buildBryggaUttaksChart() {
-    if (!bryggaUttaksCanvas) return;
-    if (bryggaUttaksChart) { bryggaUttaksChart.destroy(); bryggaUttaksChart = null; }
+  // ── Brygga-simulator med ITP 1 — uttakssimulator (hela familjens bild) ────────
+  const bryggaBridge = $derived.by(() => {
     const res = itp1Brygga;
     const ek  = bryggaEk;
-
     const startYear    = res.earlyRetiree ? res.earlyRetiree.year : res.fireYear;
     const startKapital = res.earlyRetiree ? res.earlyKapital! : res.kapital;
     const simPensions  = res.earlyRetiree
@@ -274,96 +248,52 @@
 
     const sim = simulateUttag(startKapital, res.uttakAvkPct, startYear, ek.levnadskostnad, simPensions, ek.levnadskostnad2, ek.exp_switch_ar);
     const switchYear2 = ek.exp_switch_ar > 0 && ek.levnadskostnad2 > 0 ? res.fireYear + ek.exp_switch_ar : 9999;
-    const levnadLinje = sim.rows.map(row => row.year >= switchYear2 ? ek.levnadskostnad2 : ek.levnadskostnad);
     const laonMon = (year: number) => res.earlyRetiree && year < res.fireYear ? res.earlyRetiree.workingSalaryNet : 0;
 
-    bryggaUttaksChart = new Chart(bryggaUttaksCanvas.getContext('2d')!, {
-      type: 'line',
-      data: {
-        labels: sim.rows.map(row => String(row.year)),
-        datasets: [
-          { label: 'Kapital (MSEK)', data: sim.rows.map(row => row.capital / 1e6), borderColor: '#5db3dd', backgroundColor: '#5db3dd20', fill: true, tension: 0.3, pointRadius: 0, yAxisID: 'y' },
-          { label: 'Pension/mån (kr)', data: sim.rows.map(row => row.pensionMon - laonMon(row.year)), borderColor: '#6bbd85', backgroundColor: 'transparent', tension: 0.3, pointRadius: 0, yAxisID: 'y1' },
-          ...(res.earlyRetiree ? [{ label: 'Lön/mån (kvarvarande)', data: sim.rows.map(row => laonMon(row.year)), borderColor: '#d7ab57', backgroundColor: 'transparent', tension: 0, pointRadius: 0, yAxisID: 'y1', borderDash: [2, 2] }] : []),
-          { label: 'Levnadskostnad/mån (kr)', data: levnadLinje, borderColor: '#c98500', backgroundColor: 'transparent', borderDash: [5, 3], tension: 0, pointRadius: 0, yAxisID: 'y1' },
-        ],
-      },
-      options: {
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        scales: {
-          x:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, maxTicksLimit: 10 } },
-          y:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, callback: v => `${v} M` }, position: 'left' },
-          y1: { grid: { drawOnChartArea: false }, ticks: { color: '#6bbd85', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
-        },
-        plugins: {
-          legend: { labels: { color: CHART_DARK_TEXT } },
-          tooltip: { mode: 'index', intersect: false },
-        },
-      },
-    });
-  }
-
-  $effect(() => {
-    void itp1Brygga; void itp1Breakdown; void bryggaPieCanvas; void bryggaUttaksCanvas;
-    buildBryggaPieChart();
-    buildBryggaUttaksChart();
+    const years: number[] = sim.rows.map(row => row.year);
+    const series: ChartSeries[] = [
+      { key: 'kapital', label: 'Kapital (MSEK)', color: '#5db3dd', axis: 'left', area: true,
+        data: sim.rows.map(row => row.capital / 1e6) },
+      { key: 'pension', label: 'Pension/mån (kr)', color: '#6bbd85', axis: 'right',
+        data: sim.rows.map(row => row.pensionMon - laonMon(row.year)) },
+      ...(res.earlyRetiree ? [{ key: 'lon', label: 'Lön/mån (kvarvarande)', color: '#d7ab57', axis: 'right' as const, dashed: true,
+        data: sim.rows.map(row => laonMon(row.year)) }] : []),
+      { key: 'levnad', label: 'Levnadskostnad/mån (kr)', color: '#c98500', axis: 'right', dashed: true,
+        data: sim.rows.map(row => row.year >= switchYear2 ? ek.levnadskostnad2 : ek.levnadskostnad) },
+    ];
+    const markers: ChartMarker[] = res.earlyRetiree
+      ? [{ year: res.fireYear, label: 'Brygga-start', color: '#c98500' }]
+      : [];
+    return { years, series, markers };
   });
 
-  onMount(() => { requestAnimationFrame(() => { buildBryggaPieChart(); buildBryggaUttaksChart(); }); });
-  onDestroy(() => { bryggaPieChart?.destroy(); bryggaUttaksChart?.destroy(); });
-
-  // ── Uttakssimulator ───────────────────────────────────────────────────────────
-  function buildUttaksChart() {
-    if (!uttaksCanvas) return;
-    if (uttaksChart) { uttaksChart.destroy(); uttaksChart = null; }
-
+  // ── Uttakssimulator (AKAP-KR/ITP1/ITP2-jämförelse) ────────────────────────────
+  const jobbChart = $derived.by(() => {
     const fireYear = CURRENT_YEAR + arTillFire;
     const itp2Stream: PensionStream = {
       id: 1, label: 'ITP 2 förmån', who: 'f',
       fromYear: BIRTH_YEAR + ITP2_START_AGE,
       toYear: 9999, monthly: c.itp2.prorated, livsvarig: true,
     };
-
     const simAkap = simulateUttag(c.akap.totFV, uttakAvkPct, fireYear, levnadskostnad, []);
     const simItp1 = simulateUttag(c.itp1.totFV, uttakAvkPct, fireYear, levnadskostnad, []);
     const simItp2 = simulateUttag(c.itp2.lvFV,  uttakAvkPct, fireYear, levnadskostnad, [itp2Stream]);
 
-    uttaksChart = new Chart(uttaksCanvas.getContext('2d')!, {
-      type: 'line',
-      data: {
-        labels: simAkap.rows.map(r => String(r.year)),
-        datasets: [
-          { label: 'AKAP-KR kapital (MSEK)',  data: simAkap.rows.map(r => r.capital / 1e6), borderColor: '#6bbd85', backgroundColor: '#6bbd8518', fill: true,  tension: 0.3, pointRadius: 0, yAxisID: 'y' },
-          { label: 'ITP 1 kapital (MSEK)',    data: simItp1.rows.map(r => r.capital / 1e6), borderColor: '#5db3dd', backgroundColor: '#5db3dd18', fill: true,  tension: 0.3, pointRadius: 0, yAxisID: 'y' },
-          { label: 'ITP 2 lv-kapital (MSEK)', data: simItp2.rows.map(r => r.capital / 1e6), borderColor: '#e08a4f', backgroundColor: 'transparent', fill: false, tension: 0.3, pointRadius: 0, yAxisID: 'y' },
-          { label: 'ITP 2 pension/mån (kr)',   data: simItp2.rows.map(r => r.pensionMon),   borderColor: '#e08a4f', backgroundColor: 'transparent', fill: false, tension: 0.3, pointRadius: 0, yAxisID: 'y1', borderDash: [4, 2] },
-          { label: 'Levnadskostnad/mån (kr)', data: simAkap.rows.map(() => levnadskostnad), borderColor: '#c98500', backgroundColor: 'transparent', fill: false, tension: 0,   pointRadius: 0, yAxisID: 'y1', borderDash: [5, 3] },
-        ],
-      },
-      options: {
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        scales: {
-          x:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, maxTicksLimit: 10 } },
-          y:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, callback: v => `${v} M` }, position: 'left' },
-          y1: { grid: { drawOnChartArea: false }, ticks: { color: '#c98500', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
-        },
-        plugins: {
-          legend: { labels: { color: CHART_DARK_TEXT } },
-          tooltip: { mode: 'index', intersect: false },
-        },
-      },
-    });
-  }
-
-  $effect(() => {
-    void c; void uttaksCanvas; void levnadskostnad; void uttakAvkPct;
-    buildUttaksChart();
+    const years: number[] = simAkap.rows.map(r => r.year);
+    const series: ChartSeries[] = [
+      { key: 'akap',    label: 'AKAP-KR kapital (MSEK)',  color: '#6bbd85', axis: 'left',  area: true,
+        data: simAkap.rows.map(r => r.capital / 1e6) },
+      { key: 'itp1',    label: 'ITP 1 kapital (MSEK)',    color: '#5db3dd', axis: 'left',  area: true,
+        data: simItp1.rows.map(r => r.capital / 1e6) },
+      { key: 'itp2cap', label: 'ITP 2 lv-kapital (MSEK)', color: '#e08a4f', axis: 'left',
+        data: simItp2.rows.map(r => r.capital / 1e6) },
+      { key: 'itp2pen', label: 'ITP 2 pension/mån (kr)',  color: '#e08a4f', axis: 'right', dashed: true,
+        data: simItp2.rows.map(r => r.pensionMon) },
+      { key: 'levnad',  label: 'Levnadskostnad/mån (kr)', color: '#c98500', axis: 'right', dashed: true,
+        data: simAkap.rows.map(() => levnadskostnad) },
+    ];
+    return { years, series };
   });
-
-  onMount(() => { requestAnimationFrame(() => buildUttaksChart()); });
-  onDestroy(() => { uttaksChart?.destroy(); });
 </script>
 
 <svelte:head><title>Jobbyte-analys — Verdu Ekonomi</title></svelte:head>
@@ -670,9 +600,8 @@
       <div class="form-row" style="margin:0"><label>Uttaksavkastning (%/år)</label>
         <input type="number" class="bgt-inp" bind:value={uttakAvkPct} step="0.5" /></div>
     </div>
-    <div style="position:relative;height:320px">
-      <canvas bind:this={uttaksCanvas}></canvas>
-    </div>
+    <BridgeChart years={jobbChart.years} series={jobbChart.series}
+                 leftFormat={v => v.toFixed(1) + ' M'} rightFormat={v => Math.round(v / 1000) + 'k'} />
     <p style="font-size:.75rem;color:var(--muted);margin:8px 0 0">
       Visar enbart pensionskapital från det aktuella jobbet (AKAP-KR/ITP 1/ITP 2 löneväxling).
       ITP 2 garanterad pension (lila streckad) startar {BIRTH_YEAR + ITP2_START_AGE}.
@@ -687,20 +616,30 @@
     Avkastning {fmtPct(avkPct)} · {arTillFire} år till FIRE.
   </p>
 
+  <section class="hero-verdict" style="margin-bottom:16px">
+    <div class="hero-figure">
+      <div class="label">Brygga-startår</div>
+      <div class="value mono">{itp1Brygga.fireYear}</div>
+      <div class="sub">om {arTillFire} år</div>
+    </div>
+    <div class="kpi-rail">
+      <div class="kpi">
+        <div class="k-label">Brygga-kapital</div>
+        <div class="k-value">{fmtM(itp1Brygga.bryggaKapital)}</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Brygga-täckning</div>
+        <div class="k-value" style:color={itp1Brygga.bryggaTackning >= 100 ? 'var(--green)' : itp1Brygga.bryggaTackning >= 75 ? 'var(--orange)' : 'var(--red)'}>{itp1Brygga.bryggaTackning.toFixed(1)} %</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Total förmögenhet</div>
+        <div class="k-value" style="color:var(--accent2)">{fmtM(itp1Brygga.totaltFV)}</div>
+      </div>
+    </div>
+  </section>
+
   <div class="kpi-bar" style="margin-bottom:16px">
-    <div class="kpi"><div class="kpi-label">Brygga-startår</div><div class="kpi-value orange">{itp1Brygga.fireYear} (om {arTillFire} år)</div></div>
-    <div class="kpi">
-      <div class="kpi-label">Brygga-kapital</div>
-      <div class="kpi-value">{fmtM(itp1Brygga.bryggaKapital)}</div>
-      <div class="kpi-sub" style="font-size:.7rem;color:var(--muted)">PV av gap tills pension täcker allt</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Brygga-täckning</div>
-      <div class="kpi-value" style:color={itp1Brygga.bryggaTackning >= 100 ? 'var(--green)' : itp1Brygga.bryggaTackning >= 75 ? 'var(--orange)' : 'var(--red)'}>{itp1Brygga.bryggaTackning.toFixed(1)} %</div>
-      <div class="kpi-sub" style="font-size:.7rem;color:var(--muted)">Fritt kapital / brygga-kapital</div>
-    </div>
     <div class="kpi"><div class="kpi-label">Fritt kapital vid start</div><div class="kpi-value">{fmtM(itp1Brygga.kapital)}</div></div>
-    <div class="kpi"><div class="kpi-label">Total förmögenhet vid start</div><div class="kpi-value purple">{fmtM(itp1Brygga.totaltFV)}</div></div>
   </div>
 
   <section style="margin-bottom:24px">
@@ -749,9 +688,7 @@
   <section style="margin-bottom:24px">
     <h3 style="margin-top:0">Kapital vid FIRE-start</h3>
     <div class="card">
-      <div style="position:relative;height:380px;max-width:480px;margin:0 auto">
-        <canvas bind:this={bryggaPieCanvas}></canvas>
-      </div>
+      <DonutChart slices={donutSlices} centerValue={fmtM(itp1Brygga.totaltFV)} fmt={fmtM} />
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
         <div>
           <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">TjP Sverige (tidigare, fryst)</div>
@@ -773,8 +710,9 @@
   </section>
 
   <h3>Uttakssimulator — hela familjens bild</h3>
-  <div class="card" style="height:320px;margin-bottom:24px">
-    <canvas bind:this={bryggaUttaksCanvas} style="height:100%"></canvas>
+  <div class="card" style="margin-bottom:24px">
+    <BridgeChart years={bryggaBridge.years} series={bryggaBridge.series} markers={bryggaBridge.markers}
+                 leftFormat={v => v.toFixed(1) + ' M'} rightFormat={v => Math.round(v / 1000) + 'k'} />
   </div>
 
   <footer>Jobbyte-analys · Verdu Ekonomi</footer>
