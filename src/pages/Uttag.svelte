@@ -1,21 +1,13 @@
 <script lang="ts">
   import Topnav from '../components/Topnav.svelte';
   import { onMount, onDestroy } from 'svelte';
-  import {
-    Chart, LineController, LineElement, PointElement,
-    LinearScale, CategoryScale, Tooltip, Legend, Filler,
-  } from 'chart.js';
   import { initAuth } from '../auth';
   import { computeFire, simulateUttag, incomeTax, STATLIG_GRANS } from '../calculations';
   import { ekStore, fireStore } from '../store';
   import { injectInfoBtn } from '../nav';
-  import { CHART_DARK_GRID, CHART_DARK_TEXT } from '../constants';
   import { INFO } from '../infoContent';
-  import { applyChartTheme } from '../chartTheme';
+  import BridgeChart, { type ChartSeries } from '../components/BridgeChart.svelte';
   import type { PensionStream } from '../types';
-
-  Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler);
-  applyChartTheme();
 
   const STATLIG_MON = STATLIG_GRANS / 12;
 
@@ -98,45 +90,27 @@
     return { cls: 'verdict warn', text: `~ Pensionerna täcker inte 100 % av levnadskostnaden — kapitalet behövs hela vägen.` };
   });
 
-  // ── Chart ─────────────────────────────────────────────────────────────────────
-  let chartCanvas = $state<HTMLCanvasElement>(null!);
-  let chart: Chart | null = null;
-
-  function buildChart() {
-    if (!chartCanvas) return;
-    if (chart) chart.destroy();
+  // ── Diagram-data ────────────────────────────────────────────────────────────────
+  const chartData = $derived.by(() => {
     const { sim, uttag2, switchAr, r } = data;
-    const switchYear2   = switchAr > 0 && uttag2 > 0 ? r.fireYear + switchAr : 9999;
-    const levnadLinje   = sim.rows.map(row => row.year >= switchYear2 ? uttag2 : uttag);
-    chart = new Chart(chartCanvas.getContext('2d')!, {
-      type: 'line',
-      data: {
-        labels: sim.rows.map(row => String(row.year)),
-        datasets: [
-          { label: 'Kapital (MSEK)', data: sim.rows.map(row => row.capital / 1e6), borderColor: '#5db3dd', backgroundColor: '#5db3dd20', fill: true, tension: 0.3, pointRadius: 0, yAxisID: 'y' },
-          { label: 'Pension/mån (kr)', data: sim.rows.map(row => row.pensionMon), borderColor: '#6bbd85', backgroundColor: 'transparent', tension: 0.3, pointRadius: 0, yAxisID: 'y1' },
-          { label: 'Levnadskostnad/mån (kr)', data: levnadLinje, borderColor: '#c98500', backgroundColor: 'transparent', borderDash: [5, 3], tension: 0, pointRadius: 0, yAxisID: 'y1' },
-        ],
-      },
-      options: {
-        scales: {
-          x:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, maxTicksLimit: 10 } },
-          y:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, callback: v => `${v} M` }, position: 'left' },
-          y1: { grid: { drawOnChartArea: false }, ticks: { color: '#6bbd85', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
-        },
-        plugins: { legend: { labels: { color: CHART_DARK_TEXT } } },
-      },
-    });
-  }
-
-  $effect(() => { void data; void chartCanvas; buildChart(); });
+    const switchYear2 = switchAr > 0 && uttag2 > 0 ? r.fireYear + switchAr : 9999;
+    const labels: number[] = sim.rows.map(row => row.year);
+    const series: ChartSeries[] = [
+      { key: 'kapital', label: 'Kapital (MSEK)', color: '#5db3dd', axis: 'left', area: true,
+        data: sim.rows.map(row => row.capital / 1e6) },
+      { key: 'pension', label: 'Pension/mån (kr)', color: '#6bbd85', axis: 'right',
+        data: sim.rows.map(row => row.pensionMon) },
+      { key: 'levnad',  label: 'Levnadskostnad/mån (kr)', color: '#c98500', axis: 'right', dashed: true,
+        data: sim.rows.map(row => row.year >= switchYear2 ? uttag2 : uttag) },
+    ];
+    return { labels, series };
+  });
 
   function onStorage(e: StorageEvent) {
     if (e.key?.startsWith('vek_ek_') || e.key?.startsWith('vek_fire_')) data = computeAll();
   }
 
   onMount(async () => {
-    requestAnimationFrame(() => buildChart());
     injectInfoBtn(INFO.uttag.title, INFO.uttag.sections);
     window.addEventListener('storage', onStorage);
     window.addEventListener('pageshow', (e) => { if (e.persisted) data = computeAll(); });
@@ -144,7 +118,6 @@
   });
 
   onDestroy(() => {
-    chart?.destroy();
     window.removeEventListener('storage', onStorage);
   });
 </script>
@@ -205,7 +178,8 @@
 
   <!-- Chart -->
   <div class="card" style="margin-bottom:24px">
-    <canvas bind:this={chartCanvas} height="260"></canvas>
+    <BridgeChart labels={chartData.labels} series={chartData.series}
+                 leftFormat={v => v.toFixed(1) + ' M'} rightFormat={v => Math.round(v / 1000) + 'k'} />
   </div>
 
   <!-- Detajtabell -->
