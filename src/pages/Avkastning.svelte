@@ -10,6 +10,7 @@
   import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
   import { applyChartTheme } from '../chartTheme';
+  import BridgeChart, { type ChartSeries } from '../components/BridgeChart.svelte';
   import type { AvkRow, AvkStartValues } from '../types';
 
   Chart.register(BarController, BarElement, LineController, LineElement,
@@ -83,9 +84,7 @@
 
   // ── Charts ────────────────────────────────────────────────────────────────────
   let pctCanvas  = $state<HTMLCanvasElement>(null!);
-  let krCanvas   = $state<HTMLCanvasElement>(null!);
   let pctChart:   Chart | null = null;
-  let krChart:    Chart | null = null;
 
   const GRID = '#342c23';
   const TEXT = '#a89b89';
@@ -120,39 +119,22 @@
     });
   }
 
-  function buildKrChart() {
-    if (!krCanvas || krRows.length === 0) { krChart?.destroy(); krChart = null; return; }
-    if (krChart) krChart.destroy();
+  const krChartData = $derived.by(() => {
+    if (krRows.length === 0) return { labels: [] as string[], series: [] as ChartSeries[] };
     const startTotal = sv.lysaKr + sv.tjpSveKr + sv.tjpNorKr;
-    const labels  = [String(sv.year), ...krRows.map(r => String(r.year))];
-    const faktisk = [startTotal, ...krRows.map(r => r.total)];
-    const simul   = [startTotal, ...krRows.map(r => r.totalSim)];
-    const lysaAkt = [sv.lysaKr,  ...krRows.map(r => r.lysaEnd)];
-    krChart = new Chart(krCanvas.getContext('2d')!, {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [
-          { label: 'Totalt faktisk', data: faktisk, borderColor: '#6bbd85', backgroundColor: '#6bbd8510', tension: 0.3, pointRadius: 4, fill: false, borderWidth: 2 },
-          { label: 'Totalt simulerat', data: simul, borderColor: '#d7ab57', borderDash: [6, 3], tension: 0.3, pointRadius: 3, fill: false, borderWidth: 2 },
-          { label: 'Lysa faktisk', data: lysaAkt, borderColor: '#5db3dd', backgroundColor: '#5db3dd10', tension: 0.3, pointRadius: 3, fill: false, borderWidth: 1.5 },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { labels: { color: TEXT, boxWidth: 14 } },
-          tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${fmtKr(c.raw as number)}` } },
-        },
-        scales: {
-          x: { grid: { color: GRID }, ticks: { color: TEXT } },
-          y: { grid: { color: GRID }, ticks: { color: TEXT, callback: v => fmtM(Number(v)) } },
-        },
-      },
-    });
-  }
+    const labels: string[] = [String(sv.year), ...krRows.map(r => String(r.year))];
+    const series: ChartSeries[] = [
+      { key: 'faktisk', label: 'Totalt faktisk',   color: '#6bbd85', axis: 'left', area: true,
+        data: [startTotal, ...krRows.map(r => r.total)] },
+      { key: 'simul',   label: 'Totalt simulerat', color: '#d7ab57', axis: 'left', dashed: true,
+        data: [startTotal, ...krRows.map(r => r.totalSim)] },
+      { key: 'lysaAkt', label: 'Lysa faktisk',     color: '#5db3dd', axis: 'left',
+        data: [sv.lysaKr, ...krRows.map(r => r.lysaEnd)] },
+    ];
+    return { labels, series };
+  });
 
-  $effect(() => { void rows; void antaget; void pctCanvas; void krCanvas; buildPctChart(); buildKrChart(); });
+  $effect(() => { void rows; void antaget; void pctCanvas; buildPctChart(); });
 
   // ── Rad-hantering ─────────────────────────────────────────────────────────────
   function addRow() {
@@ -183,7 +165,7 @@
   }
 
   onMount(async () => {
-    requestAnimationFrame(() => { buildPctChart(); buildKrChart(); });
+    requestAnimationFrame(() => buildPctChart());
     injectInfoBtn(INFO.avkastning.title, INFO.avkastning.sections);
     window.addEventListener('storage', onStorage);
     await initAuth();
@@ -191,7 +173,6 @@
 
   onDestroy(() => {
     pctChart?.destroy();
-    krChart?.destroy();
     window.removeEventListener('storage', onStorage);
   });
 
@@ -345,7 +326,7 @@
   {#if krRows.length > 0}
     <h2>Kr-simulation</h2>
     <div class="card" style="margin-bottom:24px">
-      <canvas bind:this={krCanvas} height="240"></canvas>
+      <BridgeChart labels={krChartData.labels} series={krChartData.series} leftFormat={fmtM} />
     </div>
 
     <div class="card" style="overflow-x:auto;margin-bottom:32px">
