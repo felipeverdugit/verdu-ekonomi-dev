@@ -9,10 +9,12 @@
   import { fireStore, avkastningStore } from '../store';
   import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
+  import { applyChartTheme } from '../chartTheme';
   import type { AvkRow, AvkStartValues } from '../types';
 
   Chart.register(BarController, BarElement, LineController, LineElement,
     PointElement, CategoryScale, LinearScale, Tooltip, Legend);
+  applyChartTheme();
 
   const fmtKr  = (n: number) => Math.round(n).toLocaleString('sv-SE') + ' kr';
   const fmtKrS = (n: number) => (n >= 0 ? '+' : '') + Math.round(n).toLocaleString('sv-SE') + ' kr';

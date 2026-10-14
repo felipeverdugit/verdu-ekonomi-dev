@@ -8,10 +8,12 @@
   import { fireStore, ekStore } from '../store';
   import { simulateUttag, computeFire, accountFVGrowing } from '../calculations';
   import { CHART_DARK_GRID, CHART_DARK_TEXT } from '../constants';
+  import { applyChartTheme } from '../chartTheme';
   import type { PensionStream, EkonomiData, FireSettings } from '../types';
 
   Chart.register(ArcElement, DoughnutController, LineController, LineElement, PointElement,
     LinearScale, CategoryScale, Tooltip, Legend, Filler);
+  applyChartTheme();
 
   const CURRENT_YEAR    = 2026;
   const BIRTH_YEAR      = 1975;

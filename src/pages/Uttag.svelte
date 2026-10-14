@@ -11,9 +11,11 @@
   import { injectInfoBtn } from '../nav';
   import { CHART_DARK_GRID, CHART_DARK_TEXT } from '../constants';
   import { INFO } from '../infoContent';
+  import { applyChartTheme } from '../chartTheme';
   import type { PensionStream } from '../types';
 
   Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler);
+  applyChartTheme();
 
   const STATLIG_MON = STATLIG_GRANS / 12;
 

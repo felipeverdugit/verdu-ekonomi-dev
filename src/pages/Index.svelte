@@ -8,8 +8,10 @@
   import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
   import { AP_INDEX_RATE, AP_TAK, PP_RATE, CHART_DARK_GRID, CHART_DARK_TEXT, SLIDER_RANGES } from '../constants';
+  import { applyChartTheme } from '../chartTheme';
 
   Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+  applyChartTheme();
 
   const AKAP_CAP  = 52_125;
   const AKAP_LOW  = 0.06;

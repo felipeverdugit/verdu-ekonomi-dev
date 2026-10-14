@@ -10,8 +10,10 @@
   import type { Snapshot, EkonomiData } from '../types';
   import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
+  import { applyChartTheme } from '../chartTheme';
 
   Chart.register(LineController, CategoryScale, LinearScale, PointElement, LineElement, Legend, Tooltip);
+  applyChartTheme();
 
   // ── Hjälp ─────────────────────────────────────────────────────────────────────
   const fmtKr = (n: number) => Math.round(n).toLocaleString('sv-SE') + ' kr';

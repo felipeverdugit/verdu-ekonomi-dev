@@ -8,8 +8,10 @@
   import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
   import { PEOPLE } from '../constants';
+  import { applyChartTheme } from '../chartTheme';
 
   Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend);
+  applyChartTheme();
 
   // ── Typer ─────────────────────────────────────────────────────────────────────
   type Row = {

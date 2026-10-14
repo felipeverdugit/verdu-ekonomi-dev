@@ -11,10 +11,12 @@
   import Topnav from '../components/Topnav.svelte';
   import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
+  import { applyChartTheme } from '../chartTheme';
   import type { FireResult, FireSettings } from '../types';
 
   Chart.register(ArcElement, DoughnutController, LineController, LineElement,
     PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler);
+  applyChartTheme();
 
   // ── Slider-config ─────────────────────────────────────────────────────────────
   type SliderKey = keyof typeof SLIDER_RANGES;
