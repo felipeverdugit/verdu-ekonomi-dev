@@ -1,17 +1,13 @@
 <script lang="ts">
   import Topnav from '../components/Topnav.svelte';
   import { onMount, onDestroy } from 'svelte';
-  import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend } from 'chart.js';
   import { initAuth } from '../auth';
   import { computeFire, incomeTax } from '../calculations';
   import { ekStore, fireStore } from '../store';
   import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
   import { PEOPLE } from '../constants';
-  import { applyChartTheme } from '../chartTheme';
-
-  Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend);
-  applyChartTheme();
+  import BridgeChart, { type ChartSeries } from '../components/BridgeChart.svelte';
 
   // ── Typer ─────────────────────────────────────────────────────────────────────
   type Row = {
@@ -66,52 +62,28 @@
   // ── State ─────────────────────────────────────────────────────────────────────
   let data = $state(compute());
 
-  // ── Canvas ────────────────────────────────────────────────────────────────────
-  let canvas = $state<HTMLCanvasElement>(null!);
-  let chart: Chart | null = null;
-
-  function buildChart() {
-    if (!canvas) return;
-    if (chart) chart.destroy();
+  // ── Diagram-data ────────────────────────────────────────────────────────────────
+  const chartData = $derived.by(() => {
     const { rows, skattPct } = data;
-    const labels  = rows.map(r => String(r.year));
-    const fEffArr = rows.map(r => r.fGrossAnn > 0 ? +(r.fTaxProg / r.fGrossAnn * 100).toFixed(1) : 0);
-    const uEffArr = rows.map(r => r.uGrossAnn > 0 ? +(r.uTaxProg / r.uGrossAnn * 100).toFixed(1) : 0);
-    const flat30  = rows.map(() => skattPct);
-    chart = new Chart(canvas.getContext('2d')!, {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [
-          { label: 'Felipe eff. %',  data: fEffArr, borderColor: '#6bbd85', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3 },
-          { label: 'Ulrika eff. %',  data: uEffArr, borderColor: '#e08a4f', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3 },
-          { label: `Schablonmässig ${skattPct} %`, data: flat30, borderColor: '#e2726c', backgroundColor: 'transparent', borderDash: [5, 5], pointRadius: 0 },
-        ],
-      },
-      options: {
-        scales: {
-          x: { grid: { color: '#342c23' }, ticks: { color: '#a89b89', maxTicksLimit: 12 } },
-          y: { grid: { color: '#342c23' }, ticks: { color: '#a89b89', callback: v => `${v} %` }, min: 0, max: 50 },
-        },
-        plugins: { legend: { labels: { color: '#a89b89' } } },
-      },
-    });
-  }
-
-  $effect(() => {
-    void data; void canvas;
-    buildChart();
+    const labels: number[] = rows.map(r => r.year);
+    const series: ChartSeries[] = [
+      { key: 'f',    label: 'Felipe eff. %',  color: '#6bbd85', axis: 'left',
+        data: rows.map(r => r.fGrossAnn > 0 ? +(r.fTaxProg / r.fGrossAnn * 100).toFixed(1) : 0) },
+      { key: 'u',    label: 'Ulrika eff. %',  color: '#e08a4f', axis: 'left',
+        data: rows.map(r => r.uGrossAnn > 0 ? +(r.uTaxProg / r.uGrossAnn * 100).toFixed(1) : 0) },
+      { key: 'flat', label: `Schablonmässig ${skattPct} %`, color: '#e2726c', axis: 'left', dashed: true,
+        data: rows.map(() => skattPct) },
+    ];
+    return { labels, series };
   });
 
   onMount(async () => {
-    requestAnimationFrame(() => buildChart());
     injectInfoBtn(INFO.skatt.title, INFO.skatt.sections);
     window.addEventListener('storage', onStorage);
     await initAuth();
   });
 
   onDestroy(() => {
-    chart?.destroy();
     window.removeEventListener('storage', onStorage);
   });
 
@@ -147,7 +119,7 @@
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px">
     <div class="card">
       <h3 style="margin-top:0">Effektiv skattesats per år</h3>
-      <canvas bind:this={canvas} height="220"></canvas>
+      <BridgeChart labels={chartData.labels} series={chartData.series} leftFormat={v => pct(v)} />
     </div>
     <div class="card">
       <h3 style="margin-top:0">Modellens antaganden</h3>
