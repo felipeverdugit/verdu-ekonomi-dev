@@ -122,7 +122,15 @@
       { who: 'Felipe', year: felipeYear, color: 'var(--accent1)' },
       { who: 'Ulrika', year: ulrikaYear, color: 'var(--accent2)' },
     ].sort((a, b) => a.year - b.year);
-    return { points, pos, minYear, bryggaYear, span };
+
+    let salaryNet = 0, gapMon = 0, fullyCovers = false;
+    if (r.earlyRetiree) {
+      salaryNet = r.earlyRetiree.workingSalaryNet;
+      const ph  = r.phases[0];
+      gapMon    = ekStore.get().levnadskostnad - (ph.incomeF + ph.incomeU);
+      fullyCovers = gapMon <= 0;
+    }
+    return { points, pos, minYear, bryggaYear, span, salaryNet, gapMon, fullyCovers };
   });
 
   // ── Fas-badge ─────────────────────────────────────────────────────────────────
@@ -204,7 +212,14 @@
       <div class="timeline-foot"><span>idag · {today}</span><span>+ {timeline.bryggaYear - today} år</span></div>
       <p class="timeline-note">
         {timeline.points[0].who} slutar <strong>{timeline.bryggaYear - timeline.points[0].year} år före</strong> {timeline.points[1].who}.
-        Brygga-start är alltid samma år som den av er som slutar <strong>sist</strong>.
+        {timeline.points[1].who}s lön ({fmt(timeline.salaryNet)}/mån) räknas som inkomst de åren,
+        {#if timeline.fullyCovers}
+          och täcker <strong>hela</strong> gapet mot levnadskostnaden — inget bryggkapital förbrukas förrän ni båda slutat jobba.
+        {:else}
+          men täcker inte hela gapet mot levnadskostnaden — det blir ett underskott på <strong>-{fmt(timeline.gapMon)}/mån</strong>
+          som ändå tär på bryggkapitalet, fast betydligt mindre än om ingen av er hade lön.
+        {/if}
+        Brygga-start är alltid samma år som den av er som slutar <strong>sist</strong> — här {timeline.points[1].who}, {timeline.bryggaYear}.
       </p>
     </div>
   {/if}
