@@ -1,17 +1,13 @@
 <script lang="ts">
   import Topnav from '../components/Topnav.svelte';
   import { onMount, onDestroy } from 'svelte';
-  import { Chart, BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
   import { initAuth } from '../auth';
   import { computeFire, computeNV } from '../calculations';
   import { ekStore, fireStore } from '../store';
   import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
-  import { AP_INDEX_RATE, AP_TAK, PP_RATE, CHART_DARK_GRID, CHART_DARK_TEXT, SLIDER_RANGES } from '../constants';
-  import { applyChartTheme } from '../chartTheme';
-
-  Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
-  applyChartTheme();
+  import { AP_INDEX_RATE, AP_TAK, PP_RATE, SLIDER_RANGES } from '../constants';
+  import BarChartH, { type BarRow } from '../components/BarChartH.svelte';
 
   const AKAP_CAP  = 52_125;
   const AKAP_LOW  = 0.06;
@@ -103,57 +99,27 @@
     data = compute();
   }
 
-  // ── Chart ─────────────────────────────────────────────────────────────────────
-  let chartCanvas = $state<HTMLCanvasElement>(null!);
-  let nvChart: Chart | null = null;
-
+  // ── Förmögenhetsförändring-diagram ─────────────────────────────────────────────
   const NV_LABELS = [
     'AP (inkomstpension)', 'Premiepension',
     'TjP Sverige (AKAP-KR + löneväxling + avk)', 'TjP Norge (avkastning)',
     'Bostad (marknadstillväxt)', 'Lysa/ISK (avk + insättningar)', 'Sparkonto (avk + insättningar)',
   ];
   const NV_COLORS = ['#3f9e3f','#6bbd85','#d7ab57','#e2726c','#e08a4f','#5db3dd','#8fc8e8'];
-
-  function buildChart() {
-    if (!chartCanvas) return;
-    if (nvChart) nvChart.destroy();
-    nvChart = new Chart(chartCanvas.getContext('2d')!, {
-      type: 'bar',
-      data: {
-        labels: NV_LABELS,
-        // Spread till vanlig array — Svelte 5 $state-proxy blockerar Chart.js Object.defineProperty
-        datasets: [{ data: [...data.nvValues], backgroundColor: NV_COLORS, borderRadius: 4 }],
-      },
-      options: {
-        indexAxis: 'y',
-        plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: { label: c => ` ${fmt(c.raw as number)}` } },
-        },
-        scales: {
-          x: { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, callback: v => `${Math.round(Number(v) / 1000)}k` } },
-          y: { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, font: { size: 11 } } },
-        },
-      },
-    });
-  }
-
-  $effect(() => { void data; void chartCanvas; buildChart(); });
+  const nvRows = $derived.by((): BarRow[] =>
+    NV_LABELS.map((label, i) => ({ label, value: data.nvValues[i], color: NV_COLORS[i] })));
 
   function onStorage(e: StorageEvent) {
     if (e.key?.startsWith('vek_')) { data = compute(); }
   }
 
   onMount(async () => {
-    // Bygg chart INNAN auth (popup kan blockera länge) — canvas har rätt dimensioner efter första frame
-    requestAnimationFrame(() => buildChart());
     injectInfoBtn(INFO.index.title, INFO.index.sections);
     window.addEventListener('storage', onStorage);
     await initAuth();
   });
 
   onDestroy(() => {
-    nvChart?.destroy();
     window.removeEventListener('storage', onStorage);
   });
 </script>
@@ -312,7 +278,7 @@
                data = compute();
              }} />
     </div>
-    <canvas bind:this={chartCanvas} height="220"></canvas>
+    <BarChartH rows={nvRows} fmt={fmt} />
   </div>
 
   <footer>Dashboard · Verdu Ekonomi</footer>
