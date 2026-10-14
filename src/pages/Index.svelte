@@ -62,6 +62,10 @@
 
     const isEmpty = ek.lysa_f_pv === 0 && ek.lysa_u_pv === 0 && ek.tjp_f_pv === 0 && ek.sparkonto_pv === 0 && ek.ap_f === 0;
 
+    // Fritt kapital IDAG (samma formel som r.kapital, men dagens balanser — inte projicerat)
+    const aktierValIdag  = ek.norco_antal * ek.norco_kurs + ek.oncop_antal * ek.oncop_kurs;
+    const frittKapitalIdag = ek.lysa_f_pv + ek.lysa_u_pv + ek.sparkonto_pv + (s.aktierIFire ? aktierValIdag : 0);
+
     // Portföljöversikt idag (aktuella balanser)
     const pct = (v: number) => nv > 0 ? v / nv * 100 : 0;
     const breakdown = [
@@ -77,7 +81,7 @@
     ].filter(b => b.val > 0).map(b => ({ ...b, pct: pct(b.val) }));
 
     return {
-      ek, s, r, nv, today, nextEv, isEmpty, total, totalPct,
+      ek, s, r, nv, today, nextEv, isEmpty, total, totalPct, frittKapitalIdag,
       nvValues: [apTotal, ppTotal, tjpTotal, norgeTotal, bostadTot, lysaTotal, borgoTotal],
       breakdown,
     };
@@ -150,7 +154,7 @@
     <div class="card" style="text-align:center;padding:24px 20px">
       <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px">Netto förmögenhet idag</div>
       <div style="font-size:2.4rem;font-weight:800;color:var(--accent1);letter-spacing:-.02em">{fmtM(data.nv)}</div>
-      <div style="font-size:.8rem;color:var(--muted);margin-top:6px">Fritt kapital: {fmtM(data.r.kapital)}</div>
+      <div style="font-size:.8rem;color:var(--muted);margin-top:6px">Fritt kapital: {fmtM(data.frittKapitalIdag)}</div>
     </div>
 
     <!-- Vid brygga-start -->

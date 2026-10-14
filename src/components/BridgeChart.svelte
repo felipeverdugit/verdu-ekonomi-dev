@@ -21,14 +21,14 @@
   }
 
   let {
-    years,
+    labels,
     series,
     leftFormat = (v: number) => String(Math.round(v)),
     rightFormat = (v: number) => String(Math.round(v)),
     markers = [],
     height = 320,
   }: {
-    years: number[];
+    labels: (string | number)[];
     series: ChartSeries[];
     leftFormat?: (v: number) => string;
     rightFormat?: (v: number) => string;
@@ -47,7 +47,7 @@
   const leftMax  = $derived(Math.max(1, ...leftSeries.flatMap(s => s.data)) * 1.08);
   const rightMax = $derived(Math.max(1, ...rightSeries.flatMap(s => s.data)) * 1.2);
 
-  const x  = $derived((i: number) => padL + (i / Math.max(1, years.length - 1)) * plotW);
+  const x  = $derived((i: number) => padL + (i / Math.max(1, labels.length - 1)) * plotW);
   const yL = $derived((v: number) => padT + plotH - (v / leftMax) * plotH);
   const yR = $derived((v: number) => padT + plotH - (v / rightMax) * plotH);
   const yFor = $derived((s: ChartSeries) => s.axis === 'left' ? yL : yR);
@@ -55,7 +55,7 @@
   function linePath(s: ChartSeries): string {
     if (s.step) {
       let d = '';
-      years.forEach((_, i) => {
+      labels.forEach((_, i) => {
         const px = x(i), py = yFor(s)(s.data[i]);
         if (i === 0) d += `M ${px},${py}`;
         else {
@@ -65,16 +65,16 @@
       });
       return d;
     }
-    return 'M ' + years.map((_, i) => `${x(i)},${yFor(s)(s.data[i])}`).join(' L ');
+    return 'M ' + labels.map((_, i) => `${x(i)},${yFor(s)(s.data[i])}`).join(' L ');
   }
   function areaPath(s: ChartSeries): string {
-    const line = years.map((_, i) => `${x(i)},${yFor(s)(s.data[i])}`).join(' L ');
+    const line = labels.map((_, i) => `${x(i)},${yFor(s)(s.data[i])}`).join(' L ');
     return `M ${padL},${padT + plotH} L ${line} L ${padL + plotW},${padT + plotH} Z`;
   }
 
-  // gridline years: ~6 evenly spaced incl. first/last
+  // gridline labels: ~6 evenly spaced incl. first/last
   const gridIdx = $derived.by(() => {
-    const n = years.length;
+    const n = labels.length;
     const step = Math.max(1, Math.round(n / 6));
     const idx: number[] = [];
     for (let i = 0; i < n; i += step) idx.push(i);
@@ -82,7 +82,7 @@
     return idx;
   });
 
-  const markerPos = $derived(markers.map(m => ({ ...m, idx: years.indexOf(m.year) })).filter(m => m.idx >= 0));
+  const markerPos = $derived(markers.map(m => ({ ...m, idx: labels.indexOf(m.year) })).filter(m => m.idx >= 0));
 
   // ── Hover state ──────────────────────────────────────────────────────
   let hoverIdx = $state<number | null>(null);
@@ -93,8 +93,8 @@
     const rect = svgEl.getBoundingClientRect();
     const scale = W / rect.width;
     const localX = (e.clientX - rect.left) * scale;
-    let i = Math.round((localX - padL) / plotW * (years.length - 1));
-    i = Math.max(0, Math.min(years.length - 1, i));
+    let i = Math.round((localX - padL) / plotW * (labels.length - 1));
+    i = Math.max(0, Math.min(labels.length - 1, i));
     hoverIdx = i;
     const wrapRect = (svgEl.parentElement as HTMLElement).getBoundingClientRect();
     tipX = ((e.clientX - rect.left) / rect.width) * wrapRect.width;
@@ -118,11 +118,11 @@
 
     {#each gridIdx as i}
       <line x1={x(i)} x2={x(i)} y1={padT} y2={padT + plotH} class="bc-grid" />
-      <text x={x(i)} y={H - 10} text-anchor="middle" class="bc-tick-x">{years[i]}</text>
+      <text x={x(i)} y={H - 10} text-anchor="middle" class="bc-tick-x">{labels[i]}</text>
     {/each}
 
     {#each markers as m}
-      {@const mi = years.indexOf(m.year)}
+      {@const mi = labels.indexOf(m.year)}
       {#if mi >= 0}
         <line x1={x(mi)} x2={x(mi)} y1={padT} y2={padT + plotH} stroke={m.color} stroke-width="1" stroke-dasharray="3 3" opacity=".6" />
         <text x={x(mi)} y={padT + 12} text-anchor="middle" class="bc-marker-label" style:fill={m.color}>{m.label}</text>
@@ -157,7 +157,7 @@
 
   {#if hoverIdx !== null}
     <div class="bc-tip" style:left="{tipX}px" style:top="{tipY}px">
-      <div class="bc-tip-title">{years[hoverIdx]}</div>
+      <div class="bc-tip-title">{labels[hoverIdx]}</div>
       {#each series as s}
         <div class="bc-tip-row">
           <span class="bc-tip-k" style:color={s.color}>{s.label}</span>

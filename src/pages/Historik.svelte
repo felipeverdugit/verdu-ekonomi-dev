@@ -1,19 +1,12 @@
 <script lang="ts">
   import Topnav from '../components/Topnav.svelte';
   import { onMount, onDestroy } from 'svelte';
-  import {
-    Chart, LineController, CategoryScale, LinearScale,
-    PointElement, LineElement, Legend, Tooltip,
-  } from 'chart.js';
   import { initAuth } from '../auth';
   import { historikStore, ekStore } from '../store';
   import type { Snapshot, EkonomiData } from '../types';
   import { injectInfoBtn } from '../nav';
   import { INFO } from '../infoContent';
-  import { applyChartTheme } from '../chartTheme';
-
-  Chart.register(LineController, CategoryScale, LinearScale, PointElement, LineElement, Legend, Tooltip);
-  applyChartTheme();
+  import BridgeChart, { type ChartSeries } from '../components/BridgeChart.svelte';
 
   // ── Hjälp ─────────────────────────────────────────────────────────────────────
   const fmtKr = (n: number) => Math.round(n).toLocaleString('sv-SE') + ' kr';
@@ -103,74 +96,30 @@
     return { rows, V0, sparAr, fireNum };
   });
 
-  // ── Charts ────────────────────────────────────────────────────────────────────
-  let histCanvas    = $state<HTMLCanvasElement>(null!);
-  let prognosCanvas = $state<HTMLCanvasElement>(null!);
-  let chartInst:     Chart | null = null;
-  let prognosInst:   Chart | null = null;
-
-  const FIRE_YEARS = new Set(['2035', '2037']);
-
-  function buildHistChart() {
-    if (!histCanvas || snaps.length === 0) return;
-    if (chartInst) chartInst.destroy();
-    const labels   = snaps.map(s => s.date);
-    const datasets = [
-      { label: 'Privata fonder', data: snaps.map(s => s.fonder),  borderColor: '#5db3dd', tension: 0.3, fill: false, pointRadius: 4 },
-      { label: 'TjP & LöneVXL', data: snaps.map(s => s.tjp),     borderColor: '#6bbd85', tension: 0.3, fill: false, pointRadius: 4 },
-      { label: 'TjP Norge',      data: snaps.map(s => s.norge),   borderColor: '#e2726c', tension: 0.3, fill: false, pointRadius: 4 },
-      { label: 'Allmänpension',  data: snaps.map(s => s.allman),  borderColor: '#199e70', tension: 0.3, fill: false, pointRadius: 4 },
-      { label: 'Aktier',         data: snaps.map(s => s.aktier),  borderColor: '#d7ab57', tension: 0.3, fill: false, pointRadius: 4 },
-      { label: 'Totalt',         data: snaps.map(s => s.totalt),  borderColor: '#e08a4f', tension: 0.3, fill: false, pointRadius: 5, borderWidth: 3 },
+  // ── Diagram-data ────────────────────────────────────────────────────────────────
+  const histChart = $derived.by(() => {
+    const labels = snaps.map(s => s.date);
+    const series: ChartSeries[] = [
+      { key: 'fonder', label: 'Privata fonder', color: '#5db3dd', axis: 'left', data: snaps.map(s => s.fonder) },
+      { key: 'tjp',    label: 'TjP & LöneVXL',  color: '#6bbd85', axis: 'left', data: snaps.map(s => s.tjp) },
+      { key: 'norge',  label: 'TjP Norge',       color: '#e2726c', axis: 'left', data: snaps.map(s => s.norge) },
+      { key: 'allman', label: 'Allmänpension',   color: '#199e70', axis: 'left', data: snaps.map(s => s.allman) },
+      { key: 'aktier', label: 'Aktier',          color: '#d7ab57', axis: 'left', data: snaps.map(s => s.aktier) },
+      { key: 'totalt', label: 'Totalt',          color: '#e08a4f', axis: 'left', data: snaps.map(s => s.totalt) },
     ];
-    chartInst = new Chart(histCanvas.getContext('2d')!, {
-      type: 'line', data: { labels, datasets: datasets as never },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { labels: { color: '#f3ece2', boxWidth: 14 } },
-          tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${Math.round(c.parsed.y as number).toLocaleString('sv-SE')} kr` } },
-        },
-        scales: {
-          x: { ticks: { color: '#a89b89' }, grid: { color: '#342c23' } },
-          y: { ticks: { color: '#a89b89', callback: v => (Number(v) / 1e6).toFixed(1) + ' M' }, grid: { color: '#342c23' } },
-        },
-      },
-    });
-  }
+    return { labels, series };
+  });
 
-  function buildPrognosChart() {
-    if (!prognosCanvas || !prognosData) return;
-    if (prognosInst) prognosInst.destroy();
+  const prognosChart = $derived.by(() => {
+    if (!prognosData) return { labels: [] as string[], series: [] as ChartSeries[] };
     const { rows } = prognosData;
-    const labels   = rows.map(r => r.lbl);
-    const ptR  = (l: string, base: number) => FIRE_YEARS.has(l) ? 9 : base;
-    const ptC  = (l: string, def: string)  => FIRE_YEARS.has(l) ? '#e08a4f' : def;
-    const datasets = [
-      { label: 'Med löpande insättningar', data: rows.map(r => r.medSpar), borderColor: '#6bbd85', tension: 0.35, fill: false, pointRadius: labels.map(l => ptR(l, 3)), pointBackgroundColor: labels.map(l => ptC(l, '#6bbd85')), pointBorderColor: labels.map(l => ptC(l, '#6bbd85')) },
-      { label: 'Enbart avkastning (inga insättningar)', data: rows.map(r => r.utanSpar), borderColor: '#5db3dd', borderDash: [7, 4], tension: 0.35, fill: false, pointRadius: labels.map(l => ptR(l, 2)), pointBackgroundColor: labels.map(l => ptC(l, '#5db3dd')), pointBorderColor: labels.map(l => ptC(l, '#5db3dd')) },
-      { label: 'FIRE-mål', data: rows.map(r => r.fireLine), borderColor: '#d7ab57', borderDash: [3, 4], borderWidth: 1.5, tension: 0, fill: false, pointRadius: 0 },
-    ] as never;
-    prognosInst = new Chart(prognosCanvas.getContext('2d')!, {
-      type: 'line', data: { labels, datasets },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { labels: { color: '#f3ece2', boxWidth: 14 } },
-          tooltip: { callbacks: { label: (c: { dataset: { label?: string }; parsed: { y: number | null } }) => ` ${c.dataset.label ?? ''}: ${fmtM(c.parsed.y ?? 0)}` } },
-        },
-        scales: {
-          x: { ticks: { color: '#a89b89' }, grid: { color: '#342c23' } },
-          y: { ticks: { color: '#a89b89', callback: (v: unknown) => (Number(v) / 1e6).toFixed(1) + ' M' }, grid: { color: '#342c23' } },
-        },
-      },
-    });
-  }
-
-  $effect(() => {
-    void snaps; void histCanvas; void prognosCanvas;
-    buildHistChart();
-    buildPrognosChart();
+    const labels: string[] = rows.map(r => r.lbl);
+    const series: ChartSeries[] = [
+      { key: 'medSpar',  label: 'Med löpande insättningar',              color: '#6bbd85', axis: 'left', data: rows.map(r => r.medSpar) },
+      { key: 'utanSpar', label: 'Enbart avkastning (inga insättningar)', color: '#5db3dd', axis: 'left', dashed: true, data: rows.map(r => r.utanSpar) },
+      { key: 'fireLine', label: 'FIRE-mål',                              color: '#d7ab57', axis: 'left', dashed: true, data: rows.map(r => r.fireLine) },
+    ];
+    return { labels, series };
   });
 
   // ── Seed ─────────────────────────────────────────────────────────────────────
@@ -191,14 +140,10 @@
     injectInfoBtn(INFO.historik.title, INFO.historik.sections);
     seedIfEmpty();
     loadSnaps();
-    requestAnimationFrame(() => { buildHistChart(); buildPrognosChart(); });
     await initAuth();
   });
 
-  onDestroy(() => {
-    chartInst?.destroy();
-    prognosInst?.destroy();
-  });
+  onDestroy(() => {});
 </script>
 
 <svelte:head><title>Historik — Verdu Ekonomi</title></svelte:head>
@@ -223,7 +168,8 @@
     {#if snaps.length === 0}
       <p style="color:var(--muted);text-align:center;padding:40px 0">Inga snapshots sparade än.</p>
     {:else}
-      <canvas bind:this={histCanvas} height="280"></canvas>
+      <BridgeChart labels={histChart.labels} series={histChart.series}
+                   leftFormat={v => Math.round(v).toLocaleString('sv-SE') + ' kr'} />
     {/if}
   </div>
 
@@ -236,7 +182,8 @@
         <span>Årsparande: <strong>{prognosData.sparAr ? Math.round(prognosData.sparAr).toLocaleString('sv-SE') + ' kr' : '—'}</strong></span>
         <span>FIRE-mål: <strong>{fmtM(prognosData.fireNum)}</strong></span>
       </div>
-      <canvas bind:this={prognosCanvas} height="260"></canvas>
+      <BridgeChart labels={prognosChart.labels} series={prognosChart.series}
+                   leftFormat={v => (v / 1e6).toFixed(1) + ' M'} />
     </div>
   {/if}
 

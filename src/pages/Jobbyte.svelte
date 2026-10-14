@@ -600,7 +600,7 @@
       <div class="form-row" style="margin:0"><label>Uttaksavkastning (%/år)</label>
         <input type="number" class="bgt-inp" bind:value={uttakAvkPct} step="0.5" /></div>
     </div>
-    <BridgeChart years={jobbChart.years} series={jobbChart.series}
+    <BridgeChart labels={jobbChart.years} series={jobbChart.series}
                  leftFormat={v => v.toFixed(1) + ' M'} rightFormat={v => Math.round(v / 1000) + 'k'} />
     <p style="font-size:.75rem;color:var(--muted);margin:8px 0 0">
       Visar enbart pensionskapital från det aktuella jobbet (AKAP-KR/ITP 1/ITP 2 löneväxling).
@@ -711,7 +711,7 @@
 
   <h3>Uttakssimulator — hela familjens bild</h3>
   <div class="card" style="margin-bottom:24px">
-    <BridgeChart years={bryggaBridge.years} series={bryggaBridge.series} markers={bryggaBridge.markers}
+    <BridgeChart labels={bryggaBridge.years} series={bryggaBridge.series} markers={bryggaBridge.markers}
                  leftFormat={v => v.toFixed(1) + ' M'} rightFormat={v => Math.round(v / 1000) + 'k'} />
   </div>
 

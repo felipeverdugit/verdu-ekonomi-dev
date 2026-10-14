@@ -323,7 +323,7 @@
   <!-- Uttakssimulator -->
   <h2>Uttakssimulator</h2>
   <div class="card">
-    <BridgeChart years={bridge.years} series={bridge.series} markers={bridge.markers}
+    <BridgeChart labels={bridge.years} series={bridge.series} markers={bridge.markers}
                  leftFormat={v => v.toFixed(1) + ' M'} rightFormat={v => Math.round(v / 1000) + 'k'} />
   </div>
 
