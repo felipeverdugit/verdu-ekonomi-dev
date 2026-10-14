@@ -70,7 +70,7 @@
   let uttaksChart:  Chart | null = null;
 
   const PIE_LABELS = ['Fonder', 'Sparkonto', 'TjP Sverige', 'TjP Norge', 'Premiepension', 'Inkomstpension'];
-  const PIE_COLORS = ['#4f8ef7','#6ee7b7','#f59e0b','#f87171','#a78bfa','#34d399'];
+  const PIE_COLORS = ['#5db3dd','#6bbd85','#d7ab57','#e2726c','#e08a4f','#3f9e3f'];
 
   function buildPieChart(res: FireResult) {
     if (!pieCanvas) return;
@@ -78,10 +78,10 @@
     const labels = [...PIE_LABELS];
     const data   = [res.fonder_fv, res.sparkonto_fv, res.tjp_fv, res.norge_fv, res.pp_fv, res.ap_fv];
     const colors = [...PIE_COLORS];
-    if (res.aktierIFire && res.aktierVal > 0) { labels.push('Aktier'); data.push(res.aktierVal); colors.push('#f97316'); }
+    if (res.aktierIFire && res.aktierVal > 0) { labels.push('Aktier'); data.push(res.aktierVal); colors.push('#b8650f'); }
     pieChart = new Chart(pieCanvas.getContext('2d')!, {
       type: 'doughnut',
-      data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#1a1d27' }] },
+      data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#1c1813' }] },
       options: {
         plugins: {
           legend: { position: 'bottom', labels: { color: CHART_DARK_TEXT, font: { size: 11 } } },
@@ -119,10 +119,10 @@
       data: {
         labels: sim.rows.map(row => String(row.year)),
         datasets: [
-          { label: 'Kapital (MSEK)', data: sim.rows.map(row => row.capital / 1e6), borderColor: '#4f8ef7', backgroundColor: '#4f8ef720', fill: true, tension: 0.3, pointRadius: 0, yAxisID: 'y' },
-          { label: 'Pension/mån (kr)', data: sim.rows.map(row => row.pensionMon - laonMon(row.year)), borderColor: '#6ee7b7', backgroundColor: 'transparent', tension: 0.3, pointRadius: 0, yAxisID: 'y1' },
-          ...(res.earlyRetiree ? [{ label: 'Lön/mån (kvarvarande)', data: sim.rows.map(row => laonMon(row.year)), borderColor: '#f59e0b', backgroundColor: 'transparent', tension: 0, pointRadius: 0, yAxisID: 'y1', borderDash: [2, 2] }] : []),
-          { label: 'Levnadskostnad/mån (kr)', data: levnadLinje, borderColor: '#fb923c', backgroundColor: 'transparent', borderDash: [5, 3], tension: 0, pointRadius: 0, yAxisID: 'y1' },
+          { label: 'Kapital (MSEK)', data: sim.rows.map(row => row.capital / 1e6), borderColor: '#5db3dd', backgroundColor: '#5db3dd20', fill: true, tension: 0.3, pointRadius: 0, yAxisID: 'y' },
+          { label: 'Pension/mån (kr)', data: sim.rows.map(row => row.pensionMon - laonMon(row.year)), borderColor: '#6bbd85', backgroundColor: 'transparent', tension: 0.3, pointRadius: 0, yAxisID: 'y1' },
+          ...(res.earlyRetiree ? [{ label: 'Lön/mån (kvarvarande)', data: sim.rows.map(row => laonMon(row.year)), borderColor: '#d7ab57', backgroundColor: 'transparent', tension: 0, pointRadius: 0, yAxisID: 'y1', borderDash: [2, 2] }] : []),
+          { label: 'Levnadskostnad/mån (kr)', data: levnadLinje, borderColor: '#c98500', backgroundColor: 'transparent', borderDash: [5, 3], tension: 0, pointRadius: 0, yAxisID: 'y1' },
         ],
       },
       options: {
@@ -131,7 +131,7 @@
         scales: {
           x:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, maxTicksLimit: 10 } },
           y:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, callback: v => `${v} M` }, position: 'left' },
-          y1: { grid: { drawOnChartArea: false }, ticks: { color: '#6ee7b7', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
+          y1: { grid: { drawOnChartArea: false }, ticks: { color: '#6bbd85', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
         },
         plugins: {
           legend: { labels: { color: CHART_DARK_TEXT } },
@@ -151,12 +151,12 @@
   function badge(label: string, who: string): string {
     const isU    = who === 'u';
     const isFire = label.includes('FIRE');
-    const color  = isFire ? '#f59e0b' : isU ? '#a78bfa' : '#6ee7b7';
+    const color  = isFire ? '#d7ab57' : isU ? '#e08a4f' : '#6bbd85';
     const short  = label.replace(/^(Felipe|Ulrika) \d+:\s*/, '').replace(' (redan aktiv)', '');
     return `<span class="badge" style="background:${color}18;color:${color};border:1px solid ${color}40">${isU ? 'U: ' : isFire ? '' : 'F: '}${short}</span>`;
   }
 
-  const FASE_COLORS = ['#4f8ef7','#6ee7b7','#f59e0b','#f87171','#a78bfa','#34d399','#60a5fa'];
+  const FASE_COLORS = ['#5db3dd','#6bbd85','#d7ab57','#e2726c','#e08a4f','#3f9e3f','#8fc8e8'];
 
   function onStorage(e: StorageEvent) {
     if (e.key?.startsWith('vek_ek_') || e.key?.startsWith('vek_fire_')) s = fireStore.get();
@@ -262,7 +262,7 @@
             {#each r.phases as ph, i}
               {@const tot  = ph.incomeF + ph.incomeU}
               {@const gap  = ekStore.get().levnadskostnad - tot}
-              {@const col  = FASE_COLORS[i] ?? '#8892a4'}
+              {@const col  = FASE_COLORS[i] ?? '#a89b89'}
               <tr>
                 <td><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:{col}22;color:{col};font-size:.72rem;font-weight:700">{ph.nr}</span></td>
                 <td class="text-muted">{ph.year}</td>

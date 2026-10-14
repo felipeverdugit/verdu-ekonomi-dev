@@ -114,24 +114,24 @@
     if (chartInst) chartInst.destroy();
     const labels   = snaps.map(s => s.date);
     const datasets = [
-      { label: 'Privata fonder', data: snaps.map(s => s.fonder),  borderColor: '#4f8ef7', tension: 0.3, fill: false, pointRadius: 4 },
-      { label: 'TjP & LöneVXL', data: snaps.map(s => s.tjp),     borderColor: '#6ee7b7', tension: 0.3, fill: false, pointRadius: 4 },
-      { label: 'TjP Norge',      data: snaps.map(s => s.norge),   borderColor: '#f87171', tension: 0.3, fill: false, pointRadius: 4 },
-      { label: 'Allmänpension',  data: snaps.map(s => s.allman),  borderColor: '#22d3ee', tension: 0.3, fill: false, pointRadius: 4 },
-      { label: 'Aktier',         data: snaps.map(s => s.aktier),  borderColor: '#f59e0b', tension: 0.3, fill: false, pointRadius: 4 },
-      { label: 'Totalt',         data: snaps.map(s => s.totalt),  borderColor: '#a78bfa', tension: 0.3, fill: false, pointRadius: 5, borderWidth: 3 },
+      { label: 'Privata fonder', data: snaps.map(s => s.fonder),  borderColor: '#5db3dd', tension: 0.3, fill: false, pointRadius: 4 },
+      { label: 'TjP & LöneVXL', data: snaps.map(s => s.tjp),     borderColor: '#6bbd85', tension: 0.3, fill: false, pointRadius: 4 },
+      { label: 'TjP Norge',      data: snaps.map(s => s.norge),   borderColor: '#e2726c', tension: 0.3, fill: false, pointRadius: 4 },
+      { label: 'Allmänpension',  data: snaps.map(s => s.allman),  borderColor: '#199e70', tension: 0.3, fill: false, pointRadius: 4 },
+      { label: 'Aktier',         data: snaps.map(s => s.aktier),  borderColor: '#d7ab57', tension: 0.3, fill: false, pointRadius: 4 },
+      { label: 'Totalt',         data: snaps.map(s => s.totalt),  borderColor: '#e08a4f', tension: 0.3, fill: false, pointRadius: 5, borderWidth: 3 },
     ];
     chartInst = new Chart(histCanvas.getContext('2d')!, {
       type: 'line', data: { labels, datasets: datasets as never },
       options: {
         responsive: true,
         plugins: {
-          legend: { labels: { color: '#e2e8f0', boxWidth: 14 } },
+          legend: { labels: { color: '#f3ece2', boxWidth: 14 } },
           tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${Math.round(c.parsed.y as number).toLocaleString('sv-SE')} kr` } },
         },
         scales: {
-          x: { ticks: { color: '#8892a4' }, grid: { color: '#2d3348' } },
-          y: { ticks: { color: '#8892a4', callback: v => (Number(v) / 1e6).toFixed(1) + ' M' }, grid: { color: '#2d3348' } },
+          x: { ticks: { color: '#a89b89' }, grid: { color: '#342c23' } },
+          y: { ticks: { color: '#a89b89', callback: v => (Number(v) / 1e6).toFixed(1) + ' M' }, grid: { color: '#342c23' } },
         },
       },
     });
@@ -143,23 +143,23 @@
     const { rows } = prognosData;
     const labels   = rows.map(r => r.lbl);
     const ptR  = (l: string, base: number) => FIRE_YEARS.has(l) ? 9 : base;
-    const ptC  = (l: string, def: string)  => FIRE_YEARS.has(l) ? '#a78bfa' : def;
+    const ptC  = (l: string, def: string)  => FIRE_YEARS.has(l) ? '#e08a4f' : def;
     const datasets = [
-      { label: 'Med löpande insättningar', data: rows.map(r => r.medSpar), borderColor: '#6ee7b7', tension: 0.35, fill: false, pointRadius: labels.map(l => ptR(l, 3)), pointBackgroundColor: labels.map(l => ptC(l, '#6ee7b7')), pointBorderColor: labels.map(l => ptC(l, '#6ee7b7')) },
-      { label: 'Enbart avkastning (inga insättningar)', data: rows.map(r => r.utanSpar), borderColor: '#4f8ef7', borderDash: [7, 4], tension: 0.35, fill: false, pointRadius: labels.map(l => ptR(l, 2)), pointBackgroundColor: labels.map(l => ptC(l, '#4f8ef7')), pointBorderColor: labels.map(l => ptC(l, '#4f8ef7')) },
-      { label: 'FIRE-mål', data: rows.map(r => r.fireLine), borderColor: '#f59e0b', borderDash: [3, 4], borderWidth: 1.5, tension: 0, fill: false, pointRadius: 0 },
+      { label: 'Med löpande insättningar', data: rows.map(r => r.medSpar), borderColor: '#6bbd85', tension: 0.35, fill: false, pointRadius: labels.map(l => ptR(l, 3)), pointBackgroundColor: labels.map(l => ptC(l, '#6bbd85')), pointBorderColor: labels.map(l => ptC(l, '#6bbd85')) },
+      { label: 'Enbart avkastning (inga insättningar)', data: rows.map(r => r.utanSpar), borderColor: '#5db3dd', borderDash: [7, 4], tension: 0.35, fill: false, pointRadius: labels.map(l => ptR(l, 2)), pointBackgroundColor: labels.map(l => ptC(l, '#5db3dd')), pointBorderColor: labels.map(l => ptC(l, '#5db3dd')) },
+      { label: 'FIRE-mål', data: rows.map(r => r.fireLine), borderColor: '#d7ab57', borderDash: [3, 4], borderWidth: 1.5, tension: 0, fill: false, pointRadius: 0 },
     ] as never;
     prognosInst = new Chart(prognosCanvas.getContext('2d')!, {
       type: 'line', data: { labels, datasets },
       options: {
         responsive: true,
         plugins: {
-          legend: { labels: { color: '#e2e8f0', boxWidth: 14 } },
+          legend: { labels: { color: '#f3ece2', boxWidth: 14 } },
           tooltip: { callbacks: { label: (c: { dataset: { label?: string }; parsed: { y: number | null } }) => ` ${c.dataset.label ?? ''}: ${fmtM(c.parsed.y ?? 0)}` } },
         },
         scales: {
-          x: { ticks: { color: '#8892a4' }, grid: { color: '#2d3348' } },
-          y: { ticks: { color: '#8892a4', callback: (v: unknown) => (Number(v) / 1e6).toFixed(1) + ' M' }, grid: { color: '#2d3348' } },
+          x: { ticks: { color: '#a89b89' }, grid: { color: '#342c23' } },
+          y: { ticks: { color: '#a89b89', callback: (v: unknown) => (Number(v) / 1e6).toFixed(1) + ' M' }, grid: { color: '#342c23' } },
         },
       },
     });

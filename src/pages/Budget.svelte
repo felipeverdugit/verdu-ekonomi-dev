@@ -276,7 +276,7 @@
     border: 1px solid var(--border, #444); border-radius: 4px;
     padding: 3px 6px; color: inherit; font-size: .85rem; font-family: inherit;
   }
-  :global(.bgt-inp:focus) { outline: none; border-color: var(--accent, #4a9eff); }
+  :global(.bgt-inp:focus) { outline: none; border-color: var(--accent, #5db3dd); }
   :global(.bgt-amor td) { color: var(--muted); font-size: .78rem; padding-top: 1px; }
   :global(.bgt-amor .bgt-inp) { font-size: .78rem; width: 80px; }
   :global(.bgt-info td) { color: var(--muted); }

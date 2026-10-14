@@ -111,16 +111,16 @@
       data: {
         labels: sim.rows.map(row => String(row.year)),
         datasets: [
-          { label: 'Kapital (MSEK)', data: sim.rows.map(row => row.capital / 1e6), borderColor: '#4f8ef7', backgroundColor: '#4f8ef720', fill: true, tension: 0.3, pointRadius: 0, yAxisID: 'y' },
-          { label: 'Pension/mån (kr)', data: sim.rows.map(row => row.pensionMon), borderColor: '#6ee7b7', backgroundColor: 'transparent', tension: 0.3, pointRadius: 0, yAxisID: 'y1' },
-          { label: 'Levnadskostnad/mån (kr)', data: levnadLinje, borderColor: '#fb923c', backgroundColor: 'transparent', borderDash: [5, 3], tension: 0, pointRadius: 0, yAxisID: 'y1' },
+          { label: 'Kapital (MSEK)', data: sim.rows.map(row => row.capital / 1e6), borderColor: '#5db3dd', backgroundColor: '#5db3dd20', fill: true, tension: 0.3, pointRadius: 0, yAxisID: 'y' },
+          { label: 'Pension/mån (kr)', data: sim.rows.map(row => row.pensionMon), borderColor: '#6bbd85', backgroundColor: 'transparent', tension: 0.3, pointRadius: 0, yAxisID: 'y1' },
+          { label: 'Levnadskostnad/mån (kr)', data: levnadLinje, borderColor: '#c98500', backgroundColor: 'transparent', borderDash: [5, 3], tension: 0, pointRadius: 0, yAxisID: 'y1' },
         ],
       },
       options: {
         scales: {
           x:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, maxTicksLimit: 10 } },
           y:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, callback: v => `${v} M` }, position: 'left' },
-          y1: { grid: { drawOnChartArea: false }, ticks: { color: '#6ee7b7', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
+          y1: { grid: { drawOnChartArea: false }, ticks: { color: '#6bbd85', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
         },
         plugins: { legend: { labels: { color: CHART_DARK_TEXT } } },
       },
@@ -214,18 +214,18 @@
         <th style="padding:5px 8px">År</th>
         <th class="num">Kapital</th>
         <th class="num" style="color:var(--green)">Avkastning/år</th>
-        <th class="num" style="color:#6ee7b7">Pension F/mån</th>
-        <th class="num" style="color:#a78bfa">Pension U/mån</th>
+        <th class="num" style="color:#6bbd85">Pension F/mån</th>
+        <th class="num" style="color:#e08a4f">Pension U/mån</th>
         <th class="num">Netto-uttag/mån</th>
         <th class="num">Δ kapital/år</th>
-        <th class="num" style="color:#6ee7b7">Skatt F/år</th>
-        <th class="num" style="color:#a78bfa">Skatt U/år</th>
-        <th class="num" style="color:#f87171">Skatt tot/år</th>
+        <th class="num" style="color:#6bbd85">Skatt F/år</th>
+        <th class="num" style="color:#e08a4f">Skatt U/år</th>
+        <th class="num" style="color:#e2726c">Skatt tot/år</th>
       </tr></thead>
       <tbody>
         {#each data.sim.rows as row}
           {@const dep    = data.sim.depletedYear !== null && row.year >= data.sim.depletedYear}
-          {@const fColor = row.delta >= 0 ? '#6ee7b7' : '#f87171'}
+          {@const fColor = row.delta >= 0 ? '#6bbd85' : '#e2726c'}
           {@const sign   = row.delta >= 0 ? '+' : ''}
           {@const tx     = data.taxByYear.get(row.year)}
           {@const fTaxYr = tx ? tx.fTax * 12 : 0}
@@ -236,13 +236,13 @@
             <td style="padding:4px 8px">{row.year}</td>
             <td class="num">{dep ? '—' : fmtM(row.capital)}</td>
             <td class="num" style="color:var(--green)">{fmt(row.returns)}</td>
-            <td class="num" style="color:#6ee7b7">{tx && tx.fNet > 0 ? fmt(Math.round(tx.fNet)) : '—'}</td>
-            <td class="num" style="color:#a78bfa">{tx && tx.uNet > 0 ? fmt(Math.round(tx.uNet)) : '—'}</td>
+            <td class="num" style="color:#6bbd85">{tx && tx.fNet > 0 ? fmt(Math.round(tx.fNet)) : '—'}</td>
+            <td class="num" style="color:#e08a4f">{tx && tx.uNet > 0 ? fmt(Math.round(tx.uNet)) : '—'}</td>
             <td class="num">{fmt(row.netUttag)}/mån</td>
             <td class="num" style:color={fColor}>{sign}{fmt(row.delta)}</td>
-            <td class="num" style:color={fOver ? '#f87171' : '#6ee7b7'}>{fTaxYr > 0 ? fmt(Math.round(fTaxYr)) : '—'}{fOver ? ' ▲' : ''}</td>
-            <td class="num" style:color={uOver ? '#f87171' : '#a78bfa'}>{uTaxYr > 0 ? fmt(Math.round(uTaxYr)) : '—'}{uOver ? ' ▲' : ''}</td>
-            <td class="num" style="color:#f87171">{fTaxYr + uTaxYr > 0 ? fmt(Math.round(fTaxYr + uTaxYr)) : '—'}</td>
+            <td class="num" style:color={fOver ? '#e2726c' : '#6bbd85'}>{fTaxYr > 0 ? fmt(Math.round(fTaxYr)) : '—'}{fOver ? ' ▲' : ''}</td>
+            <td class="num" style:color={uOver ? '#e2726c' : '#e08a4f'}>{uTaxYr > 0 ? fmt(Math.round(uTaxYr)) : '—'}{uOver ? ' ▲' : ''}</td>
+            <td class="num" style="color:#e2726c">{fTaxYr + uTaxYr > 0 ? fmt(Math.round(fTaxYr + uTaxYr)) : '—'}</td>
           </tr>
         {/each}
       </tbody>
@@ -276,11 +276,11 @@
           <tr style:background={isOver ? 'rgba(248,113,113,.05)' : undefined}>
             <td style="padding:5px 8px;color:var(--muted)">{row.year}</td>
             <td class="num">{row.fGross > 0 ? fmt(Math.round(row.fGross)) : '—'}{row.fGross > STATLIG_MON ? ' ▲' : ''}</td>
-            <td class="num" style:color={fRoom >= 0 ? '#6ee7b7' : '#f87171'}>
+            <td class="num" style:color={fRoom >= 0 ? '#6bbd85' : '#e2726c'}>
               {row.fGross > 0 ? (fRoom >= 0 ? '+' : '') + fmt(Math.round(fRoom)) : '—'}
             </td>
             <td class="num">{row.uGross > 0 ? fmt(Math.round(row.uGross)) : '—'}{row.uGross > STATLIG_MON ? ' ▲' : ''}</td>
-            <td class="num" style:color={uRoom >= 0 ? '#6ee7b7' : '#f87171'}>
+            <td class="num" style:color={uRoom >= 0 ? '#6bbd85' : '#e2726c'}>
               {row.uGross > 0 ? (uRoom >= 0 ? '+' : '') + fmt(Math.round(uRoom)) : '—'}
             </td>
             <td class="num" style="color:var(--red)">{fmt(Math.round(row.taxCur))}/mån</td>

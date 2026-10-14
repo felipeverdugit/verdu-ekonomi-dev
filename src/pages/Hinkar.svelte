@@ -190,10 +190,10 @@
   <div class="card" style="margin-bottom:24px;font-size:.88rem;line-height:1.7;color:var(--muted)">
     <p style="margin:0 0 6px"><strong style="color:var(--text)">Fyra hinkar</strong> är ett sätt att strukturera ekonomin efter <em>syfte</em>, inte produkt.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:10px">
-      <div><span style="color:#6ee7b7;font-weight:700">🛡 Hink 1 — Likviditet</span><br>Pengar du når direkt. Täcker 3–6 månaders utgifter utan att sälja något.</div>
-      <div><span style="color:#4f8ef7;font-weight:700">🏠 Hink 2 — Bevara värde</span><br>Kapital som är bundet men säkert: fastigheter (equity) och allmänpension.</div>
-      <div><span style="color:#a78bfa;font-weight:700">📈 Hink 3 — Tillväxt</span><br>Fonder och tjänstepension som ska växa långsiktigt. Grunden för FIRE.</div>
-      <div><span style="color:#f59e0b;font-weight:700">🎲 Hink 4 — Lek</span><br>Spekulativa innehav (enskilda aktier). Max 10 % av hink 3 — resten rebalansera.</div>
+      <div><span style="color:#6bbd85;font-weight:700">🛡 Hink 1 — Likviditet</span><br>Pengar du når direkt. Täcker 3–6 månaders utgifter utan att sälja något.</div>
+      <div><span style="color:#5db3dd;font-weight:700">🏠 Hink 2 — Bevara värde</span><br>Kapital som är bundet men säkert: fastigheter (equity) och allmänpension.</div>
+      <div><span style="color:#e08a4f;font-weight:700">📈 Hink 3 — Tillväxt</span><br>Fonder och tjänstepension som ska växa långsiktigt. Grunden för FIRE.</div>
+      <div><span style="color:#d7ab57;font-weight:700">🎲 Hink 4 — Lek</span><br>Spekulativa innehav (enskilda aktier). Max 10 % av hink 3 — resten rebalansera.</div>
     </div>
   </div>
 
@@ -256,22 +256,22 @@
   <!-- Stapeldiagram -->
   <div class="card" style="margin-bottom:24px">
     <div style="display:flex;height:28px;border-radius:8px;overflow:hidden;gap:2px;margin-bottom:12px">
-      <div style:width="{stapel.p1.toFixed(1)}%" style="background:#6ee7b7;transition:width .4s" title="Hink 1: {pct(stapel.p1)}"></div>
-      <div style:width="{stapel.p2.toFixed(1)}%" style="background:#4f8ef7;transition:width .4s" title="Hink 2: {pct(stapel.p2)}"></div>
-      <div style:width="{stapel.p3.toFixed(1)}%" style="background:#a78bfa;transition:width .4s" title="Hink 3: {pct(stapel.p3)}"></div>
-      <div style:width="{stapel.p4.toFixed(1)}%" style="background:#f59e0b;transition:width .4s" title="Hink 4: {pct(stapel.p4)}"></div>
+      <div style:width="{stapel.p1.toFixed(1)}%" style="background:#6bbd85;transition:width .4s" title="Hink 1: {pct(stapel.p1)}"></div>
+      <div style:width="{stapel.p2.toFixed(1)}%" style="background:#5db3dd;transition:width .4s" title="Hink 2: {pct(stapel.p2)}"></div>
+      <div style:width="{stapel.p3.toFixed(1)}%" style="background:#e08a4f;transition:width .4s" title="Hink 3: {pct(stapel.p3)}"></div>
+      <div style:width="{stapel.p4.toFixed(1)}%" style="background:#d7ab57;transition:width .4s" title="Hink 4: {pct(stapel.p4)}"></div>
     </div>
     <div style="display:flex;gap:16px;font-size:.78rem;flex-wrap:wrap">
-      <span><span style="color:#6ee7b7">■</span> Hink 1: {pct(stapel.p1)}</span>
-      <span><span style="color:#4f8ef7">■</span> Hink 2: {pct(stapel.p2)}</span>
-      <span><span style="color:#a78bfa">■</span> Hink 3: {pct(stapel.p3)}</span>
-      <span><span style="color:#f59e0b">■</span> Hink 4: {pct(stapel.p4)}</span>
+      <span><span style="color:#6bbd85">■</span> Hink 1: {pct(stapel.p1)}</span>
+      <span><span style="color:#5db3dd">■</span> Hink 2: {pct(stapel.p2)}</span>
+      <span><span style="color:#e08a4f">■</span> Hink 3: {pct(stapel.p3)}</span>
+      <span><span style="color:#d7ab57">■</span> Hink 4: {pct(stapel.p4)}</span>
     </div>
     <div style="font-size:.75rem;color:var(--muted);margin-top:8px">Totalt ~{fmtM(h.totalAll)} · Hink 2 inkluderar IP + NAV + fastigheter (villa + lägenhet equity)</div>
   </div>
 
   <!-- Hink 1 -->
-  <div class="card" style="margin-bottom:16px;border-left:4px solid #6ee7b7">
+  <div class="card" style="margin-bottom:16px;border-left:4px solid #6bbd85">
     <h3 style="margin-top:0">🛡 Hink 1 — Likviditet &amp; buffert</h3>
     <p style="font-size:.82rem;color:var(--muted);margin:0 0 12px">Pengar du når inom 1–2 dagar utan att sälja något. Ska täcka 3–6 månader om inkomsten faller bort.</p>
     <div class="form-row"><label>Borgo sparkonto</label><span class="num">{fmt(h.h1_borgo)}</span></div>
@@ -294,7 +294,7 @@
   </div>
 
   <!-- Hink 2 -->
-  <div class="card" style="margin-bottom:16px;border-left:4px solid #4f8ef7">
+  <div class="card" style="margin-bottom:16px;border-left:4px solid #5db3dd">
     <h3 style="margin-top:0">🏠 Hink 2 — Bevara värde</h3>
     <p style="font-size:.82rem;color:var(--muted);margin:0 0 12px">Kapital som är bundet och svårt att ta ut snabbt, men stabilt. Fastigheter räknas som nettovärde (marknadsvärde minus lån). Allmänpension betalas ut av staten från 63 år.</p>
     <div class="form-row"><label>Inkomstpension SE (IP)</label><span class="num">{fmtK(h.h2_ip)}</span></div>
@@ -306,7 +306,7 @@
   </div>
 
   <!-- Hink 3 -->
-  <div class="card" style="margin-bottom:16px;border-left:4px solid #a78bfa">
+  <div class="card" style="margin-bottom:16px;border-left:4px solid #e08a4f">
     <h3 style="margin-top:0">📈 Hink 3 — Tillväxt</h3>
     <p style="font-size:.82rem;color:var(--muted);margin:0 0 12px">Det stora tillväxtkapitalet. Fonder och tjänstepension som investeras långsiktigt. Det är detta kapital som finansierar bryggan och pensionen — och som FIRE-talet jämförs mot.</p>
     <div class="form-row"><label>Lysa (F+U) — ISK-fonder</label><span class="num">{fmtK(h.h3_lysa)}</span></div>
@@ -318,7 +318,7 @@
   </div>
 
   <!-- Hink 4 -->
-  <div class="card" style="margin-bottom:24px;border-left:4px solid #f59e0b">
+  <div class="card" style="margin-bottom:24px;border-left:4px solid #d7ab57">
     <h3 style="margin-top:0">🎲 Hink 4 — Lek (spekulativt)</h3>
     <p style="font-size:.82rem;color:var(--muted);margin:0 0 12px">Enskilda aktier med högre risk — ok att hålla, men bör max vara 10 % av hink 3. Är andelen högre bör överskottet säljas och flyttas till hink 3 (breda fonder).</p>
     <div class="form-row"><label>Norconsult</label><span class="num">{fmtK(h.h4_norco)}</span></div>

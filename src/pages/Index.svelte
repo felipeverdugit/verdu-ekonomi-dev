@@ -67,15 +67,15 @@
     // Portföljöversikt idag (aktuella balanser)
     const pct = (v: number) => nv > 0 ? v / nv * 100 : 0;
     const breakdown = [
-      { label: 'Privata fonder (Lysa)',  val: ek.lysa_f_pv + ek.lysa_u_pv,                                               color: '#4f8ef7' },
-      { label: 'TjP Sverige',            val: ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pv + ek.kapan_pv + ek.tjp_u_pv, color: '#6ee7b7' },
-      { label: 'TjP Norge',              val: ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv + ek.sb_u_pv + ek.dnb_u_pv,     color: '#f87171' },
-      { label: 'Allmänpension (AP)',      val: ek.ap_f + ek.ap_u,                                                          color: '#34d399' },
-      { label: 'NAV Norge',              val: (ek.nav_f_nok + ek.nav_u_nok) * ek.nok_sek,                      color: '#22d3ee' },
-      { label: 'Premiepension (PP)',      val: ek.pp_f + ek.pp_u,                                                          color: '#a78bfa' },
-      { label: 'Aktier',                 val: ek.norco_antal * ek.norco_kurs + ek.oncop_antal * ek.oncop_kurs,            color: '#f59e0b' },
-      { label: 'Sparkonto (Borgo)',       val: ek.sparkonto_pv,                                                             color: '#60a5fa' },
-      { label: 'Bostad (netto)',          val: Math.max(0, ek.villa_varde - ek.villa_lan) + Math.max(0, ek.lagenhet_varde - ek.lagenhet_lan), color: '#fb923c' },
+      { label: 'Privata fonder (Lysa)',  val: ek.lysa_f_pv + ek.lysa_u_pv,                                               color: '#5db3dd' },
+      { label: 'TjP Sverige',            val: ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pv + ek.kapan_pv + ek.tjp_u_pv, color: '#6bbd85' },
+      { label: 'TjP Norge',              val: ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv + ek.sb_u_pv + ek.dnb_u_pv,     color: '#e2726c' },
+      { label: 'Allmänpension (AP)',      val: ek.ap_f + ek.ap_u,                                                          color: '#3f9e3f' },
+      { label: 'NAV Norge',              val: (ek.nav_f_nok + ek.nav_u_nok) * ek.nok_sek,                      color: '#199e70' },
+      { label: 'Premiepension (PP)',      val: ek.pp_f + ek.pp_u,                                                          color: '#e08a4f' },
+      { label: 'Aktier',                 val: ek.norco_antal * ek.norco_kurs + ek.oncop_antal * ek.oncop_kurs,            color: '#d7ab57' },
+      { label: 'Sparkonto (Borgo)',       val: ek.sparkonto_pv,                                                             color: '#8fc8e8' },
+      { label: 'Bostad (netto)',          val: Math.max(0, ek.villa_varde - ek.villa_lan) + Math.max(0, ek.lagenhet_varde - ek.lagenhet_lan), color: '#c98500' },
     ].filter(b => b.val > 0).map(b => ({ ...b, pct: pct(b.val) }));
 
     return {
@@ -110,7 +110,7 @@
     'TjP Sverige (AKAP-KR + löneväxling + avk)', 'TjP Norge (avkastning)',
     'Bostad (marknadstillväxt)', 'Lysa/ISK (avk + insättningar)', 'Sparkonto (avk + insättningar)',
   ];
-  const NV_COLORS = ['#34d399','#6ee7b7','#f59e0b','#f87171','#a78bfa','#4f8ef7','#60a5fa'];
+  const NV_COLORS = ['#3f9e3f','#6bbd85','#d7ab57','#e2726c','#e08a4f','#5db3dd','#8fc8e8'];
 
   function buildChart() {
     if (!chartCanvas) return;

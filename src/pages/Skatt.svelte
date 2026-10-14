@@ -81,17 +81,17 @@
       data: {
         labels,
         datasets: [
-          { label: 'Felipe eff. %',  data: fEffArr, borderColor: '#6ee7b7', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3 },
-          { label: 'Ulrika eff. %',  data: uEffArr, borderColor: '#a78bfa', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3 },
-          { label: `Schablonmässig ${skattPct} %`, data: flat30, borderColor: '#f87171', backgroundColor: 'transparent', borderDash: [5, 5], pointRadius: 0 },
+          { label: 'Felipe eff. %',  data: fEffArr, borderColor: '#6bbd85', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3 },
+          { label: 'Ulrika eff. %',  data: uEffArr, borderColor: '#e08a4f', backgroundColor: 'transparent', tension: 0.3, pointRadius: 3 },
+          { label: `Schablonmässig ${skattPct} %`, data: flat30, borderColor: '#e2726c', backgroundColor: 'transparent', borderDash: [5, 5], pointRadius: 0 },
         ],
       },
       options: {
         scales: {
-          x: { grid: { color: '#2d3348' }, ticks: { color: '#8892a4', maxTicksLimit: 12 } },
-          y: { grid: { color: '#2d3348' }, ticks: { color: '#8892a4', callback: v => `${v} %` }, min: 0, max: 50 },
+          x: { grid: { color: '#342c23' }, ticks: { color: '#a89b89', maxTicksLimit: 12 } },
+          y: { grid: { color: '#342c23' }, ticks: { color: '#a89b89', callback: v => `${v} %` }, min: 0, max: 50 },
         },
-        plugins: { legend: { labels: { color: '#8892a4' } } },
+        plugins: { legend: { labels: { color: '#a89b89' } } },
       },
     });
   }
@@ -187,7 +187,7 @@
           {@const saving = (row.fTax30 + row.uTax30) - (row.fTaxProg + row.uTaxProg)}
           {@const fEff   = row.fGrossAnn > 0 ? row.fTaxProg / row.fGrossAnn * 100 : 0}
           {@const uEff   = row.uGrossAnn > 0 ? row.uTaxProg / row.uGrossAnn * 100 : 0}
-          <tr style="border-top:1px solid #2d3348">
+          <tr style="border-top:1px solid #342c23">
             <td style="padding:5px 8px;color:var(--muted)">{row.year}</td>
             <td style="text-align:right;padding:5px 6px">{fmt(Math.round(row.fGrossAnn / 12))}</td>
             <td style="text-align:right;padding:5px 6px;color:var(--red)">{fmt(Math.round(row.fTax30 / 12))}</td>

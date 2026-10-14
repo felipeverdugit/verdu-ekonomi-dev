@@ -128,8 +128,8 @@ export const KREDITKORT = [
 ] as const;
 
 // ── Chart.js-färger (dark theme) ─────────────────────────────────────────────
-export const CHART_DARK_GRID = '#2d3348';
-export const CHART_DARK_TEXT = '#8892a4';
+export const CHART_DARK_GRID = '#342c23';
+export const CHART_DARK_TEXT = '#a89b89';
 
 // ── Sidonavigation ────────────────────────────────────────────────────────────
 export const NAV_LINKS = [

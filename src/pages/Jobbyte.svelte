@@ -215,11 +215,11 @@
     return { felipeGammalTjp, ulrikaTjp, itp1Nytt };
   });
 
-  const FASE_COLORS = ['#4f8ef7','#6ee7b7','#f59e0b','#f87171','#a78bfa','#34d399','#60a5fa'];
+  const FASE_COLORS = ['#5db3dd','#6bbd85','#d7ab57','#e2726c','#e08a4f','#3f9e3f','#8fc8e8'];
   function badge(label: string, who: string): string {
     const isU    = who === 'u';
     const isFire = label.includes('FIRE') || label.includes('Brygga');
-    const color  = isFire ? '#f59e0b' : isU ? '#a78bfa' : '#6ee7b7';
+    const color  = isFire ? '#d7ab57' : isU ? '#e08a4f' : '#6bbd85';
     const short  = label.replace(/^(Felipe|Ulrika) \d+:\s*/, '').replace(' (redan aktiv)', '');
     return `<span class="badge" style="background:${color}18;color:${color};border:1px solid ${color}40">${isU ? 'U: ' : isFire ? '' : 'F: '}${short}</span>`;
   }
@@ -230,7 +230,7 @@
   let bryggaUttaksChart: Chart | null = null;
 
   const PIE_LABELS = ['Fonder', 'Sparkonto', 'TjP Sverige (tidigare)', 'ITP 1 (nytt jobb)', 'TjP Norge', 'Premiepension', 'Inkomstpension'];
-  const PIE_COLORS = ['#4f8ef7','#6ee7b7','#f59e0b','#22d3ee','#f87171','#a78bfa','#34d399'];
+  const PIE_COLORS = ['#5db3dd','#6bbd85','#d7ab57','#199e70','#e2726c','#e08a4f','#3f9e3f'];
 
   function buildBryggaPieChart() {
     if (!bryggaPieCanvas) return;
@@ -240,10 +240,10 @@
     const labels = [...PIE_LABELS];
     const data   = [res.fonder_fv, res.sparkonto_fv, b.felipeGammalTjp + b.ulrikaTjp, b.itp1Nytt, res.norge_fv, res.pp_fv, res.ap_fv];
     const colors = [...PIE_COLORS];
-    if (res.aktierIFire && res.aktierVal > 0) { labels.push('Aktier'); data.push(res.aktierVal); colors.push('#f97316'); }
+    if (res.aktierIFire && res.aktierVal > 0) { labels.push('Aktier'); data.push(res.aktierVal); colors.push('#b8650f'); }
     bryggaPieChart = new Chart(bryggaPieCanvas.getContext('2d')!, {
       type: 'doughnut',
-      data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#1a1d27' }] },
+      data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#1c1813' }] },
       options: {
         plugins: {
           legend: { position: 'bottom', labels: { color: CHART_DARK_TEXT, font: { size: 11 } } },
@@ -280,10 +280,10 @@
       data: {
         labels: sim.rows.map(row => String(row.year)),
         datasets: [
-          { label: 'Kapital (MSEK)', data: sim.rows.map(row => row.capital / 1e6), borderColor: '#4f8ef7', backgroundColor: '#4f8ef720', fill: true, tension: 0.3, pointRadius: 0, yAxisID: 'y' },
-          { label: 'Pension/mån (kr)', data: sim.rows.map(row => row.pensionMon - laonMon(row.year)), borderColor: '#6ee7b7', backgroundColor: 'transparent', tension: 0.3, pointRadius: 0, yAxisID: 'y1' },
-          ...(res.earlyRetiree ? [{ label: 'Lön/mån (kvarvarande)', data: sim.rows.map(row => laonMon(row.year)), borderColor: '#f59e0b', backgroundColor: 'transparent', tension: 0, pointRadius: 0, yAxisID: 'y1', borderDash: [2, 2] }] : []),
-          { label: 'Levnadskostnad/mån (kr)', data: levnadLinje, borderColor: '#fb923c', backgroundColor: 'transparent', borderDash: [5, 3], tension: 0, pointRadius: 0, yAxisID: 'y1' },
+          { label: 'Kapital (MSEK)', data: sim.rows.map(row => row.capital / 1e6), borderColor: '#5db3dd', backgroundColor: '#5db3dd20', fill: true, tension: 0.3, pointRadius: 0, yAxisID: 'y' },
+          { label: 'Pension/mån (kr)', data: sim.rows.map(row => row.pensionMon - laonMon(row.year)), borderColor: '#6bbd85', backgroundColor: 'transparent', tension: 0.3, pointRadius: 0, yAxisID: 'y1' },
+          ...(res.earlyRetiree ? [{ label: 'Lön/mån (kvarvarande)', data: sim.rows.map(row => laonMon(row.year)), borderColor: '#d7ab57', backgroundColor: 'transparent', tension: 0, pointRadius: 0, yAxisID: 'y1', borderDash: [2, 2] }] : []),
+          { label: 'Levnadskostnad/mån (kr)', data: levnadLinje, borderColor: '#c98500', backgroundColor: 'transparent', borderDash: [5, 3], tension: 0, pointRadius: 0, yAxisID: 'y1' },
         ],
       },
       options: {
@@ -292,7 +292,7 @@
         scales: {
           x:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, maxTicksLimit: 10 } },
           y:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, callback: v => `${v} M` }, position: 'left' },
-          y1: { grid: { drawOnChartArea: false }, ticks: { color: '#6ee7b7', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
+          y1: { grid: { drawOnChartArea: false }, ticks: { color: '#6bbd85', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
         },
         plugins: {
           legend: { labels: { color: CHART_DARK_TEXT } },
@@ -332,11 +332,11 @@
       data: {
         labels: simAkap.rows.map(r => String(r.year)),
         datasets: [
-          { label: 'AKAP-KR kapital (MSEK)',  data: simAkap.rows.map(r => r.capital / 1e6), borderColor: '#6ee7b7', backgroundColor: '#6ee7b718', fill: true,  tension: 0.3, pointRadius: 0, yAxisID: 'y' },
-          { label: 'ITP 1 kapital (MSEK)',    data: simItp1.rows.map(r => r.capital / 1e6), borderColor: '#4f8ef7', backgroundColor: '#4f8ef718', fill: true,  tension: 0.3, pointRadius: 0, yAxisID: 'y' },
-          { label: 'ITP 2 lv-kapital (MSEK)', data: simItp2.rows.map(r => r.capital / 1e6), borderColor: '#a78bfa', backgroundColor: 'transparent', fill: false, tension: 0.3, pointRadius: 0, yAxisID: 'y' },
-          { label: 'ITP 2 pension/mån (kr)',   data: simItp2.rows.map(r => r.pensionMon),   borderColor: '#a78bfa', backgroundColor: 'transparent', fill: false, tension: 0.3, pointRadius: 0, yAxisID: 'y1', borderDash: [4, 2] },
-          { label: 'Levnadskostnad/mån (kr)', data: simAkap.rows.map(() => levnadskostnad), borderColor: '#fb923c', backgroundColor: 'transparent', fill: false, tension: 0,   pointRadius: 0, yAxisID: 'y1', borderDash: [5, 3] },
+          { label: 'AKAP-KR kapital (MSEK)',  data: simAkap.rows.map(r => r.capital / 1e6), borderColor: '#6bbd85', backgroundColor: '#6bbd8518', fill: true,  tension: 0.3, pointRadius: 0, yAxisID: 'y' },
+          { label: 'ITP 1 kapital (MSEK)',    data: simItp1.rows.map(r => r.capital / 1e6), borderColor: '#5db3dd', backgroundColor: '#5db3dd18', fill: true,  tension: 0.3, pointRadius: 0, yAxisID: 'y' },
+          { label: 'ITP 2 lv-kapital (MSEK)', data: simItp2.rows.map(r => r.capital / 1e6), borderColor: '#e08a4f', backgroundColor: 'transparent', fill: false, tension: 0.3, pointRadius: 0, yAxisID: 'y' },
+          { label: 'ITP 2 pension/mån (kr)',   data: simItp2.rows.map(r => r.pensionMon),   borderColor: '#e08a4f', backgroundColor: 'transparent', fill: false, tension: 0.3, pointRadius: 0, yAxisID: 'y1', borderDash: [4, 2] },
+          { label: 'Levnadskostnad/mån (kr)', data: simAkap.rows.map(() => levnadskostnad), borderColor: '#c98500', backgroundColor: 'transparent', fill: false, tension: 0,   pointRadius: 0, yAxisID: 'y1', borderDash: [5, 3] },
         ],
       },
       options: {
@@ -345,7 +345,7 @@
         scales: {
           x:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, maxTicksLimit: 10 } },
           y:  { grid: { color: CHART_DARK_GRID }, ticks: { color: CHART_DARK_TEXT, callback: v => `${v} M` }, position: 'left' },
-          y1: { grid: { drawOnChartArea: false }, ticks: { color: '#fb923c', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
+          y1: { grid: { drawOnChartArea: false }, ticks: { color: '#c98500', callback: v => `${Math.round(Number(v) / 1000)}k` }, position: 'right' },
         },
         plugins: {
           legend: { labels: { color: CHART_DARK_TEXT } },
@@ -376,8 +376,8 @@
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
 
     <!-- Nuläge -->
-    <div class="card" style="border-left:4px solid #6ee7b7">
-      <h3 style="margin-top:0;color:#6ee7b7">Nuläge — AKAP-KR</h3>
+    <div class="card" style="border-left:4px solid #6bbd85">
+      <h3 style="margin-top:0;color:#6bbd85">Nuläge — AKAP-KR</h3>
       <div class="form-row"><label>Bruttolön (kr/mån)</label>
         <input type="number" class="bgt-inp" bind:value={lonNu} step="100" /></div>
       <div class="form-row"><label>Löneväxling (kr/mån)</label>
@@ -389,8 +389,8 @@
     </div>
 
     <!-- Nytt jobb -->
-    <div class="card" style="border-left:4px solid #4f8ef7">
-      <h3 style="margin-top:0;color:#4f8ef7">Nytt jobb — ITP 1 / ITP 2</h3>
+    <div class="card" style="border-left:4px solid #5db3dd">
+      <h3 style="margin-top:0;color:#5db3dd">Nytt jobb — ITP 1 / ITP 2</h3>
       <div class="form-row"><label>Ny bruttolön (kr/mån)</label>
         <input type="number" class="bgt-inp" bind:value={lonNy} step="100" /></div>
       <div class="form-row"><label>Löneväxling (kr/mån)</label>
@@ -441,9 +441,9 @@
       <thead>
         <tr style="font-size:.72rem;color:var(--muted)">
           <th style="text-align:left;padding:8px">Post</th>
-          <th class="num" style="color:#6ee7b7">AKAP-KR (nu)</th>
-          <th class="num" style="color:#4f8ef7">ITP 1 (nytt)</th>
-          <th class="num" style="color:#a78bfa">ITP 2 (nytt)</th>
+          <th class="num" style="color:#6bbd85">AKAP-KR (nu)</th>
+          <th class="num" style="color:#5db3dd">ITP 1 (nytt)</th>
+          <th class="num" style="color:#e08a4f">ITP 2 (nytt)</th>
         </tr>
       </thead>
       <tbody>
@@ -473,9 +473,9 @@
         </tr>
         <tr style="border-top:1px solid var(--border);font-weight:700">
           <td style="padding:7px 8px">Nettolön (est.)</td>
-          <td class="num" style="color:#6ee7b7">{fmt(c.akap.netto)}</td>
-          <td class="num" style="color:#4f8ef7">{fmt(c.itp1.netto)}</td>
-          <td class="num" style="color:#a78bfa">{fmt(c.itp2.netto)}</td>
+          <td class="num" style="color:#6bbd85">{fmt(c.akap.netto)}</td>
+          <td class="num" style="color:#5db3dd">{fmt(c.itp1.netto)}</td>
+          <td class="num" style="color:#e08a4f">{fmt(c.itp2.netto)}</td>
         </tr>
       </tbody>
     </table>
@@ -488,9 +488,9 @@
       <thead>
         <tr style="font-size:.72rem;color:var(--muted)">
           <th style="text-align:left;padding:8px">Post</th>
-          <th class="num" style="color:#6ee7b7">AKAP-KR (nu)</th>
-          <th class="num" style="color:#4f8ef7">ITP 1 (nytt)</th>
-          <th class="num" style="color:#a78bfa">ITP 2 (nytt)</th>
+          <th class="num" style="color:#6bbd85">AKAP-KR (nu)</th>
+          <th class="num" style="color:#5db3dd">ITP 1 (nytt)</th>
+          <th class="num" style="color:#e08a4f">ITP 2 (nytt)</th>
         </tr>
       </thead>
       <tbody>
@@ -514,9 +514,9 @@
         </tr>
         <tr style="border-top:1px solid var(--border);font-weight:700">
           <td style="padding:7px 8px">Totalt till pension/mån</td>
-          <td class="num" style="color:#6ee7b7">{fmt(c.akap.totPens)}</td>
-          <td class="num" style="color:#4f8ef7">{fmt(c.itp1.totPens)}</td>
-          <td class="num" style="color:#a78bfa">{fmt(c.itp2.lvTot)} <span style="font-size:.72rem;color:var(--muted)">(lv)</span></td>
+          <td class="num" style="color:#6bbd85">{fmt(c.akap.totPens)}</td>
+          <td class="num" style="color:#5db3dd">{fmt(c.itp1.totPens)}</td>
+          <td class="num" style="color:#e08a4f">{fmt(c.itp2.lvTot)} <span style="font-size:.72rem;color:var(--muted)">(lv)</span></td>
         </tr>
       </tbody>
     </table>
@@ -527,8 +527,8 @@
   </div>
 
   <!-- ITP 2 förmån -->
-  <div class="card" style="margin-bottom:24px;border-left:4px solid #a78bfa">
-    <h3 style="margin-top:0;color:#a78bfa">ITP 2 — Garanterad månadsutbetalning vid 65</h3>
+  <div class="card" style="margin-bottom:24px;border-left:4px solid #e08a4f">
+    <h3 style="margin-top:0;color:#e08a4f">ITP 2 — Garanterad månadsutbetalning vid 65</h3>
     <p style="font-size:.82rem;color:var(--muted);margin:0 0 12px">
       ITP 2 är förmånsbestämd: du vet vad du får ut, men kapitalet äger inte du.
       Beräknat på bruttolön {fmt(lonNy)}/mån.
@@ -547,7 +547,7 @@
       </div>
       <div>
         <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Din förmån ({c.itp2.totalItp2Yr.toFixed(1)} av 37 år)</div>
-        <div style="font-size:1.4rem;font-weight:700;color:#a78bfa">{fmt(c.itp2.prorated)}/mån</div>
+        <div style="font-size:1.4rem;font-weight:700;color:#e08a4f">{fmt(c.itp2.prorated)}/mån</div>
       </div>
     </div>
     <p style="font-size:.75rem;color:var(--muted);margin:12px 0 0">
@@ -562,28 +562,28 @@
     Löpande avsättning × {avkPct} % avkastning × {arTillFire} år
   </p>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px">
-    <div class="card" style="border-left:4px solid #6ee7b7">
+    <div class="card" style="border-left:4px solid #6bbd85">
       <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-bottom:6px">AKAP-KR (nu)</div>
-      <div style="font-size:1.6rem;font-weight:800;color:#6ee7b7">{fmtM(c.akap.totFV)}</div>
+      <div style="font-size:1.6rem;font-weight:800;color:#6bbd85">{fmtM(c.akap.totFV)}</div>
       <div style="font-size:.8rem;color:var(--muted);margin-top:4px">{fmt(c.akap.totPens)}/mån → pension</div>
     </div>
-    <div class="card" style="border-left:4px solid #4f8ef7">
+    <div class="card" style="border-left:4px solid #5db3dd">
       <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-bottom:6px">ITP 1 (nytt)</div>
-      <div style="font-size:1.6rem;font-weight:800;color:#4f8ef7">{fmtM(c.itp1.totFV)}</div>
+      <div style="font-size:1.6rem;font-weight:800;color:#5db3dd">{fmtM(c.itp1.totFV)}</div>
       <div style="font-size:.8rem;color:var(--muted);margin-top:4px">{fmt(c.itp1.totPens)}/mån → pension</div>
     </div>
-    <div class="card" style="border-left:4px solid #a78bfa">
+    <div class="card" style="border-left:4px solid #e08a4f">
       <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-bottom:6px">ITP 2 — löneväxling (avgiftsb.)</div>
-      <div style="font-size:1.6rem;font-weight:800;color:#a78bfa">{fmtM(c.itp2.lvFV)}</div>
+      <div style="font-size:1.6rem;font-weight:800;color:#e08a4f">{fmtM(c.itp2.lvFV)}</div>
       <div style="font-size:.8rem;color:var(--muted);margin-top:4px">{fmt(c.itp2.lvTot)}/mån lv + AG-bidrag</div>
       <div style="font-size:.75rem;color:var(--muted);margin-top:2px">+ {fmt(c.itp2.prorated)}/mån garanterad förmån vid 65</div>
     </div>
   </div>
 
   <!-- ITP 2 kapitalvärde -->
-  <div class="card" style="margin-bottom:24px;border-left:4px solid #a78bfa">
+  <div class="card" style="margin-bottom:24px;border-left:4px solid #e08a4f">
     <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:12px">
-      <h3 style="margin:0;color:#a78bfa">ITP 2 — kapitalvärde av förmånspensionen</h3>
+      <h3 style="margin:0;color:#e08a4f">ITP 2 — kapitalvärde av förmånspensionen</h3>
       <div class="form-row" style="margin:0">
         <label style="font-size:.8rem">Livslängd (år)</label>
         <input type="number" class="bgt-inp" bind:value={livslangd} step="1" min="66" max="100"
@@ -601,16 +601,16 @@
       </div>
       <div>
         <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">PV vid 65 ({avkPct} % disk.)</div>
-        <div style="font-size:1.3rem;font-weight:700;color:#a78bfa">{fmtM(c.itp2.pvAt65)}</div>
+        <div style="font-size:1.3rem;font-weight:700;color:#e08a4f">{fmtM(c.itp2.pvAt65)}</div>
       </div>
       <div>
         <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">PV vid FIRE {CURRENT_YEAR + arTillFire}</div>
-        <div style="font-size:1.3rem;font-weight:700;color:#a78bfa">{fmtM(c.itp2.pvAtFire)}</div>
+        <div style="font-size:1.3rem;font-weight:700;color:#e08a4f">{fmtM(c.itp2.pvAtFire)}</div>
         <div style="font-size:.72rem;color:var(--muted);margin-top:2px">= jämförbart med ITP 1:s {fmtM(c.itp1.totFV)}</div>
       </div>
       <div>
         <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">ITP 2 totalt vid FIRE</div>
-        <div style="font-size:1.3rem;font-weight:700;color:#a78bfa">{fmtM(c.itp2.lvFV + c.itp2.pvAtFire)}</div>
+        <div style="font-size:1.3rem;font-weight:700;color:#e08a4f">{fmtM(c.itp2.lvFV + c.itp2.pvAtFire)}</div>
         <div style="font-size:.72rem;color:var(--muted);margin-top:2px">lv-kapital + förmånens PV</div>
       </div>
     </div>
@@ -716,7 +716,7 @@
             {#each itp1Brygga.phases as ph, i}
               {@const tot  = ph.incomeF + ph.incomeU}
               {@const gap  = bryggaEk.levnadskostnad - tot}
-              {@const col  = FASE_COLORS[i] ?? '#8892a4'}
+              {@const col  = FASE_COLORS[i] ?? '#a89b89'}
               <tr>
                 <td><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:{col}22;color:{col};font-size:.72rem;font-weight:700">{ph.nr}</span></td>
                 <td class="text-muted">{ph.year}</td>
@@ -753,17 +753,17 @@
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
         <div>
           <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">TjP Sverige (tidigare, fryst)</div>
-          <div style="font-size:1.4rem;font-weight:800;color:#f59e0b">{fmtM(itp1Breakdown.felipeGammalTjp + itp1Breakdown.ulrikaTjp)}</div>
+          <div style="font-size:1.4rem;font-weight:800;color:#d7ab57">{fmtM(itp1Breakdown.felipeGammalTjp + itp1Breakdown.ulrikaTjp)}</div>
           <div style="font-size:.75rem;color:var(--muted);margin-top:4px">AKAP-KR/Kåpan/tidigare löneväxling (F) + TjP (U) — inga nya inbetalningar</div>
         </div>
         <div>
           <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">ITP 1 (nytt jobb)</div>
-          <div style="font-size:1.4rem;font-weight:800;color:#22d3ee">{fmtM(itp1Breakdown.itp1Nytt)}</div>
+          <div style="font-size:1.4rem;font-weight:800;color:#199e70">{fmtM(itp1Breakdown.itp1Nytt)}</div>
           <div style="font-size:.75rem;color:var(--muted);margin-top:4px">{fmt(itp1Contrib(lonNy) + lvNy)}/mån i {arTillFire} år</div>
         </div>
         <div>
           <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Total förmögenhet vid start</div>
-          <div style="font-size:1.4rem;font-weight:800;color:#a78bfa">{fmtM(itp1Brygga.totaltFV)}</div>
+          <div style="font-size:1.4rem;font-weight:800;color:#e08a4f">{fmtM(itp1Brygga.totaltFV)}</div>
           <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Alla poster i diagrammet summerade</div>
         </div>
       </div>

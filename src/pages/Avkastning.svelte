@@ -85,8 +85,8 @@
   let pctChart:   Chart | null = null;
   let krChart:    Chart | null = null;
 
-  const GRID = '#2d3348';
-  const TEXT = '#8892a4';
+  const GRID = '#342c23';
+  const TEXT = '#a89b89';
 
   function buildPctChart() {
     if (!pctCanvas || rows.length === 0) { pctChart?.destroy(); pctChart = null; return; }
@@ -98,10 +98,10 @@
       data: {
         labels,
         datasets: [
-          { type: 'bar', label: 'Lysa %', data: sorted.map(r => r.lysaPct), backgroundColor: sorted.map(r => r.lysaPct === null ? '#2d3348' : r.lysaPct >= antaget ? '#4f8ef740' : '#f8717140'), borderColor: sorted.map(r => r.lysaPct === null ? '#2d3348' : r.lysaPct >= antaget ? '#4f8ef7' : '#f87171'), borderWidth: 1.5, borderRadius: 4 } as never,
-          { type: 'bar', label: 'TjP Sverige %', data: sorted.map(r => r.tjpSvePct), backgroundColor: '#6ee7b730', borderColor: '#6ee7b7', borderWidth: 1.5, borderRadius: 4 } as never,
-          { type: 'bar', label: 'TjP Norge %', data: sorted.map(r => r.tjpNorPct), backgroundColor: '#f8717130', borderColor: '#f87171', borderWidth: 1.5, borderRadius: 4 } as never,
-          { type: 'line', label: `Antaget ${antaget} %`, data: sorted.map(() => antaget), borderColor: '#f59e0b', borderDash: [6, 3], borderWidth: 2, pointRadius: 0, tension: 0 } as never,
+          { type: 'bar', label: 'Lysa %', data: sorted.map(r => r.lysaPct), backgroundColor: sorted.map(r => r.lysaPct === null ? '#342c23' : r.lysaPct >= antaget ? '#5db3dd40' : '#e2726c40'), borderColor: sorted.map(r => r.lysaPct === null ? '#342c23' : r.lysaPct >= antaget ? '#5db3dd' : '#e2726c'), borderWidth: 1.5, borderRadius: 4 } as never,
+          { type: 'bar', label: 'TjP Sverige %', data: sorted.map(r => r.tjpSvePct), backgroundColor: '#6bbd8530', borderColor: '#6bbd85', borderWidth: 1.5, borderRadius: 4 } as never,
+          { type: 'bar', label: 'TjP Norge %', data: sorted.map(r => r.tjpNorPct), backgroundColor: '#e2726c30', borderColor: '#e2726c', borderWidth: 1.5, borderRadius: 4 } as never,
+          { type: 'line', label: `Antaget ${antaget} %`, data: sorted.map(() => antaget), borderColor: '#d7ab57', borderDash: [6, 3], borderWidth: 2, pointRadius: 0, tension: 0 } as never,
         ],
       },
       options: {
@@ -131,9 +131,9 @@
       data: {
         labels,
         datasets: [
-          { label: 'Totalt faktisk', data: faktisk, borderColor: '#6ee7b7', backgroundColor: '#6ee7b710', tension: 0.3, pointRadius: 4, fill: false, borderWidth: 2 },
-          { label: 'Totalt simulerat', data: simul, borderColor: '#f59e0b', borderDash: [6, 3], tension: 0.3, pointRadius: 3, fill: false, borderWidth: 2 },
-          { label: 'Lysa faktisk', data: lysaAkt, borderColor: '#4f8ef7', backgroundColor: '#4f8ef710', tension: 0.3, pointRadius: 3, fill: false, borderWidth: 1.5 },
+          { label: 'Totalt faktisk', data: faktisk, borderColor: '#6bbd85', backgroundColor: '#6bbd8510', tension: 0.3, pointRadius: 4, fill: false, borderWidth: 2 },
+          { label: 'Totalt simulerat', data: simul, borderColor: '#d7ab57', borderDash: [6, 3], tension: 0.3, pointRadius: 3, fill: false, borderWidth: 2 },
+          { label: 'Lysa faktisk', data: lysaAkt, borderColor: '#5db3dd', backgroundColor: '#5db3dd10', tension: 0.3, pointRadius: 3, fill: false, borderWidth: 1.5 },
         ],
       },
       options: {
@@ -263,9 +263,9 @@
       <table style="width:100%;border-collapse:collapse;font-size:.88rem">
         <thead><tr style="color:var(--muted);font-size:.72rem;text-transform:uppercase">
           <th style="text-align:left;padding:6px 8px">År</th>
-          <th style="text-align:right;padding:6px 8px;color:#4f8ef7">Lysa %</th>
-          <th style="text-align:right;padding:6px 8px;color:#6ee7b7">TjP Sverige %</th>
-          <th style="text-align:right;padding:6px 8px;color:#f87171">TjP Norge %</th>
+          <th style="text-align:right;padding:6px 8px;color:#5db3dd">Lysa %</th>
+          <th style="text-align:right;padding:6px 8px;color:#6bbd85">TjP Sverige %</th>
+          <th style="text-align:right;padding:6px 8px;color:#e2726c">TjP Norge %</th>
           <th style="text-align:right;padding:6px 8px">Lysa vs antaget</th>
           <th style="padding:6px 8px"></th>
         </tr></thead>
@@ -302,9 +302,9 @@
           {#if rows.length > 0}
             <tr style="border-top:2px solid var(--border);background:var(--card)">
               <td style="padding:9px 10px;font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">CAGR</td>
-              <td style="text-align:right;padding:9px 10px;font-weight:700;color:#4f8ef7">{fmtPct(cL)}</td>
-              <td style="text-align:right;padding:9px 10px;font-weight:700;color:#6ee7b7">{fmtPct(cS)}</td>
-              <td style="text-align:right;padding:9px 10px;font-weight:700;color:#f87171">{fmtPct(cN)}</td>
+              <td style="text-align:right;padding:9px 10px;font-weight:700;color:#5db3dd">{fmtPct(cL)}</td>
+              <td style="text-align:right;padding:9px 10px;font-weight:700;color:#6bbd85">{fmtPct(cS)}</td>
+              <td style="text-align:right;padding:9px 10px;font-weight:700;color:#e2726c">{fmtPct(cN)}</td>
               <td style="text-align:right;padding:9px 10px;font-weight:700;color:{diff === null ? 'var(--muted)' : diff >= 0 ? 'var(--green)' : 'var(--red)'}">
                 {diff !== null ? `${diff >= 0 ? '+' : ''}${diff.toFixed(1)} %` : '—'}
               </td>
@@ -352,9 +352,9 @@
           <th style="text-align:left;padding:6px 10px">År</th>
           <th style="text-align:right;padding:6px 10px">Lysa start</th>
           <th style="text-align:right;padding:6px 10px">Avkastning kr</th>
-          <th style="text-align:right;padding:6px 10px;color:#4f8ef7">Lysa slut</th>
-          <th style="text-align:right;padding:6px 10px;color:#6ee7b7">TjP Sverige</th>
-          <th style="text-align:right;padding:6px 10px;color:#f87171">TjP Norge</th>
+          <th style="text-align:right;padding:6px 10px;color:#5db3dd">Lysa slut</th>
+          <th style="text-align:right;padding:6px 10px;color:#6bbd85">TjP Sverige</th>
+          <th style="text-align:right;padding:6px 10px;color:#e2726c">TjP Norge</th>
           <th style="text-align:right;padding:6px 10px;color:var(--accent2)">Totalt</th>
         </tr></thead>
         <tbody>
@@ -363,9 +363,9 @@
               <td style="padding:9px 10px;font-weight:700">{r.year}</td>
               <td style="text-align:right;padding:9px 10px;color:var(--muted)">{fmtKr(r.lysaStart)}</td>
               <td style="text-align:right;padding:9px 10px;font-weight:700;color:{r.lysaAvkKr >= 0 ? 'var(--green)' : 'var(--red)'}">{fmtKrS(r.lysaAvkKr)}</td>
-              <td style="text-align:right;padding:9px 10px;color:#4f8ef7">{fmtKr(r.lysaEnd)}</td>
-              <td style="text-align:right;padding:9px 10px;color:#6ee7b7">{fmtKr(r.tjpSveEnd)}</td>
-              <td style="text-align:right;padding:9px 10px;color:#f87171">{fmtKr(r.tjpNorEnd)}</td>
+              <td style="text-align:right;padding:9px 10px;color:#5db3dd">{fmtKr(r.lysaEnd)}</td>
+              <td style="text-align:right;padding:9px 10px;color:#6bbd85">{fmtKr(r.tjpSveEnd)}</td>
+              <td style="text-align:right;padding:9px 10px;color:#e2726c">{fmtKr(r.tjpNorEnd)}</td>
               <td style="text-align:right;padding:9px 10px;font-weight:700;color:var(--accent2)">{fmtKr(r.total)}</td>
             </tr>
           {/each}

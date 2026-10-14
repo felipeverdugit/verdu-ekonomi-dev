@@ -38,7 +38,7 @@
   let buffertPct   = $derived(kvMax > 0 ? Math.min(100, (buffert / kvMax) * 100) : 0);
   let barColor     = $derived(
     buffertPct >= 100 ? 'var(--green)'
-    : buffertPct >= 66 ? '#4f8ef7'
+    : buffertPct >= 66 ? '#5db3dd'
     : buffertPct >= 33 ? 'var(--orange)'
     : 'var(--red)'
   );
@@ -77,7 +77,7 @@
     };
     if (r <= 7) return {
       label:   `Neutralt  (${r} %)`,
-      color:   '#4f8ef7', bg: 'rgba(79,142,247,.08)', border: 'rgba(79,142,247,.35)',
+      color:   '#5db3dd', bg: 'rgba(79,142,247,.08)', border: 'rgba(79,142,247,.35)',
       actions: [
         'Ta ut kvartalsbehov från bäst presterande fond (naturlig ombalansering).',
         'Jämför fondernas senaste kvartalsutveckling och sälj "vinnaren" först.',
@@ -207,7 +207,7 @@
       <span style="font-size:1rem;font-weight:600" style:color={barColor}>{fmtKr(buffert)} / {fmtKr(kvMax)}</span>
       <span style="font-size:.9rem;color:var(--muted)">{buffertPct.toFixed(0)} %</span>
     </div>
-    <div style="height:14px;background:#2d3348;border-radius:7px;overflow:hidden">
+    <div style="height:14px;background:#342c23;border-radius:7px;overflow:hidden">
       <div style:width="{buffertPct.toFixed(1)}%" style:background={barColor}
            style="height:100%;border-radius:7px;transition:width .3s,background .3s"></div>
     </div>
@@ -259,7 +259,7 @@
     </ul>
     {#if scenario.belaning}
       <div style="margin-top:14px;padding:10px 14px;background:rgba(79,142,247,.1);border-radius:6px;
-                  font-size:.88rem;color:#4f8ef7;border-left:3px solid #4f8ef7">
+                  font-size:.88rem;color:#5db3dd;border-left:3px solid #5db3dd">
         {scenario.belaning}
       </div>
     {/if}
