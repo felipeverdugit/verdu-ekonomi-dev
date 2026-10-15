@@ -163,8 +163,17 @@
 
 <div class="page">
   <Topnav active="fire.html" onPull={() => { s = fireStore.get(); }} />
-  <h1>🌉 Brygga-simulator</h1>
-  <p class="subtitle">Genererad {new Date().toLocaleDateString('sv-SE')} · Levnadskostnad {fmt(ekStore.get().levnadskostnad)}/mån</p>
+
+  <div class="masthead">
+    <div class="eyebrow">Verdu Ekonomi</div>
+    <h1 class="headline">Bryggan mellan sista lönen och första pensionen</h1>
+    <p class="subtitle">
+      Felipe och Ulrika slutar jobba olika år. <strong>Brygga-startår</strong> är
+      året ingen av er längre har lön — kapitalet bär resten av vägen tills
+      pensionerna täcker levnadskostnaden ({fmt(ekStore.get().levnadskostnad)}/mån).
+      Genererad {new Date().toLocaleDateString('sv-SE')}.
+    </p>
+  </div>
 
   <!-- Hero -->
   <section class="hero-verdict">
