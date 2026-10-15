@@ -184,15 +184,18 @@
       </div>
       <div class="kpi">
         <div class="k-label">Total förmögenhet</div>
-        <div class="k-value" style="color:var(--accent2)">{fmtM(r.totaltFV)}</div>
+        <div class="k-value">{fmtM(r.totaltFV)}</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Fritt kapital vid start</div>
+        <div class="k-value">{fmtM(r.kapital)}</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">ISK-skatt/år (Lysa)</div>
+        <div class="k-value" style="color:var(--orange)">{fmt(Math.round(r.iskKapital * r.iskPct / 100))}</div>
       </div>
     </div>
   </section>
-
-  <div class="kpi-bar">
-    <div class="kpi"><div class="kpi-label">Fritt kapital vid start</div><div class="kpi-value">{fmtM(r.kapital)}</div></div>
-    <div class="kpi"><div class="kpi-label">ISK-skatt/år (Lysa)</div><div class="kpi-value orange">{fmt(Math.round(r.iskKapital * r.iskPct / 100))}</div><div class="kpi-sub" style="font-size:.7rem;color:var(--muted)">schablonbeskattning ISK-konton</div></div>
-  </div>
 
   {#if timeline.span > 0}
     <h2>Vem slutar när</h2>

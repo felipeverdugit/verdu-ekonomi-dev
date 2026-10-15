@@ -97,7 +97,7 @@ h2 { font-family: 'Fraunces', Georgia, serif; font-size: 1.2rem; font-weight: 60
 .hero-figure .label { font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
 .hero-figure .value { font-family: 'Fraunces', Georgia, serif; font-variant-numeric: tabular-nums; font-size: clamp(2.6rem, 8vw, 3.6rem); font-weight: 600; line-height: 1; white-space: nowrap; }
 .hero-figure .sub { color: var(--muted); font-size: .9rem; margin-top: 8px; }
-.kpi-rail { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+.kpi-rail { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: var(--border); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
 .kpi-rail .kpi { background: var(--card); padding: 14px 16px; min-width: 0; border-radius: 0; }
 .kpi-rail .kpi .k-label { font-size: .7rem; color: var(--muted); letter-spacing: .03em; margin-bottom: 5px; }
 .kpi-rail .kpi .k-value { font-family: 'Fraunces', Georgia, serif; font-variant-numeric: tabular-nums; font-size: 1.25rem; font-weight: 600; white-space: nowrap; }

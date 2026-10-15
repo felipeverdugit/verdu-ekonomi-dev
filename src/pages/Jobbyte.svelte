@@ -633,14 +633,14 @@
       </div>
       <div class="kpi">
         <div class="k-label">Total förmögenhet</div>
-        <div class="k-value" style="color:var(--accent2)">{fmtM(itp1Brygga.totaltFV)}</div>
+        <div class="k-value">{fmtM(itp1Brygga.totaltFV)}</div>
+      </div>
+      <div class="kpi">
+        <div class="k-label">Fritt kapital vid start</div>
+        <div class="k-value">{fmtM(itp1Brygga.kapital)}</div>
       </div>
     </div>
   </section>
-
-  <div class="kpi-bar" style="margin-bottom:16px">
-    <div class="kpi"><div class="kpi-label">Fritt kapital vid start</div><div class="kpi-value">{fmtM(itp1Brygga.kapital)}</div></div>
-  </div>
 
   <section style="margin-bottom:24px">
     <h3 style="margin-top:0">Pensionsinkomster per fas</h3>
