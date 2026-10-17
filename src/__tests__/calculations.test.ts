@@ -9,7 +9,7 @@ const EMPTY_EK: EkonomiData = {
   lysa_f_pv: 0, lysa_f_pmt: 0, lysa_u_pv: 0, lysa_u_pmt: 0,
 
   tjp_f_pv: 0, tjp_f_pmt_q: 0, lonevxl_pv: 0, lonevxl_pmt: 0,
-  tidigare_pv: 0, kapan_pv: 0, tjp_u_pv: 0, tjp_u_pmt_q: 0,
+  tidigare_pv: 0, kapan_pv: 0, fast_tjp_f: 0, itp2_alecta_f: 0, tjp_u_pv: 0, tjp_u_pmt_q: 0,
   norge_f_pv: 0, dnb_f_pv: 0, sb_f_pv: 0, sb_u_pv: 0, dnb_u_pv: 0,
   sparkonto_pv: 0, sparkonto_pmt: 0,
   ap_f: 0, ap_u: 0, nav_f_nok: 0, nav_u_nok: 0, nok_sek: 0.97,

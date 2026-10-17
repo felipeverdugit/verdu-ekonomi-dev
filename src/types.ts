@@ -23,6 +23,8 @@ export interface EkonomiData {
   lonevxl_pmt:     number;  // Löneväxling, månadsinsättning
   tidigare_pv:     number;  // Tidigare LöneVXL+TjP, nuv. värde
   kapan_pv:        number;  // TjP Kåpan Felipe, nuv. värde
+  fast_tjp_f:      number;  // Fast TjP Felipe (KPA+Kåpan), kr/mån, livsvarig fr.o.m. FAST_TJP_AGE
+  itp2_alecta_f:   number;  // ITP 2 (Alecta) Felipe, kr/mån, livsvarig fr.o.m. FAST_TJP_AGE — separat från ovan
   tjp_u_pv:        number;  // TjP Kommun Ulrika
   tjp_u_pmt_q:     number;  // TjP Ulrika, kvartalsinsättning
 

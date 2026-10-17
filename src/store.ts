@@ -7,7 +7,7 @@
  */
 
 import type { EkonomiData, FireSettings, Snapshot, BudgetData, KvartalData, AvkastningData, AvkRow, AvkStartValues } from './types';
-import { SLIDER_DEFAULTS, ALLMAN_DEFAULTS } from './constants';
+import { SLIDER_DEFAULTS, ALLMAN_DEFAULTS, FAST_TJP_FELIPE, ITP2_ALECTA_FELIPE } from './constants';
 
 // ── Nyckelprefix ──────────────────────────────────────────────────────────────
 const K = {
@@ -60,7 +60,7 @@ const EK_DEFAULTS: EkonomiData = {
   lysa_u_pv: 0, lysa_u_pmt: 0,
   tjp_f_pv: 0, tjp_f_pmt_q: 0,
   lonevxl_pv: 0, lonevxl_pmt: 0,
-  tidigare_pv: 0, kapan_pv: 0,
+  tidigare_pv: 0, kapan_pv: 0, fast_tjp_f: FAST_TJP_FELIPE, itp2_alecta_f: ITP2_ALECTA_FELIPE,
   tjp_u_pv: 0, tjp_u_pmt_q: 0,
   norge_f_pv: 0, dnb_f_pv: 0, sb_f_pv: 0,
   sb_u_pv: 0, dnb_u_pv: 0,

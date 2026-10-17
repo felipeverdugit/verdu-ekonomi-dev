@@ -134,6 +134,8 @@
       <div class="form-row"><label>Löneväxling — månadsinsättning (kr)</label><input type="number" step="500" value={v(ek.lonevxl_pmt)} oninput={e => handleEk('lonevxl_pmt', (e.target as HTMLInputElement).value)}></div>
       <div class="form-row"><label>Tidigare LöneVXL+TjP — nuv. värde (kr)</label><input type="number" step="10000" value={v(ek.tidigare_pv)} oninput={e => handleEk('tidigare_pv', (e.target as HTMLInputElement).value)}></div>
       <div class="form-row"><label>TjP Kåpan — nuv. värde (kr)</label><input type="number" step="10000" value={v(ek.kapan_pv)} oninput={e => handleEk('kapan_pv', (e.target as HTMLInputElement).value)}></div>
+      <div class="form-row"><label>Fast TjP (KPA+Kåpan) — kr/mån fr.o.m. 65</label><input type="number" step="10" value={v(ek.fast_tjp_f)} oninput={e => handleEk('fast_tjp_f', (e.target as HTMLInputElement).value)}></div>
+      <div class="form-row"><label>ITP 2 (Alecta) — kr/mån fr.o.m. 65</label><input type="number" step="10" value={v(ek.itp2_alecta_f)} oninput={e => handleEk('itp2_alecta_f', (e.target as HTMLInputElement).value)}></div>
     </div>
     <div>
       <p style="font-size:.8rem;color:var(--accent2);margin-bottom:10px">Ulrika</p>

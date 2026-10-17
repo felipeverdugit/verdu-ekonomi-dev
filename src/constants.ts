@@ -5,8 +5,9 @@ export const PEOPLE = {
 } as const;
 
 // ── Fasta pensionsbelopp ──────────────────────────────────────────────────────
-export const FAST_TJP_FELIPE = 2353; // KPA 334 + Alecta 1637 + Kåpan 382 kr/mån
-export const FAST_TJP_AGE    = 65;   // Livsvarig från 65 år
+export const FAST_TJP_FELIPE    = 716;  // KPA 334 + Kåpan 382 kr/mån (redan intjänat, exkl. Alecta/ITP2)
+export const ITP2_ALECTA_FELIPE = 1637; // ITP 2 (Alecta) kr/mån — redovisas separat
+export const FAST_TJP_AGE       = 65;   // Livsvarig från 65 år (gäller båda ovan)
 
 // Norsk OTP (privat tjänstepension) betalas ut 62→77 år (15 år)
 export const NORSK_TJP_END_AGE = 77; // Norsk OTP betalas ut t.o.m. 77 år (start styrs av slider)

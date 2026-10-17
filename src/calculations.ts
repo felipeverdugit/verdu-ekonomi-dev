@@ -7,7 +7,7 @@
  * Testbar utan webbläsare.
  */
 
-import { PEOPLE, FAST_TJP_FELIPE, FAST_TJP_AGE, NORSK_TJP_END_AGE, AP_INDEX_RATE, AP_TAK } from './constants';
+import { PEOPLE, FAST_TJP_AGE, NORSK_TJP_END_AGE, AP_INDEX_RATE, AP_TAK } from './constants';
 import type { EkonomiData, FireSettings, FireResult, PensionStream, Phase, TimelineEvent, UttakResult, UttakRow } from './types';
 
 const BASE_YEAR  = new Date().getFullYear();
@@ -235,11 +235,12 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
     { id: 3,  label: 'Norsk TjP — Felipe',           who: 'f', fromYear: YR_F_NORSK_TJP, toYear: f_norsk_end, monthly: Math.round(f_norsk_mon    * skattFaktor), livsvarig: false },
     { id: 4,  label: 'Allmänpension — Ulrika (SE)',  who: 'u', fromYear: YR_U_ALLMAN,    toYear: 9999,        monthly: u_allman_se_mon,                          livsvarig: true  },
     { id: 5,  label: 'Svensk TjP — Felipe',          who: 'f', fromYear: f_tjp_start,    toYear: f_tjp_end,   monthly: Math.round(f_tjp_mon      * skattFaktor), livsvarig: false },
-    { id: 6,  label: 'Fast TjP Felipe (Alecta/KPA)', who: 'f', fromYear: YR_F_FAST_TJP,  toYear: 9999,        monthly: Math.round(FAST_TJP_FELIPE * skattFaktor), livsvarig: true  },
+    { id: 6,  label: 'Fast TjP Felipe (KPA/Kåpan)',   who: 'f', fromYear: YR_F_FAST_TJP,  toYear: 9999,        monthly: Math.round(ek.fast_tjp_f    * skattFaktor), livsvarig: true  },
     { id: 7,  label: 'Allmänpension — Felipe (SE)',  who: 'f', fromYear: YR_F_ALLMAN,    toYear: 9999,        monthly: f_allman_se_mon,                          livsvarig: true  },
     { id: 8,  label: 'Löneväxling — Felipe',         who: 'f', fromYear: f_tjp_start,    toYear: f_tjp_end,   monthly: Math.round(f_lonevxl_mon  * skattFaktor), livsvarig: false },
     { id: 9,  label: 'NAV — Ulrika',                 who: 'u', fromYear: YR_U_ALLMAN,    toYear: 9999,        monthly: u_nav_mon,                                livsvarig: true  },
     { id: 10, label: 'NAV — Felipe',                 who: 'f', fromYear: YR_F_ALLMAN,    toYear: 9999,        monthly: f_nav_mon,                                livsvarig: true  },
+    { id: 11, label: 'ITP 2 (Alecta) — Felipe',      who: 'f', fromYear: YR_F_FAST_TJP,  toYear: 9999,        monthly: Math.round(ek.itp2_alecta_f * skattFaktor), livsvarig: true  },
   ];
 
   function incomeF(yr: number): number {
@@ -277,7 +278,7 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
     { year: f_norsk_end,     who: 'f', type: 'norsk_tjp_end',   label: `Felipe 77: Norsk TjP slutar` },
     { year: f_tjp_start,     who: 'f', type: 'tjp_start',       label: `Felipe ${s.fTjpAge}: Svensk TjP startar (${s.tjpArF} år)` },
     { year: f_tjp_end,       who: 'f', type: 'tjp_end',         label: `Felipe ${f_tjp_end - felipe.born}: Svensk TjP slutar` },
-    { year: YR_F_FAST_TJP,  who: 'f', type: 'fast_tjp',        label: `Felipe ${FAST_TJP_AGE}: Fast TjP (Alecta/KPA/Kåpan)` },
+    { year: YR_F_FAST_TJP,  who: 'f', type: 'fast_tjp',        label: `Felipe ${FAST_TJP_AGE}: Fast TjP (KPA/Kåpan) + ITP 2 (Alecta)` },
     { year: YR_U_ALLMAN,    who: 'u', type: 'allman',           label: `Ulrika ${s.uAllmanAge}: Allmänpension SE + NAV` },
     { year: YR_F_ALLMAN,    who: 'f', type: 'allman',           label: `Felipe ${s.fAllmanAge}: Allmänpension SE + NAV` },
   ].sort((a, b) => a.year - b.year) as TimelineEvent[];

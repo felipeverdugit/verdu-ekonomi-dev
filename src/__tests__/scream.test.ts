@@ -11,7 +11,7 @@ import {
   pmt, computeNV, computeFire, incomeTax, simulateUttag, STATLIG_GRANS, KOMMUNAL,
 } from '../calculations';
 import type { EkonomiData, FireSettings, PensionStream } from '../types';
-import { PEOPLE, ALLMAN_DEFAULTS, FAST_TJP_FELIPE, NORSK_TJP_END_AGE } from '../constants';
+import { PEOPLE, ALLMAN_DEFAULTS, FAST_TJP_FELIPE, ITP2_ALECTA_FELIPE, NORSK_TJP_END_AGE } from '../constants';
 
 // ── Testdata ───────────────────────────────────────────────────────────────────
 
@@ -19,7 +19,7 @@ const EMPTY_EK: EkonomiData = {
   lysa_f_pv: 0, lysa_f_pmt: 0, lysa_u_pv: 0, lysa_u_pmt: 0,
 
   tjp_f_pv: 0, tjp_f_pmt_q: 0, lonevxl_pv: 0, lonevxl_pmt: 0,
-  tidigare_pv: 0, kapan_pv: 0, tjp_u_pv: 0, tjp_u_pmt_q: 0,
+  tidigare_pv: 0, kapan_pv: 0, fast_tjp_f: 0, itp2_alecta_f: 0, tjp_u_pv: 0, tjp_u_pmt_q: 0,
   norge_f_pv: 0, dnb_f_pv: 0, sb_f_pv: 0, sb_u_pv: 0, dnb_u_pv: 0,
   sparkonto_pv: 0, sparkonto_pmt: 0,
   ap_f: 0, ap_u: 0, nav_f_nok: 0, nav_u_nok: 0, nok_sek: 0.97,
@@ -43,6 +43,7 @@ const REALISTIC_EK: EkonomiData = {
 
   tjp_f_pv:   1_200_000, tjp_f_pmt_q: 25_000,
   lonevxl_pv:   400_000, lonevxl_pmt: 11_638,
+  fast_tjp_f: FAST_TJP_FELIPE, itp2_alecta_f: ITP2_ALECTA_FELIPE,
   tjp_u_pv:     300_000, tjp_u_pmt_q: 6_500,
   norge_f_pv:   800_000, dnb_f_pv: 200_000,
   sb_u_pv:      400_000,
@@ -238,13 +239,13 @@ describe('pmt() — annuitetsuttag', () => {
 describe('computeFire() — pensionsströmmar', () => {
   const result = computeFire(REALISTIC_EK, BASE_FIRE);
 
-  it('genererar exakt 10 pensionsströmmar', () => {
-    expect(result.pensions).toHaveLength(10);
+  it('genererar exakt 11 pensionsströmmar', () => {
+    expect(result.pensions).toHaveLength(11);
   });
 
-  it('id 1–10 finns alla', () => {
+  it('id 1–11 finns alla', () => {
     const ids = result.pensions.map(p => p.id).sort((a, b) => a - b);
-    expect(ids).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(ids).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
   });
 
   it('who-fält: Ulrika-strömmar (1,2,4,9)', () => {
@@ -254,15 +255,15 @@ describe('computeFire() — pensionsströmmar', () => {
     });
   });
 
-  it('who-fält: Felipe-strömmar (3,5,6,7,8,10)', () => {
-    [3, 5, 6, 7, 8, 10].forEach(id => {
+  it('who-fält: Felipe-strömmar (3,5,6,7,8,10,11)', () => {
+    [3, 5, 6, 7, 8, 10, 11].forEach(id => {
       const p = result.pensions.find(p => p.id === id)!;
       expect(p.who).toBe('f');
     });
   });
 
-  it('livsvarig = true för id 4,6,7,9,10', () => {
-    [4, 6, 7, 9, 10].forEach(id => {
+  it('livsvarig = true för id 4,6,7,9,10,11', () => {
+    [4, 6, 7, 9, 10, 11].forEach(id => {
       const p = result.pensions.find(p => p.id === id)!;
       expect(p.livsvarig).toBe(true);
     });
@@ -293,6 +294,11 @@ describe('computeFire() — pensionsströmmar', () => {
   it('id 6 (Fast TjP) monthly ≈ FAST_TJP_FELIPE vid skattPct=0', () => {
     const p6 = result.pensions.find(p => p.id === 6)!;
     expect(p6.monthly).toBe(FAST_TJP_FELIPE);
+  });
+
+  it('id 11 (ITP 2 Alecta) monthly ≈ ITP2_ALECTA_FELIPE vid skattPct=0', () => {
+    const p11 = result.pensions.find(p => p.id === 11)!;
+    expect(p11.monthly).toBe(ITP2_ALECTA_FELIPE);
   });
 
   it('id 4 monthly = allman_se_u vid skattPct=0', () => {
