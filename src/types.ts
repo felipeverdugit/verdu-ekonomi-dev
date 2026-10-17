@@ -24,7 +24,8 @@ export interface EkonomiData {
   tidigare_pv:     number;  // Tidigare LöneVXL+TjP, nuv. värde
   kapan_pv:        number;  // TjP Kåpan Felipe, nuv. värde
   fast_tjp_f:      number;  // Fast TjP Felipe (KPA+Kåpan), kr/mån, livsvarig fr.o.m. FAST_TJP_AGE
-  itp2_alecta_f:   number;  // ITP 2 (Alecta) Felipe, kr/mån, livsvarig fr.o.m. FAST_TJP_AGE — separat från ovan
+  itp2_alecta_f:   number;  // ITP 2 (Alecta) Felipe, kr/mån, fr.o.m. FAST_TJP_AGE — separat från ovan
+  itp2_alecta_ar_f: number; // Vald utbetalningsperiod i år för Alecta-beloppet ovan (0 = livsvarig)
   tjp_u_pv:        number;  // TjP Kommun Ulrika
   tjp_u_pmt_q:     number;  // TjP Ulrika, kvartalsinsättning
 

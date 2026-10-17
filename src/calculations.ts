@@ -229,6 +229,11 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const u_nav_mon       = Math.round(ek.norsk_u     * skattFaktor);
   const f_nav_mon       = Math.round(ek.norsk_f     * skattFaktor);
 
+  // ITP 2 (Alecta) — Felipe kan själv välja utbetalningsperiod hos Alecta (samma
+  // startår, kortare period ger högre månadsbelopp). 0 år = livsvarig (standard).
+  const alectaLivsvarig = ek.itp2_alecta_ar_f <= 0;
+  const alectaToYear    = alectaLivsvarig ? 9999 : YR_F_FAST_TJP + ek.itp2_alecta_ar_f;
+
   const pensions: PensionStream[] = [
     { id: 1,  label: 'Norsk TjP — Ulrika',           who: 'u', fromYear: YR_U_NORSK_TJP, toYear: u_norsk_end, monthly: Math.round(u_norsk_mon    * skattFaktor), livsvarig: false },
     { id: 2,  label: 'Svensk TjP — Ulrika',          who: 'u', fromYear: u_tjp_start,    toYear: u_tjp_end,   monthly: Math.round(u_tjp_mon      * skattFaktor), livsvarig: false },
@@ -240,7 +245,7 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
     { id: 8,  label: 'Löneväxling — Felipe',         who: 'f', fromYear: f_tjp_start,    toYear: f_tjp_end,   monthly: Math.round(f_lonevxl_mon  * skattFaktor), livsvarig: false },
     { id: 9,  label: 'NAV — Ulrika',                 who: 'u', fromYear: YR_U_ALLMAN,    toYear: 9999,        monthly: u_nav_mon,                                livsvarig: true  },
     { id: 10, label: 'NAV — Felipe',                 who: 'f', fromYear: YR_F_ALLMAN,    toYear: 9999,        monthly: f_nav_mon,                                livsvarig: true  },
-    { id: 11, label: 'ITP 2 (Alecta) — Felipe',      who: 'f', fromYear: YR_F_FAST_TJP,  toYear: 9999,        monthly: Math.round(ek.itp2_alecta_f * skattFaktor), livsvarig: true  },
+    { id: 11, label: 'ITP 2 (Alecta) — Felipe',      who: 'f', fromYear: YR_F_FAST_TJP,  toYear: alectaToYear, monthly: Math.round(ek.itp2_alecta_f * skattFaktor), livsvarig: alectaLivsvarig },
   ];
 
   function incomeF(yr: number): number {
