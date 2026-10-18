@@ -74,29 +74,30 @@ Sedan v2 anropar alla sidor `computeFire()` direkt — ingen beroende av mellanl
 
 Ovanpå kommunalskatt (31 %) tillkommer 20 % statlig skatt på inkomst över 615 300 kr/år. Används av `skatt.html` och `uttag.html` för jämförelse progressiv vs. schablonbeskattning.
 
-### Pensionsströmmar (id 1–10)
+### Pensionsströmmar (id 1–11)
 
-| ID | Ström | Vem | Livsvarig |
-|---|---|---|---|
-| 1 | Norsk TjP | Ulrika | Nej (→ 77 år) |
-| 2 | Svensk TjP | Ulrika | Nej |
-| 3 | Norsk TjP | Felipe | Nej (→ 77 år) |
-| 4 | Allmänpension SE | Ulrika | Ja |
-| 5 | Svensk TjP | Felipe | Nej |
-| 6 | Fast TjP (Alecta/KPA/Kåpan) | Felipe | Ja |
-| 7 | Allmänpension SE | Felipe | Ja |
-| 8 | Löneväxling | Felipe | Nej |
-| 9 | NAV (norsk statspension) | Ulrika | Ja |
-| 10 | NAV (norsk statspension) | Felipe | Ja |
+| ID | Ström | Vem | Livsvarig | Uttaksperiod |
+|---|---|---|---|---|
+| 1 | Norsk TjP | Ulrika | Nej (→ 77 år) | Fast |
+| 2 | Svensk TjP | Ulrika | Nej | `tjpArU` (slider) |
+| 3 | Norsk TjP | Felipe | Nej (→ 77 år) | Fast |
+| 4 | Allmänpension SE | Ulrika | Ja | — |
+| 5 | Svensk TjP | Felipe | Nej | `tjpArF` (slider) |
+| 6 | Fast TjP (KPA/Kåpan) | Felipe | Ja | — |
+| 7 | Allmänpension SE | Felipe | Ja | — |
+| 8 | Löneväxling | Felipe | Nej | `lonevxlArF` (slider, oberoende av id 5) |
+| 9 | NAV (norsk statspension) | Ulrika | Ja | — |
+| 10 | NAV (norsk statspension) | Felipe | Ja | — |
+| 11 | ITP 2 (Alecta) | Felipe | Valbart (`itp2_alecta_ar_f`, 0 = livsvarig) | Manuellt belopp från Alecta |
 
-Belopp beräknas av `computeFire()` och används direkt av alla sidor utan mellanlager.
+Belopp beräknas av `computeFire()` och används direkt av alla sidor utan mellanlager. Löneväxling (id 8) delade tidigare utbetalningsperiod med Svensk TjP (id 5) — de styrs nu av oberoende slidrar på fire.html, liksom Alectas utbetalningsperiod för id 11.
 
 ## Köra lokalt
 
 ```bash
 npm install
 npm run dev       # Vite dev-server
-npm test          # Vitest (26 enhetstester)
+npm test          # Vitest (89 enhetstester)
 npm run build     # Bygg till dist/
 npm run deploy    # Bygg + publicera till GitHub Pages
 ```

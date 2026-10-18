@@ -121,8 +121,9 @@ export interface FireSettings {
   fireYearF:     number;  // Felipe: kalenderår FIRE startar (slutar jobba/kontribuera)
   fireYearU:     number;  // Ulrika: kalenderår FIRE startar
   uttakAvkPct:   number;
-  tjpArF:        number;  // Felipe: TjP uttaksperiod (år)
-  tjpArU:        number;  // Ulrika: TjP uttaksperiod (år)
+  tjpArF:        number;  // Felipe: Svensk TjP uttaksperiod (år)
+  tjpArU:        number;  // Ulrika: Svensk TjP uttaksperiod (år)
+  lonevxlArF:    number;  // Felipe: Löneväxling uttaksperiod (år) — separat från Svensk TjP
   skattPct:      number;
   borgoRanta:    number;
   lonehojF:      number;

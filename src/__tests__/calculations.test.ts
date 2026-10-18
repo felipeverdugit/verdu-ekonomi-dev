@@ -25,7 +25,7 @@ const EMPTY_EK: EkonomiData = {
 const TEST_YEAR = new Date().getFullYear();
 
 const FIRE_S: FireSettings = {
-  avkPct: 8, fireYearF: TEST_YEAR + 10, fireYearU: TEST_YEAR + 10, uttakAvkPct: 2, tjpArF: 20, tjpArU: 20,
+  avkPct: 8, fireYearF: TEST_YEAR + 10, fireYearU: TEST_YEAR + 10, uttakAvkPct: 2, tjpArF: 20, tjpArU: 20, lonevxlArF: 20,
   skattPct: 0, borgoRanta: 2.3, lonehojF: 0, lonehojU: 0,
   fTjpAge: 65, fNorskTjpAge: 62, uTjpAge: 65,
   uNorskTjpAge: 62, fAllmanAge: 67, uAllmanAge: 68,

@@ -54,7 +54,7 @@ const REALISTIC_EK: EkonomiData = {
 const TEST_YEAR = new Date().getFullYear();
 
 const BASE_FIRE: FireSettings = {
-  avkPct: 8, fireYearF: TEST_YEAR + 10, fireYearU: TEST_YEAR + 10, uttakAvkPct: 2, tjpArF: 20, tjpArU: 20,
+  avkPct: 8, fireYearF: TEST_YEAR + 10, fireYearU: TEST_YEAR + 10, uttakAvkPct: 2, tjpArF: 20, tjpArU: 20, lonevxlArF: 20,
   skattPct: 0, borgoRanta: 2.3, lonehojF: 0, lonehojU: 0,
   fTjpAge: 65, fNorskTjpAge: 62, uTjpAge: 65, uNorskTjpAge: 62,
   fAllmanAge: 67, uAllmanAge: 68,
@@ -316,6 +316,17 @@ describe('computeFire() — pensionsströmmar', () => {
     expect(p11.fromYear).toBe(startYear);
     expect(p11.toYear).toBe(startYear + 5);
     expect(p11.monthly).toBe(6_000);
+  });
+
+  it('Löneväxling (id 8) har egen uttaksperiod, oberoende av Svensk TjP (id 5)', () => {
+    const s = { ...BASE_FIRE, tjpArF: 20, lonevxlArF: 8 };
+    const r = computeFire(REALISTIC_EK, s);
+    const p5 = r.pensions.find(p => p.id === 5)!;
+    const p8 = r.pensions.find(p => p.id === 8)!;
+    expect(p5.toYear - p5.fromYear).toBe(20);
+    expect(p8.toYear - p8.fromYear).toBe(8);
+    expect(p8.fromYear).toBe(p5.fromYear); // samma startår
+    expect(p8.toYear).not.toBe(p5.toYear); // olika slutår
   });
 
   it('id 4 monthly = allman_se_u vid skattPct=0', () => {
