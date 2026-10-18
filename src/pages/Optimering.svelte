@@ -10,6 +10,8 @@
 
   // ── Formatering ───────────────────────────────────────────────────────────────
   const fmt = (n: number) => (Math.round(n) || 0).toLocaleString('sv-SE') + ' kr';
+  const sumBy = (items: { monthlyCurrent: number; monthlyOptimal: number }[], key: 'monthlyCurrent' | 'monthlyOptimal') =>
+    items.reduce((sum, s) => sum + s[key], 0);
 
   // ── State ─────────────────────────────────────────────────────────────────────
   let minAr    = $state(5);
@@ -157,6 +159,14 @@
             </tr>
           {/each}
         </tbody>
+        <tfoot>
+          <tr style="border-top:2px solid var(--border);font-weight:700">
+            <td style="padding:8px">Totalt (vid start, alla konton aktiva)</td>
+            <td></td><td></td><td></td><td></td>
+            <td style="text-align:right;padding:8px;color:var(--muted)">{fmt(sumBy(result.suggestions, 'monthlyCurrent'))}/mån</td>
+            <td style="text-align:right;padding:8px;color:var(--accent)">{fmt(sumBy(result.suggestions, 'monthlyOptimal'))}/mån</td>
+          </tr>
+        </tfoot>
       </table>
     </div>
 
