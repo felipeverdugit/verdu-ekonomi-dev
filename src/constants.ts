@@ -42,6 +42,7 @@ export const SLIDER_DEFAULTS = {
   tjpArF:        20,   // Felipe: Svensk TjP uttaksperiod (år)
   tjpArU:        20,   // Ulrika: Svensk TjP uttaksperiod (år)
   lonevxlArF:    20,   // Felipe: Löneväxling uttaksperiod (år)
+  tidigareArF:   20,   // Felipe: Tidigare LöneVXL+TjP uttaksperiod (år)
   skattPct:       0,   // Skatt på pensionsinkomster %
   borgoRanta:   2.3,   // Borgensränta / sparkonto %
   lonehojF:       0,   // Löneökning Felipe %
@@ -64,6 +65,7 @@ export const SLIDER_RANGES = {
   tjpArF:        { min: 5,  max: 30, step: 1   },
   tjpArU:        { min: 5,  max: 30, step: 1   },
   lonevxlArF:    { min: 5,  max: 30, step: 1   },
+  tidigareArF:   { min: 5,  max: 30, step: 1   },
   skattPct:      { min: 0,  max: 40, step: 1   },
   borgoRanta:    { min: 0,  max: 6,  step: 0.1 },
   lonehojF:      { min: 0,  max: 10, step: 0.5 },

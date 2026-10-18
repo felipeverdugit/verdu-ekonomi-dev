@@ -2,7 +2,7 @@
  * scream.test.ts — Stresstest / regressiontest
  *
  * Täcker: kontinuitet i skattefunktioner, korrekta breakpoints,
- * alla 10 pensionsströmmar, who-fält, livsvarig-flagga, dynamisk
+ * alla 12 pensionsströmmar, who-fält, livsvarig-flagga, dynamisk
  * Norsk TjP-period, bryggaTackning = 100 edge-case, monotona egenskaper.
  */
 
@@ -43,6 +43,7 @@ const REALISTIC_EK: EkonomiData = {
 
   tjp_f_pv:   1_200_000, tjp_f_pmt_q: 25_000,
   lonevxl_pv:   400_000, lonevxl_pmt: 11_638,
+  tidigare_pv:  400_000,
   fast_tjp_f: FAST_TJP_FELIPE, itp2_alecta_f: ITP2_ALECTA_FELIPE, itp2_alecta_ar_f: 0,
   tjp_u_pv:     300_000, tjp_u_pmt_q: 6_500,
   norge_f_pv:   800_000, dnb_f_pv: 200_000,
@@ -54,7 +55,7 @@ const REALISTIC_EK: EkonomiData = {
 const TEST_YEAR = new Date().getFullYear();
 
 const BASE_FIRE: FireSettings = {
-  avkPct: 8, fireYearF: TEST_YEAR + 10, fireYearU: TEST_YEAR + 10, uttakAvkPct: 2, tjpArF: 20, tjpArU: 20, lonevxlArF: 20,
+  avkPct: 8, fireYearF: TEST_YEAR + 10, fireYearU: TEST_YEAR + 10, uttakAvkPct: 2, tjpArF: 20, tjpArU: 20, lonevxlArF: 20, tidigareArF: 20,
   skattPct: 0, borgoRanta: 2.3, lonehojF: 0, lonehojU: 0,
   fTjpAge: 65, fNorskTjpAge: 62, uTjpAge: 65, uNorskTjpAge: 62,
   fAllmanAge: 67, uAllmanAge: 68,
@@ -239,13 +240,13 @@ describe('pmt() — annuitetsuttag', () => {
 describe('computeFire() — pensionsströmmar', () => {
   const result = computeFire(REALISTIC_EK, BASE_FIRE);
 
-  it('genererar exakt 11 pensionsströmmar', () => {
-    expect(result.pensions).toHaveLength(11);
+  it('genererar exakt 12 pensionsströmmar', () => {
+    expect(result.pensions).toHaveLength(12);
   });
 
-  it('id 1–11 finns alla', () => {
+  it('id 1–12 finns alla', () => {
     const ids = result.pensions.map(p => p.id).sort((a, b) => a - b);
-    expect(ids).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+    expect(ids).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
   });
 
   it('who-fält: Ulrika-strömmar (1,2,4,9)', () => {
@@ -255,8 +256,8 @@ describe('computeFire() — pensionsströmmar', () => {
     });
   });
 
-  it('who-fält: Felipe-strömmar (3,5,6,7,8,10,11)', () => {
-    [3, 5, 6, 7, 8, 10, 11].forEach(id => {
+  it('who-fält: Felipe-strömmar (3,5,6,7,8,10,11,12)', () => {
+    [3, 5, 6, 7, 8, 10, 11, 12].forEach(id => {
       const p = result.pensions.find(p => p.id === id)!;
       expect(p.who).toBe('f');
     });
@@ -269,8 +270,8 @@ describe('computeFire() — pensionsströmmar', () => {
     });
   });
 
-  it('livsvarig = false för id 1,2,3,5,8', () => {
-    [1, 2, 3, 5, 8].forEach(id => {
+  it('livsvarig = false för id 1,2,3,5,8,12', () => {
+    [1, 2, 3, 5, 8, 12].forEach(id => {
       const p = result.pensions.find(p => p.id === id)!;
       expect(p.livsvarig).toBe(false);
     });
@@ -327,6 +328,19 @@ describe('computeFire() — pensionsströmmar', () => {
     expect(p8.toYear - p8.fromYear).toBe(8);
     expect(p8.fromYear).toBe(p5.fromYear); // samma startår
     expect(p8.toYear).not.toBe(p5.toYear); // olika slutår
+  });
+
+  it('Tidigare LöneVXL+TjP (id 12) har egen uttaksperiod, oberoende av Löneväxling (id 8) och Svensk TjP (id 5)', () => {
+    const s = { ...BASE_FIRE, tjpArF: 20, lonevxlArF: 8, tidigareArF: 12 };
+    const r = computeFire(REALISTIC_EK, s);
+    const p5  = r.pensions.find(p => p.id === 5)!;
+    const p8  = r.pensions.find(p => p.id === 8)!;
+    const p12 = r.pensions.find(p => p.id === 12)!;
+    expect(p12.toYear - p12.fromYear).toBe(12);
+    expect(p12.fromYear).toBe(p5.fromYear); // samma startår som Svensk TjP/Löneväxling
+    expect(p12.toYear).not.toBe(p5.toYear);
+    expect(p12.toYear).not.toBe(p8.toYear);
+    expect(p12.monthly).toBeGreaterThan(0); // REALISTIC_EK har tidigare_pv > 0
   });
 
   it('id 4 monthly = allman_se_u vid skattPct=0', () => {

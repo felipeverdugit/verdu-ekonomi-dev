@@ -130,6 +130,7 @@ export const fireStore = {
       tjpArU:       getNum(K.fire('tjpArU'),        getNum('vek_fire_tjpAr', FIRE_DEFAULTS.tjpArU)),
       // Löneväxling delade tidigare period med Svensk TjP F — ärv det värdet som startpunkt
       lonevxlArF:   getNum(K.fire('lonevxlArF'),     getNum(K.fire('tjpArF'), getNum('vek_fire_tjpAr', FIRE_DEFAULTS.lonevxlArF))),
+      tidigareArF:  getNum(K.fire('tidigareArF'),    getNum(K.fire('lonevxlArF'), getNum(K.fire('tjpArF'), getNum('vek_fire_tjpAr', FIRE_DEFAULTS.tidigareArF)))),
       skattPct:     getNum(K.fire('skattPct'),      FIRE_DEFAULTS.skattPct),
       borgoRanta:   getNum(K.fire('borgoRanta'),    FIRE_DEFAULTS.borgoRanta),
       lonehojF:     getNum(K.fire('lonehojF'),      FIRE_DEFAULTS.lonehojF),

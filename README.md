@@ -74,7 +74,7 @@ Sedan v2 anropar alla sidor `computeFire()` direkt — ingen beroende av mellanl
 
 Ovanpå kommunalskatt (31 %) tillkommer 20 % statlig skatt på inkomst över 615 300 kr/år. Används av `skatt.html` och `uttag.html` för jämförelse progressiv vs. schablonbeskattning.
 
-### Pensionsströmmar (id 1–11)
+### Pensionsströmmar (id 1–12)
 
 | ID | Ström | Vem | Livsvarig | Uttaksperiod |
 |---|---|---|---|---|
@@ -82,22 +82,23 @@ Ovanpå kommunalskatt (31 %) tillkommer 20 % statlig skatt på inkomst över 615
 | 2 | Svensk TjP | Ulrika | Nej | `tjpArU` (slider) |
 | 3 | Norsk TjP | Felipe | Nej (→ 77 år) | Fast |
 | 4 | Allmänpension SE | Ulrika | Ja | — |
-| 5 | Svensk TjP | Felipe | Nej | `tjpArF` (slider) |
+| 5 | Svensk TjP (AKAP/KR) | Felipe | Nej | `tjpArF` (slider) |
 | 6 | Fast TjP (KPA/Kåpan) | Felipe | Ja | — |
 | 7 | Allmänpension SE | Felipe | Ja | — |
 | 8 | Löneväxling | Felipe | Nej | `lonevxlArF` (slider, oberoende av id 5) |
 | 9 | NAV (norsk statspension) | Ulrika | Ja | — |
 | 10 | NAV (norsk statspension) | Felipe | Ja | — |
 | 11 | ITP 2 (Alecta) | Felipe | Valbart (`itp2_alecta_ar_f`, 0 = livsvarig) | Manuellt belopp från Alecta |
+| 12 | Tidigare LöneVXL+TjP | Felipe | Nej | `tidigareArF` (slider, oberoende av id 5 och 8) |
 
-Belopp beräknas av `computeFire()` och används direkt av alla sidor utan mellanlager. Löneväxling (id 8) delade tidigare utbetalningsperiod med Svensk TjP (id 5) — de styrs nu av oberoende slidrar på fire.html, liksom Alectas utbetalningsperiod för id 11.
+Belopp beräknas av `computeFire()` och används direkt av alla sidor utan mellanlager. Felipes tjänstepensionskapital är uppdelat i tre oberoende kluster — Svensk TjP/AKAP-KR (id 5, kvartalsinsättningar), Löneväxling (id 8, månadsinsättningar) och Tidigare LöneVXL+TjP (id 12, `tidigare_pv` — inga nya insättningar, växer bara på avkastning) — som tidigare delade utbetalningsperiod men nu styrs av var sin slider på fire.html, liksom Alectas period för id 11.
 
 ## Köra lokalt
 
 ```bash
 npm install
 npm run dev       # Vite dev-server
-npm test          # Vitest (89 enhetstester)
+npm test          # Vitest (90 enhetstester)
 npm run build     # Bygg till dist/
 npm run deploy    # Bygg + publicera till GitHub Pages
 ```

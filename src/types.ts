@@ -124,6 +124,7 @@ export interface FireSettings {
   tjpArF:        number;  // Felipe: Svensk TjP uttaksperiod (år)
   tjpArU:        number;  // Ulrika: Svensk TjP uttaksperiod (år)
   lonevxlArF:    number;  // Felipe: Löneväxling uttaksperiod (år) — separat från Svensk TjP
+  tidigareArF:   number;  // Felipe: Tidigare LöneVXL+TjP uttaksperiod (år) — separat från Löneväxling
   skattPct:      number;
   borgoRanta:    number;
   lonehojF:      number;

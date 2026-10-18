@@ -174,13 +174,14 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const grp_fonder_f = lysa_f_fv;
   const grp_fonder_u = lysa_u_fv;
   const grp_tjp_f    = tjp_f_fv + kapan_fv;
-  const grp_lonevxl  = lonevxl_fv + tidigare_fv;
+  const grp_lonevxl  = lonevxl_fv;
+  const grp_tidigare = tidigare_fv;
   const grp_tjp_u    = tjp_u_fv;
   const grp_norge_f  = norge_f_fv;
   const grp_norge_u  = norge_u_fv;
 
   const fonder_fv  = Math.max(0, grp_fonder_f + grp_fonder_u - engJust);
-  const tjp_fv_tot = grp_tjp_f + grp_lonevxl + grp_tjp_u;
+  const tjp_fv_tot = grp_tjp_f + grp_lonevxl + grp_tidigare + grp_tjp_u;
   const norge_fv   = grp_norge_f + grp_norge_u;
 
   const kapital   = fonder_fv + sparkonto_fv + (s.aktierIFire ? aktierVal : 0);
@@ -203,6 +204,7 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const u_tjp_end     = u_tjp_start + s.tjpArU;
   const f_tjp_end     = f_tjp_start + s.tjpArF;
   const f_lonevxl_end = f_tjp_start + s.lonevxlArF;
+  const f_tidigare_end = f_tjp_start + s.tidigareArF;
 
   // PMT för norsk TjP: kapitalet växer från FIRE till startår, sedan dynamisk period (start→77)
   const u_norsk_extra  = Math.max(0, YR_U_NORSK_TJP - fireYear);
@@ -220,9 +222,11 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const u_tjp_cap      = grp_tjp_u   * Math.pow(1 + avkPct / 100, u_tjp_extra);
   const f_tjp_cap      = grp_tjp_f   * Math.pow(1 + avkPct / 100, f_tjp_extra);
   const f_lonevxl_cap  = grp_lonevxl * Math.pow(1 + avkPct / 100, f_tjp_extra);
+  const f_tidigare_cap = grp_tidigare * Math.pow(1 + avkPct / 100, f_tjp_extra);
   const u_tjp_mon      = Math.round(pmt(uttakAvkMon, s.tjpArU * 12, u_tjp_cap));
   const f_tjp_mon      = Math.round(pmt(uttakAvkMon, s.tjpArF * 12, f_tjp_cap));
   const f_lonevxl_mon  = Math.round(pmt(uttakAvkMon, s.lonevxlArF * 12, f_lonevxl_cap));
+  const f_tidigare_mon = Math.round(pmt(uttakAvkMon, s.tidigareArF * 12, f_tidigare_cap));
 
   // Allmänpension (statlig SE) och NAV inntektspension — visas som separata rader
   const u_allman_se_mon = Math.round(ek.allman_se_u * skattFaktor);
@@ -247,6 +251,7 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
     { id: 9,  label: 'NAV — Ulrika',                 who: 'u', fromYear: YR_U_ALLMAN,    toYear: 9999,        monthly: u_nav_mon,                                livsvarig: true  },
     { id: 10, label: 'NAV — Felipe',                 who: 'f', fromYear: YR_F_ALLMAN,    toYear: 9999,        monthly: f_nav_mon,                                livsvarig: true  },
     { id: 11, label: 'ITP 2 (Alecta) — Felipe',      who: 'f', fromYear: YR_F_FAST_TJP,  toYear: alectaToYear, monthly: Math.round(ek.itp2_alecta_f * skattFaktor), livsvarig: alectaLivsvarig },
+    { id: 12, label: 'Tidigare LöneVXL+TjP — Felipe', who: 'f', fromYear: f_tjp_start,   toYear: f_tidigare_end, monthly: Math.round(f_tidigare_mon * skattFaktor), livsvarig: false },
   ];
 
   function incomeF(yr: number): number {
@@ -285,6 +290,7 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
     { year: f_tjp_start,     who: 'f', type: 'tjp_start',       label: `Felipe ${s.fTjpAge}: Svensk TjP startar (${s.tjpArF} år)` },
     { year: f_tjp_end,       who: 'f', type: 'tjp_end',         label: `Felipe ${f_tjp_end - felipe.born}: Svensk TjP slutar` },
     ...(f_lonevxl_end !== f_tjp_end ? [{ year: f_lonevxl_end, who: 'f' as const, type: 'lonevxl_end', label: `Felipe ${f_lonevxl_end - felipe.born}: Löneväxling slutar` }] : []),
+    ...(f_tidigare_end !== f_tjp_end && f_tidigare_end !== f_lonevxl_end ? [{ year: f_tidigare_end, who: 'f' as const, type: 'tidigare_end', label: `Felipe ${f_tidigare_end - felipe.born}: Tidigare LöneVXL+TjP slutar` }] : []),
     { year: YR_F_FAST_TJP,  who: 'f', type: 'fast_tjp',        label: `Felipe ${FAST_TJP_AGE}: Fast TjP (KPA/Kåpan) + ITP 2 (Alecta)` },
     { year: YR_U_ALLMAN,    who: 'u', type: 'allman',           label: `Ulrika ${s.uAllmanAge}: Allmänpension SE + NAV` },
     { year: YR_F_ALLMAN,    who: 'f', type: 'allman',           label: `Felipe ${s.fAllmanAge}: Allmänpension SE + NAV` },
