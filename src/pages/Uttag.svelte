@@ -225,12 +225,14 @@
           {@const uTaxYr = tx ? tx.uTax * 12 : 0}
           {@const fOver  = tx ? tx.fGross > STATLIG_MON : false}
           {@const uOver  = tx ? tx.uGross > STATLIG_MON : false}
+          {@const fIsLon = data.r.earlyRetiree?.who === 'u' && row.year < data.r.fireYear}
+          {@const uIsLon = data.r.earlyRetiree?.who === 'f' && row.year < data.r.fireYear}
           <tr style:opacity={dep ? 0.4 : undefined}>
             <td style="padding:4px 8px">{row.year}</td>
             <td class="num">{dep ? '—' : fmtM(row.capital)}</td>
             <td class="num" style="color:var(--green)">{fmt(row.returns)}</td>
-            <td class="num" style="color:#6bbd85">{tx && tx.fNet > 0 ? fmt(Math.round(tx.fNet)) : '—'}</td>
-            <td class="num" style="color:#e08a4f">{tx && tx.uNet > 0 ? fmt(Math.round(tx.uNet)) : '—'}</td>
+            <td class="num" style:color={fIsLon ? '#d7ab57' : '#6bbd85'}>{tx && tx.fNet > 0 ? fmt(Math.round(tx.fNet)) + (fIsLon ? ' (lön)' : '') : '—'}</td>
+            <td class="num" style:color={uIsLon ? '#d7ab57' : '#e08a4f'}>{tx && tx.uNet > 0 ? fmt(Math.round(tx.uNet)) + (uIsLon ? ' (lön)' : '') : '—'}</td>
             <td class="num">{fmt(row.netUttag)}/mån</td>
             <td class="num" style:color={fColor}>{sign}{fmt(row.delta)}</td>
             <td class="num" style:color={fOver ? '#e2726c' : '#6bbd85'}>{fTaxYr > 0 ? fmt(Math.round(fTaxYr)) : '—'}{fOver ? ' ▲' : ''}</td>
