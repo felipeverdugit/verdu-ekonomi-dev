@@ -9,7 +9,8 @@ const EMPTY_EK: EkonomiData = {
   lysa_f_pv: 0, lysa_f_pmt: 0, lysa_u_pv: 0, lysa_u_pmt: 0,
 
   tjp_f_pv: 0, tjp_f_pmt_q: 0, lonevxl_pv: 0, lonevxl_pmt: 0,
-  tidigare_pv: 0, kapan_pv: 0, fast_tjp_f: 0, itp2_alecta_f: 0, itp2_alecta_ar_f: 0, tjp_u_pv: 0, tjp_u_pmt_q: 0,
+  tidigare_pa16_pv: 0, tidigare_tjpkonto_pv: 0, tidigare_itpk_pv: 0,
+  kapan_pv: 0, fast_tjp_f: 0, itp2_alecta_f: 0, itp2_alecta_ar_f: 0, tjp_u_pv: 0, tjp_u_pmt_q: 0,
   norge_f_pv: 0, dnb_f_pv: 0, sb_f_pv: 0, sb_u_pv: 0, dnb_u_pv: 0,
   sparkonto_pv: 0, sparkonto_pmt: 0,
   ap_f: 0, ap_u: 0, nav_f_nok: 0, nav_u_nok: 0, nok_sek: 0.97,
@@ -25,7 +26,8 @@ const EMPTY_EK: EkonomiData = {
 const TEST_YEAR = new Date().getFullYear();
 
 const FIRE_S: FireSettings = {
-  avkPct: 8, fireYearF: TEST_YEAR + 10, fireYearU: TEST_YEAR + 10, uttakAvkPct: 2, tjpArF: 20, tjpArU: 20, lonevxlArF: 20, tidigareArF: 20,
+  avkPct: 8, fireYearF: TEST_YEAR + 10, fireYearU: TEST_YEAR + 10, uttakAvkPct: 2, tjpArF: 20, tjpArU: 20, lonevxlArF: 20,
+  tidigarePa16ArF: 20, tidigareTjpkontoArF: 20, tidigareItpkArF: 20,
   skattPct: 0, borgoRanta: 2.3, lonehojF: 0, lonehojU: 0,
   fTjpAge: 65, fNorskTjpAge: 62, uTjpAge: 65,
   uNorskTjpAge: 62, fAllmanAge: 67, uAllmanAge: 68,

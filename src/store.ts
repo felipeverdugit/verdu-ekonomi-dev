@@ -60,7 +60,8 @@ const EK_DEFAULTS: EkonomiData = {
   lysa_u_pv: 0, lysa_u_pmt: 0,
   tjp_f_pv: 0, tjp_f_pmt_q: 0,
   lonevxl_pv: 0, lonevxl_pmt: 0,
-  tidigare_pv: 0, kapan_pv: 0, fast_tjp_f: FAST_TJP_FELIPE, itp2_alecta_f: ITP2_ALECTA_FELIPE, itp2_alecta_ar_f: 0,
+  tidigare_pa16_pv: 0, tidigare_tjpkonto_pv: 0, tidigare_itpk_pv: 0,
+  kapan_pv: 0, fast_tjp_f: FAST_TJP_FELIPE, itp2_alecta_f: ITP2_ALECTA_FELIPE, itp2_alecta_ar_f: 0,
   tjp_u_pv: 0, tjp_u_pmt_q: 0,
   norge_f_pv: 0, dnb_f_pv: 0, sb_f_pv: 0,
   sb_u_pv: 0, dnb_u_pv: 0,
@@ -90,6 +91,16 @@ export const ekStore = {
         (d as Record<string, number>)[field] = getNum(key, d[field] as number);
       }
     });
+    // Migrering: "Tidigare LöneVXL+TjP" var tidigare ETT fält (tidigare_pv), nu uppdelat
+    // i de 3 verkliga kontona (PA16/Tjänstepensionskonto/ITPK). Om inget av de nya
+    // fälten sparats ännu, lägg hela det gamla värdet i PA16-fältet så inget kapital
+    // försvinner — användaren kan sedan fördela om manuellt på ekonomi.html.
+    if (localStorage.getItem(K.ek('tidigare_pa16_pv')) === null &&
+        localStorage.getItem(K.ek('tidigare_tjpkonto_pv')) === null &&
+        localStorage.getItem(K.ek('tidigare_itpk_pv')) === null) {
+      const legacy = getNum('vek_ek_tidigare_pv', 0);
+      if (legacy > 0) d.tidigare_pa16_pv = legacy;
+    }
     return d;
   },
   set(data: Partial<EkonomiData>): void {
@@ -130,7 +141,11 @@ export const fireStore = {
       tjpArU:       getNum(K.fire('tjpArU'),        getNum('vek_fire_tjpAr', FIRE_DEFAULTS.tjpArU)),
       // Löneväxling delade tidigare period med Svensk TjP F — ärv det värdet som startpunkt
       lonevxlArF:   getNum(K.fire('lonevxlArF'),     getNum(K.fire('tjpArF'), getNum('vek_fire_tjpAr', FIRE_DEFAULTS.lonevxlArF))),
-      tidigareArF:  getNum(K.fire('tidigareArF'),    getNum(K.fire('lonevxlArF'), getNum(K.fire('tjpArF'), getNum('vek_fire_tjpAr', FIRE_DEFAULTS.tidigareArF)))),
+      // Tidigare LöneVXL+TjP delades i 3 konton — ärv samma startpunkt (gamla tidigareArF,
+      // annars samma kedja som Löneväxling) tills användaren justerar varje konto för sig.
+      tidigarePa16ArF:     getNum(K.fire('tidigarePa16ArF'),     getNum('vek_fire_tidigareArF', getNum(K.fire('lonevxlArF'), getNum(K.fire('tjpArF'), getNum('vek_fire_tjpAr', FIRE_DEFAULTS.tidigarePa16ArF))))),
+      tidigareTjpkontoArF: getNum(K.fire('tidigareTjpkontoArF'), getNum('vek_fire_tidigareArF', getNum(K.fire('lonevxlArF'), getNum(K.fire('tjpArF'), getNum('vek_fire_tjpAr', FIRE_DEFAULTS.tidigareTjpkontoArF))))),
+      tidigareItpkArF:     getNum(K.fire('tidigareItpkArF'),     getNum('vek_fire_tidigareArF', getNum(K.fire('lonevxlArF'), getNum(K.fire('tjpArF'), getNum('vek_fire_tjpAr', FIRE_DEFAULTS.tidigareItpkArF))))),
       skattPct:     getNum(K.fire('skattPct'),      FIRE_DEFAULTS.skattPct),
       borgoRanta:   getNum(K.fire('borgoRanta'),    FIRE_DEFAULTS.borgoRanta),
       lonehojF:     getNum(K.fire('lonehojF'),      FIRE_DEFAULTS.lonehojF),

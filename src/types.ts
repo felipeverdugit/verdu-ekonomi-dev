@@ -21,7 +21,10 @@ export interface EkonomiData {
   tjp_f_pmt_q:     number;  // TjP Felipe, kvartalsinsättning
   lonevxl_pv:      number;  // Löneväxling, nuv. värde
   lonevxl_pmt:     number;  // Löneväxling, månadsinsättning
-  tidigare_pv:     number;  // Tidigare LöneVXL+TjP, nuv. värde
+  // Tidigare LöneVXL+TjP — delat i de 3 verkliga kontona (inga nya insättningar, bara avkastning)
+  tidigare_pa16_pv:     number;  // Tjänstepension PA 16 Avd 2, nuv. värde
+  tidigare_tjpkonto_pv: number;  // Tjänstepensionskonto, nuv. värde
+  tidigare_itpk_pv:     number;  // Tjänstepension ITPK, nuv. värde
   kapan_pv:        number;  // TjP Kåpan Felipe, nuv. värde
   fast_tjp_f:      number;  // Fast TjP Felipe (KPA+Kåpan), kr/mån, livsvarig fr.o.m. FAST_TJP_AGE
   itp2_alecta_f:   number;  // ITP 2 (Alecta) Felipe, kr/mån, fr.o.m. FAST_TJP_AGE — separat från ovan
@@ -124,7 +127,9 @@ export interface FireSettings {
   tjpArF:        number;  // Felipe: Svensk TjP uttaksperiod (år)
   tjpArU:        number;  // Ulrika: Svensk TjP uttaksperiod (år)
   lonevxlArF:    number;  // Felipe: Löneväxling uttaksperiod (år) — separat från Svensk TjP
-  tidigareArF:   number;  // Felipe: Tidigare LöneVXL+TjP uttaksperiod (år) — separat från Löneväxling
+  tidigarePa16ArF:     number;  // Felipe: Tidigare PA 16 Avd 2 uttaksperiod (år)
+  tidigareTjpkontoArF: number;  // Felipe: Tidigare Tjänstepensionskonto uttaksperiod (år)
+  tidigareItpkArF:     number;  // Felipe: Tidigare ITPK uttaksperiod (år)
   skattPct:      number;
   borgoRanta:    number;
   lonehojF:      number;

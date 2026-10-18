@@ -29,7 +29,7 @@
     const h2_lagenhet = Math.max(0, (ek.lagenhet_varde ?? 0) - (ek.lagenhet_lan ?? 0));
     const h2_amor     = (ek.villa_amor ?? 0) + (ek.lagenhet_amor ?? 0);
     const h3_lysa     = ek.lysa_f_pv + ek.lysa_u_pv;
-    const h3_tjpSve   = ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pv + ek.kapan_pv + ek.tjp_u_pv;
+    const h3_tjpSve   = ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pa16_pv + ek.tidigare_tjpkonto_pv + ek.tidigare_itpk_pv + ek.kapan_pv + ek.tjp_u_pv;
     const h3_tjpNor   = ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv + ek.sb_u_pv + ek.dnb_u_pv;
     const h3_pp       = ek.pp_f + ek.pp_u;
     const h4_norco    = ek.norco_antal * ek.norco_kurs;

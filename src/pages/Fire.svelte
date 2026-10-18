@@ -21,7 +21,9 @@
     { key: 'tjpArF',        label: 'Felipe: Svensk TjP uttaksperiod' },
     { key: 'tjpArU',        label: 'Ulrika: Svensk TjP uttaksperiod' },
     { key: 'lonevxlArF',    label: 'Felipe: Löneväxling uttaksperiod' },
-    { key: 'tidigareArF',   label: 'Felipe: Tidigare LöneVXL+TjP uttaksperiod' },
+    { key: 'tidigarePa16ArF',     label: 'Felipe: Tidigare PA 16 Avd 2 uttaksperiod' },
+    { key: 'tidigareTjpkontoArF', label: 'Felipe: Tidigare Tjänstepensionskonto uttaksperiod' },
+    { key: 'tidigareItpkArF',     label: 'Felipe: Tidigare ITPK uttaksperiod' },
     { key: 'fTjpAge',       label: 'Felipe: Svensk TjP startålder' },
     { key: 'fNorskTjpAge',  label: 'Felipe: Norsk TjP startålder' },
     { key: 'uNorskTjpAge',  label: 'Ulrika: Norsk TjP startålder' },
@@ -32,7 +34,8 @@
   ];
 
   const SLIDER_UNITS: Partial<Record<SliderKey, string>> = {
-    avkPct: ' %', uttakAvkPct: ' %', tjpArF: ' år', tjpArU: ' år', lonevxlArF: ' år', tidigareArF: ' år',
+    avkPct: ' %', uttakAvkPct: ' %', tjpArF: ' år', tjpArU: ' år', lonevxlArF: ' år',
+    tidigarePa16ArF: ' år', tidigareTjpkontoArF: ' år', tidigareItpkArF: ' år',
     fTjpAge: ' år', fNorskTjpAge: ' år', uNorskTjpAge: ' år',
     uTjpAge: ' år', fAllmanAge: ' år', uAllmanAge: ' år', skattPct: ' %',
   };

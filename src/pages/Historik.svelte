@@ -15,7 +15,7 @@
   function buildSnapshot(ek: EkonomiData): Snapshot {
     const nokSek = ek.nok_sek;
     const fonder = ek.lysa_f_pv + ek.lysa_u_pv + ek.sparkonto_pv;
-    const tjp    = ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pv + ek.kapan_pv + ek.tjp_u_pv;
+    const tjp    = ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pa16_pv + ek.tidigare_tjpkonto_pv + ek.tidigare_itpk_pv + ek.kapan_pv + ek.tjp_u_pv;
     const norge  = ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv + ek.sb_u_pv + ek.dnb_u_pv;
     const allman = ek.ap_f + ek.pp_f + ek.ap_u + ek.pp_u + (ek.nav_f_nok + ek.nav_u_nok) * nokSek;
     const aktier = ek.norco_antal * ek.norco_kurs + ek.oncop_antal * ek.oncop_kurs;

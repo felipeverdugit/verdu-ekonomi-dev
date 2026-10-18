@@ -84,7 +84,7 @@ export function computeNV(ek: EkonomiData): number {
     Math.max(0, ek.villa_varde   - ek.villa_lan) +
     Math.max(0, ek.lagenhet_varde - ek.lagenhet_lan) +
     ek.lysa_f_pv + ek.lysa_u_pv +
-    ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pv + ek.kapan_pv + ek.tjp_u_pv +
+    ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pa16_pv + ek.tidigare_tjpkonto_pv + ek.tidigare_itpk_pv + ek.kapan_pv + ek.tjp_u_pv +
     ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv + ek.sb_u_pv + ek.dnb_u_pv +
     ek.pp_f + ek.pp_u +
     ek.norco_antal * ek.norco_kurs + ek.oncop_antal * ek.oncop_kurs
@@ -119,7 +119,9 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   // Tjänstepension Sverige (insättningar slutar när resp. person slutar jobba, växer med lönehöjning)
   const tjp_f_fv     = accountFVGrowing(ek.tjp_f_pv,   ek.tjp_f_pmt_q,  'quarterly', avkPct, s.lonehojF, antalArF, antalAr);
   const lonevxl_fv   = accountFVGrowing(ek.lonevxl_pv, ek.lonevxl_pmt,  'monthly',   avkPct, s.lonehojF, antalArF, antalAr);
-  const tidigare_fv  = accountFV(ek.tidigare_pv,  0,                     'monthly',   avkPct, antalArF, antalAr);
+  const tidigare_pa16_fv     = accountFV(ek.tidigare_pa16_pv,     0, 'monthly', avkPct, antalArF, antalAr);
+  const tidigare_tjpkonto_fv = accountFV(ek.tidigare_tjpkonto_pv, 0, 'monthly', avkPct, antalArF, antalAr);
+  const tidigare_itpk_fv     = accountFV(ek.tidigare_itpk_pv,     0, 'monthly', avkPct, antalArF, antalAr);
   const kapan_fv     = accountFV(ek.kapan_pv,     0,                     'monthly',   avkPct, antalArF, antalAr);
   const tjp_u_fv     = accountFVGrowing(ek.tjp_u_pv,   ek.tjp_u_pmt_q,  'quarterly', avkPct, s.lonehojU, antalArU, antalAr);
 
@@ -175,7 +177,7 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const grp_fonder_u = lysa_u_fv;
   const grp_tjp_f    = tjp_f_fv + kapan_fv;
   const grp_lonevxl  = lonevxl_fv;
-  const grp_tidigare = tidigare_fv;
+  const grp_tidigare = tidigare_pa16_fv + tidigare_tjpkonto_fv + tidigare_itpk_fv;
   const grp_tjp_u    = tjp_u_fv;
   const grp_norge_f  = norge_f_fv;
   const grp_norge_u  = norge_u_fv;
@@ -204,7 +206,9 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const u_tjp_end     = u_tjp_start + s.tjpArU;
   const f_tjp_end     = f_tjp_start + s.tjpArF;
   const f_lonevxl_end = f_tjp_start + s.lonevxlArF;
-  const f_tidigare_end = f_tjp_start + s.tidigareArF;
+  const f_tidigare_pa16_end     = f_tjp_start + s.tidigarePa16ArF;
+  const f_tidigare_tjpkonto_end = f_tjp_start + s.tidigareTjpkontoArF;
+  const f_tidigare_itpk_end     = f_tjp_start + s.tidigareItpkArF;
 
   // PMT för norsk TjP: kapitalet växer från FIRE till startår, sedan dynamisk period (start→77)
   const u_norsk_extra  = Math.max(0, YR_U_NORSK_TJP - fireYear);
@@ -222,11 +226,15 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const u_tjp_cap      = grp_tjp_u   * Math.pow(1 + avkPct / 100, u_tjp_extra);
   const f_tjp_cap      = grp_tjp_f   * Math.pow(1 + avkPct / 100, f_tjp_extra);
   const f_lonevxl_cap  = grp_lonevxl * Math.pow(1 + avkPct / 100, f_tjp_extra);
-  const f_tidigare_cap = grp_tidigare * Math.pow(1 + avkPct / 100, f_tjp_extra);
+  const f_tidigare_pa16_cap     = tidigare_pa16_fv     * Math.pow(1 + avkPct / 100, f_tjp_extra);
+  const f_tidigare_tjpkonto_cap = tidigare_tjpkonto_fv * Math.pow(1 + avkPct / 100, f_tjp_extra);
+  const f_tidigare_itpk_cap     = tidigare_itpk_fv     * Math.pow(1 + avkPct / 100, f_tjp_extra);
   const u_tjp_mon      = Math.round(pmt(uttakAvkMon, s.tjpArU * 12, u_tjp_cap));
   const f_tjp_mon      = Math.round(pmt(uttakAvkMon, s.tjpArF * 12, f_tjp_cap));
   const f_lonevxl_mon  = Math.round(pmt(uttakAvkMon, s.lonevxlArF * 12, f_lonevxl_cap));
-  const f_tidigare_mon = Math.round(pmt(uttakAvkMon, s.tidigareArF * 12, f_tidigare_cap));
+  const f_tidigare_pa16_mon     = Math.round(pmt(uttakAvkMon, s.tidigarePa16ArF * 12, f_tidigare_pa16_cap));
+  const f_tidigare_tjpkonto_mon = Math.round(pmt(uttakAvkMon, s.tidigareTjpkontoArF * 12, f_tidigare_tjpkonto_cap));
+  const f_tidigare_itpk_mon     = Math.round(pmt(uttakAvkMon, s.tidigareItpkArF * 12, f_tidigare_itpk_cap));
 
   // Allmänpension (statlig SE) och NAV inntektspension — visas som separata rader
   const u_allman_se_mon = Math.round(ek.allman_se_u * skattFaktor);
@@ -251,7 +259,9 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
     { id: 9,  label: 'NAV — Ulrika',                 who: 'u', fromYear: YR_U_ALLMAN,    toYear: 9999,        monthly: u_nav_mon,                                livsvarig: true  },
     { id: 10, label: 'NAV — Felipe',                 who: 'f', fromYear: YR_F_ALLMAN,    toYear: 9999,        monthly: f_nav_mon,                                livsvarig: true  },
     { id: 11, label: 'ITP 2 (Alecta) — Felipe',      who: 'f', fromYear: YR_F_FAST_TJP,  toYear: alectaToYear, monthly: Math.round(ek.itp2_alecta_f * skattFaktor), livsvarig: alectaLivsvarig },
-    { id: 12, label: 'Tidigare LöneVXL+TjP — Felipe', who: 'f', fromYear: f_tjp_start,   toYear: f_tidigare_end, monthly: Math.round(f_tidigare_mon * skattFaktor), livsvarig: false },
+    { id: 12, label: 'Tidigare TjP — PA 16 Avd 2 — Felipe',          who: 'f', fromYear: f_tjp_start, toYear: f_tidigare_pa16_end,     monthly: Math.round(f_tidigare_pa16_mon     * skattFaktor), livsvarig: false },
+    { id: 13, label: 'Tidigare TjP — Tjänstepensionskonto — Felipe', who: 'f', fromYear: f_tjp_start, toYear: f_tidigare_tjpkonto_end, monthly: Math.round(f_tidigare_tjpkonto_mon * skattFaktor), livsvarig: false },
+    { id: 14, label: 'Tidigare TjP — ITPK — Felipe',                 who: 'f', fromYear: f_tjp_start, toYear: f_tidigare_itpk_end,     monthly: Math.round(f_tidigare_itpk_mon     * skattFaktor), livsvarig: false },
   ];
 
   function incomeF(yr: number): number {
@@ -290,7 +300,14 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
     { year: f_tjp_start,     who: 'f', type: 'tjp_start',       label: `Felipe ${s.fTjpAge}: Svensk TjP startar (${s.tjpArF} år)` },
     { year: f_tjp_end,       who: 'f', type: 'tjp_end',         label: `Felipe ${f_tjp_end - felipe.born}: Svensk TjP slutar` },
     ...(f_lonevxl_end !== f_tjp_end ? [{ year: f_lonevxl_end, who: 'f' as const, type: 'lonevxl_end', label: `Felipe ${f_lonevxl_end - felipe.born}: Löneväxling slutar` }] : []),
-    ...(f_tidigare_end !== f_tjp_end && f_tidigare_end !== f_lonevxl_end ? [{ year: f_tidigare_end, who: 'f' as const, type: 'tidigare_end', label: `Felipe ${f_tidigare_end - felipe.born}: Tidigare LöneVXL+TjP slutar` }] : []),
+    ...([
+      ['PA 16 Avd 2',            f_tidigare_pa16_end],
+      ['Tjänstepensionskonto',   f_tidigare_tjpkonto_end],
+      ['ITPK',                   f_tidigare_itpk_end],
+    ] as const)
+      .filter(([, yr], i, arr) =>
+        yr !== f_tjp_end && yr !== f_lonevxl_end && arr.findIndex(([, y]) => y === yr) === i)
+      .map(([namn, yr]) => ({ year: yr, who: 'f' as const, type: 'tidigare_end', label: `Felipe ${yr - felipe.born}: Tidigare TjP (${namn}) slutar` })),
     { year: YR_F_FAST_TJP,  who: 'f', type: 'fast_tjp',        label: `Felipe ${FAST_TJP_AGE}: Fast TjP (KPA/Kåpan) + ITP 2 (Alecta)` },
     { year: YR_U_ALLMAN,    who: 'u', type: 'allman',           label: `Ulrika ${s.uAllmanAge}: Allmänpension SE + NAV` },
     { year: YR_F_ALLMAN,    who: 'f', type: 'allman',           label: `Felipe ${s.fAllmanAge}: Allmänpension SE + NAV` },

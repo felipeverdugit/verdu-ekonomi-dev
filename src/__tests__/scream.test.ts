@@ -19,7 +19,8 @@ const EMPTY_EK: EkonomiData = {
   lysa_f_pv: 0, lysa_f_pmt: 0, lysa_u_pv: 0, lysa_u_pmt: 0,
 
   tjp_f_pv: 0, tjp_f_pmt_q: 0, lonevxl_pv: 0, lonevxl_pmt: 0,
-  tidigare_pv: 0, kapan_pv: 0, fast_tjp_f: 0, itp2_alecta_f: 0, itp2_alecta_ar_f: 0, tjp_u_pv: 0, tjp_u_pmt_q: 0,
+  tidigare_pa16_pv: 0, tidigare_tjpkonto_pv: 0, tidigare_itpk_pv: 0,
+  kapan_pv: 0, fast_tjp_f: 0, itp2_alecta_f: 0, itp2_alecta_ar_f: 0, tjp_u_pv: 0, tjp_u_pmt_q: 0,
   norge_f_pv: 0, dnb_f_pv: 0, sb_f_pv: 0, sb_u_pv: 0, dnb_u_pv: 0,
   sparkonto_pv: 0, sparkonto_pmt: 0,
   ap_f: 0, ap_u: 0, nav_f_nok: 0, nav_u_nok: 0, nok_sek: 0.97,
@@ -43,7 +44,7 @@ const REALISTIC_EK: EkonomiData = {
 
   tjp_f_pv:   1_200_000, tjp_f_pmt_q: 25_000,
   lonevxl_pv:   400_000, lonevxl_pmt: 11_638,
-  tidigare_pv:  400_000,
+  tidigare_pa16_pv: 158_235, tidigare_tjpkonto_pv: 149_244, tidigare_itpk_pv: 99_708,
   fast_tjp_f: FAST_TJP_FELIPE, itp2_alecta_f: ITP2_ALECTA_FELIPE, itp2_alecta_ar_f: 0,
   tjp_u_pv:     300_000, tjp_u_pmt_q: 6_500,
   norge_f_pv:   800_000, dnb_f_pv: 200_000,
@@ -55,7 +56,8 @@ const REALISTIC_EK: EkonomiData = {
 const TEST_YEAR = new Date().getFullYear();
 
 const BASE_FIRE: FireSettings = {
-  avkPct: 8, fireYearF: TEST_YEAR + 10, fireYearU: TEST_YEAR + 10, uttakAvkPct: 2, tjpArF: 20, tjpArU: 20, lonevxlArF: 20, tidigareArF: 20,
+  avkPct: 8, fireYearF: TEST_YEAR + 10, fireYearU: TEST_YEAR + 10, uttakAvkPct: 2, tjpArF: 20, tjpArU: 20, lonevxlArF: 20,
+  tidigarePa16ArF: 20, tidigareTjpkontoArF: 20, tidigareItpkArF: 20,
   skattPct: 0, borgoRanta: 2.3, lonehojF: 0, lonehojU: 0,
   fTjpAge: 65, fNorskTjpAge: 62, uTjpAge: 65, uNorskTjpAge: 62,
   fAllmanAge: 67, uAllmanAge: 68,
@@ -240,13 +242,13 @@ describe('pmt() — annuitetsuttag', () => {
 describe('computeFire() — pensionsströmmar', () => {
   const result = computeFire(REALISTIC_EK, BASE_FIRE);
 
-  it('genererar exakt 12 pensionsströmmar', () => {
-    expect(result.pensions).toHaveLength(12);
+  it('genererar exakt 14 pensionsströmmar', () => {
+    expect(result.pensions).toHaveLength(14);
   });
 
-  it('id 1–12 finns alla', () => {
+  it('id 1–14 finns alla', () => {
     const ids = result.pensions.map(p => p.id).sort((a, b) => a - b);
-    expect(ids).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    expect(ids).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
   });
 
   it('who-fält: Ulrika-strömmar (1,2,4,9)', () => {
@@ -256,8 +258,8 @@ describe('computeFire() — pensionsströmmar', () => {
     });
   });
 
-  it('who-fält: Felipe-strömmar (3,5,6,7,8,10,11,12)', () => {
-    [3, 5, 6, 7, 8, 10, 11, 12].forEach(id => {
+  it('who-fält: Felipe-strömmar (3,5,6,7,8,10,11,12,13,14)', () => {
+    [3, 5, 6, 7, 8, 10, 11, 12, 13, 14].forEach(id => {
       const p = result.pensions.find(p => p.id === id)!;
       expect(p.who).toBe('f');
     });
@@ -270,8 +272,8 @@ describe('computeFire() — pensionsströmmar', () => {
     });
   });
 
-  it('livsvarig = false för id 1,2,3,5,8,12', () => {
-    [1, 2, 3, 5, 8, 12].forEach(id => {
+  it('livsvarig = false för id 1,2,3,5,8,12,13,14', () => {
+    [1, 2, 3, 5, 8, 12, 13, 14].forEach(id => {
       const p = result.pensions.find(p => p.id === id)!;
       expect(p.livsvarig).toBe(false);
     });
@@ -330,17 +332,33 @@ describe('computeFire() — pensionsströmmar', () => {
     expect(p8.toYear).not.toBe(p5.toYear); // olika slutår
   });
 
-  it('Tidigare LöneVXL+TjP (id 12) har egen uttaksperiod, oberoende av Löneväxling (id 8) och Svensk TjP (id 5)', () => {
-    const s = { ...BASE_FIRE, tjpArF: 20, lonevxlArF: 8, tidigareArF: 12 };
+  it('Tidigare LöneVXL+TjP är uppdelat i 3 egna konton (id 12-14), var och en med egen uttaksperiod', () => {
+    const s = {
+      ...BASE_FIRE, tjpArF: 20, lonevxlArF: 8,
+      tidigarePa16ArF: 12, tidigareTjpkontoArF: 6, tidigareItpkArF: 25,
+    };
     const r = computeFire(REALISTIC_EK, s);
     const p5  = r.pensions.find(p => p.id === 5)!;
     const p8  = r.pensions.find(p => p.id === 8)!;
-    const p12 = r.pensions.find(p => p.id === 12)!;
+    const p12 = r.pensions.find(p => p.id === 12)!; // PA 16 Avd 2
+    const p13 = r.pensions.find(p => p.id === 13)!; // Tjänstepensionskonto
+    const p14 = r.pensions.find(p => p.id === 14)!; // ITPK
+
     expect(p12.toYear - p12.fromYear).toBe(12);
-    expect(p12.fromYear).toBe(p5.fromYear); // samma startår som Svensk TjP/Löneväxling
+    expect(p13.toYear - p13.fromYear).toBe(6);
+    expect(p14.toYear - p14.fromYear).toBe(25);
+
+    // Alla tre startar samtidigt som Svensk TjP/Löneväxling, men slutar olika år
+    [p12, p13, p14].forEach(p => expect(p.fromYear).toBe(p5.fromYear));
+    expect(p12.toYear).not.toBe(p13.toYear);
+    expect(p13.toYear).not.toBe(p14.toYear);
     expect(p12.toYear).not.toBe(p5.toYear);
     expect(p12.toYear).not.toBe(p8.toYear);
-    expect(p12.monthly).toBeGreaterThan(0); // REALISTIC_EK har tidigare_pv > 0
+
+    // REALISTIC_EK har kapital i alla tre konton (158 235 / 149 244 / 99 708)
+    expect(p12.monthly).toBeGreaterThan(0);
+    expect(p13.monthly).toBeGreaterThan(0);
+    expect(p14.monthly).toBeGreaterThan(0);
   });
 
   it('id 4 monthly = allman_se_u vid skattPct=0', () => {

@@ -74,7 +74,7 @@ Sedan v2 anropar alla sidor `computeFire()` direkt — ingen beroende av mellanl
 
 Ovanpå kommunalskatt (31 %) tillkommer 20 % statlig skatt på inkomst över 615 300 kr/år. Används av `skatt.html` och `uttag.html` för jämförelse progressiv vs. schablonbeskattning.
 
-### Pensionsströmmar (id 1–12)
+### Pensionsströmmar (id 1–14)
 
 | ID | Ström | Vem | Livsvarig | Uttaksperiod |
 |---|---|---|---|---|
@@ -89,9 +89,11 @@ Ovanpå kommunalskatt (31 %) tillkommer 20 % statlig skatt på inkomst över 615
 | 9 | NAV (norsk statspension) | Ulrika | Ja | — |
 | 10 | NAV (norsk statspension) | Felipe | Ja | — |
 | 11 | ITP 2 (Alecta) | Felipe | Valbart (`itp2_alecta_ar_f`, 0 = livsvarig) | Manuellt belopp från Alecta |
-| 12 | Tidigare LöneVXL+TjP | Felipe | Nej | `tidigareArF` (slider, oberoende av id 5 och 8) |
+| 12 | Tidigare TjP — PA 16 Avd 2 | Felipe | Nej | `tidigarePa16ArF` (slider) |
+| 13 | Tidigare TjP — Tjänstepensionskonto | Felipe | Nej | `tidigareTjpkontoArF` (slider) |
+| 14 | Tidigare TjP — ITPK | Felipe | Nej | `tidigareItpkArF` (slider) |
 
-Belopp beräknas av `computeFire()` och används direkt av alla sidor utan mellanlager. Felipes tjänstepensionskapital är uppdelat i tre oberoende kluster — Svensk TjP/AKAP-KR (id 5, kvartalsinsättningar), Löneväxling (id 8, månadsinsättningar) och Tidigare LöneVXL+TjP (id 12, `tidigare_pv` — inga nya insättningar, växer bara på avkastning) — som tidigare delade utbetalningsperiod men nu styrs av var sin slider på fire.html, liksom Alectas period för id 11.
+Belopp beräknas av `computeFire()` och används direkt av alla sidor utan mellanlager. Felipes tjänstepensionskapital är uppdelat i fem oberoende delar — Svensk TjP/AKAP-KR (id 5, kvartalsinsättningar), Löneväxling (id 8, månadsinsättningar) och tre "Tidigare"-konton utan nya insättningar (id 12–14: `tidigare_pa16_pv`, `tidigare_tjpkonto_pv`, `tidigare_itpk_pv` — motsvarar de tre verkliga kontona PA 16 Avd 2, Tjänstepensionskonto och ITPK) — var och en med egen uttaksperiod-slider på fire.html, liksom Alectas period för id 11.
 
 ## Köra lokalt
 

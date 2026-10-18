@@ -42,7 +42,9 @@ export const SLIDER_DEFAULTS = {
   tjpArF:        20,   // Felipe: Svensk TjP uttaksperiod (år)
   tjpArU:        20,   // Ulrika: Svensk TjP uttaksperiod (år)
   lonevxlArF:    20,   // Felipe: Löneväxling uttaksperiod (år)
-  tidigareArF:   20,   // Felipe: Tidigare LöneVXL+TjP uttaksperiod (år)
+  tidigarePa16ArF:     20,   // Felipe: Tidigare PA 16 Avd 2 uttaksperiod (år)
+  tidigareTjpkontoArF: 20,   // Felipe: Tidigare Tjänstepensionskonto uttaksperiod (år)
+  tidigareItpkArF:     20,   // Felipe: Tidigare ITPK uttaksperiod (år)
   skattPct:       0,   // Skatt på pensionsinkomster %
   borgoRanta:   2.3,   // Borgensränta / sparkonto %
   lonehojF:       0,   // Löneökning Felipe %
@@ -65,7 +67,9 @@ export const SLIDER_RANGES = {
   tjpArF:        { min: 5,  max: 30, step: 1   },
   tjpArU:        { min: 5,  max: 30, step: 1   },
   lonevxlArF:    { min: 5,  max: 30, step: 1   },
-  tidigareArF:   { min: 5,  max: 30, step: 1   },
+  tidigarePa16ArF:     { min: 5,  max: 30, step: 1   },
+  tidigareTjpkontoArF: { min: 5,  max: 30, step: 1   },
+  tidigareItpkArF:     { min: 5,  max: 30, step: 1   },
   skattPct:      { min: 0,  max: 40, step: 1   },
   borgoRanta:    { min: 0,  max: 6,  step: 0.1 },
   lonehojF:      { min: 0,  max: 10, step: 0.5 },
@@ -91,7 +95,7 @@ export const SHEETS_MAP: Record<string, string> = {
   ek_spar_lysau:      'lysa_u_pmt',
   ek_bal_tjpf:        'tjp_f_pv',
   ek_bal_lonevxl:     'lonevxl_pv',
-  ek_bal_tidligare:   'tidigare_pv',
+  ek_bal_tidligare:   'tidigare_pa16_pv', // Gammal enskild totalkolumn — landar i PA16-fältet tills Sheet-kolumnerna delas upp
   ek_bal_kapan:       'kapan_pv',
   ek_bal_tjpu:        'tjp_u_pv',
   ek_bal_norgef:      'norge_f_pv',

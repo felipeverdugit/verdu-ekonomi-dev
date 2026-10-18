@@ -198,7 +198,9 @@
     const felipeGammalTjp =
       accountFVGrowing(ek.tjp_f_pv,   0, 'quarterly', avkPct, 0, arTillFire, arTillFire) +
       accountFVGrowing(ek.kapan_pv,   0, 'monthly',   avkPct, 0, arTillFire, arTillFire) +
-      accountFVGrowing(ek.tidigare_pv,0, 'monthly',   avkPct, 0, arTillFire, arTillFire) +
+      accountFVGrowing(ek.tidigare_pa16_pv,     0, 'monthly', avkPct, 0, arTillFire, arTillFire) +
+      accountFVGrowing(ek.tidigare_tjpkonto_pv, 0, 'monthly', avkPct, 0, arTillFire, arTillFire) +
+      accountFVGrowing(ek.tidigare_itpk_pv,     0, 'monthly', avkPct, 0, arTillFire, arTillFire) +
       accountFVGrowing(ek.lonevxl_pv, 0, 'monthly',   avkPct, 0, arTillFire, arTillFire);
     const ulrikaTjp = accountFVGrowing(ek.tjp_u_pv, ek.tjp_u_pmt_q, 'quarterly', avkPct, bryggaFs.lonehojU, arTillFire, arTillFire);
     const itp1Nytt  = accountFVGrowing(0, itp1Contrib(lonNy) + lvNy, 'monthly', avkPct, bryggaFs.lonehojF, arTillFire, arTillFire);

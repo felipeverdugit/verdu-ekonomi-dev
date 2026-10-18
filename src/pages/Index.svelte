@@ -48,7 +48,7 @@
     const akapF      = akapMon(ek.brutto_f) * 12;
     const akapU      = akapMon(ek.brutto_u) * 12;
     const lonevxlAr  = ek.lonevxl_pmt * 12;
-    const tjpKapital = ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pv + ek.kapan_pv + ek.tjp_u_pv;
+    const tjpKapital = ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pa16_pv + ek.tidigare_tjpkonto_pv + ek.tidigare_itpk_pv + ek.kapan_pv + ek.tjp_u_pv;
     const tjpTotal   = akapF + akapU + lonevxlAr + tjpKapital * avk;
     const norgeKap   = ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv + ek.sb_u_pv + ek.dnb_u_pv;
     const norgeTotal = norgeKap * avk;
@@ -70,7 +70,7 @@
     const pct = (v: number) => nv > 0 ? v / nv * 100 : 0;
     const breakdown = [
       { label: 'Privata fonder (Lysa)',  val: ek.lysa_f_pv + ek.lysa_u_pv,                                               color: '#5db3dd' },
-      { label: 'TjP Sverige',            val: ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pv + ek.kapan_pv + ek.tjp_u_pv, color: '#6bbd85' },
+      { label: 'TjP Sverige',            val: ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pa16_pv + ek.tidigare_tjpkonto_pv + ek.tidigare_itpk_pv + ek.kapan_pv + ek.tjp_u_pv, color: '#6bbd85' },
       { label: 'TjP Norge',              val: ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv + ek.sb_u_pv + ek.dnb_u_pv,     color: '#e2726c' },
       { label: 'Allmänpension (AP)',      val: ek.ap_f + ek.ap_u,                                                          color: '#3f9e3f' },
       { label: 'NAV Norge',              val: (ek.nav_f_nok + ek.nav_u_nok) * ek.nok_sek,                      color: '#199e70' },
