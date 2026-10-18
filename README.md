@@ -18,10 +18,11 @@ Personligt ekonomi- och FIRE-planeringsverktyg för familjen Verdu. Simulerar br
 | 📅 Kvartal | Kvartalsstrategi — buffert vs. fondförsäljning |
 | 🎯 Avkastning | Faktisk avkastning vs. Lysa-index |
 | 💼 Jobbyte | Jämför nuvarande AKAP-KR-jobb med nytt jobb (ITP 1/ITP 2) — lön, skatt, pensionskapital, uttakssimulator, samt full Brygga-simulator med ITP 1 |
+| 🧮 Optimering | Brute-force-sökning efter de uttaksperioder (Felipes 5 justerbara tjänstepensionskonton) som ger lägst total inkomstskatt |
 
 ## Tech stack
 
-- **Vite** — MPA-byggverktyg (12 HTML-ingångspunkter)
+- **Vite** — MPA-byggverktyg (13 HTML-ingångspunkter)
 - **Svelte 5** — reaktiva komponenter (runes-läge: `$state`, `$derived`, `$effect`)
 - **TypeScript** — strikt typad källkod
 - **Chart.js** — diagram
@@ -33,7 +34,7 @@ Personligt ekonomi- och FIRE-planeringsverktyg för familjen Verdu. Simulerar br
 
 ```
 src/
-  calculations.ts   # Ren beräkningsmotor (fv, pmt, computeFire, simulateUttag, incomeTax)
+  calculations.ts   # Ren beräkningsmotor (fv, pmt, computeFire, simulateUttag, incomeTax, optimizePensionPeriods)
   store.ts          # Typad localStorage-wrapper (ekStore, fireStore, budgetStore, ...)
   types.ts          # Delade TypeScript-interfaces
   constants.ts      # Personkonstanter, slider-gränser, chart-färger
@@ -95,12 +96,16 @@ Ovanpå kommunalskatt (31 %) tillkommer 20 % statlig skatt på inkomst över 615
 
 Belopp beräknas av `computeFire()` och används direkt av alla sidor utan mellanlager. Felipes tjänstepensionskapital är uppdelat i fem oberoende delar — Svensk TjP/AKAP-KR (id 5, kvartalsinsättningar), Löneväxling (id 8, månadsinsättningar) och tre "Tidigare"-konton utan nya insättningar (id 12–14: `tidigare_pa16_pv`, `tidigare_tjpkonto_pv`, `tidigare_itpk_pv` — motsvarar de tre verkliga kontona PA 16 Avd 2, Tjänstepensionskonto och ITPK) — var och en med egen uttaksperiod-slider på fire.html, liksom Alectas period för id 11.
 
+### Optimering (optimering.html)
+
+`optimizePensionPeriods(ek, s, minAr, maxAr)` i `calculations.ts` testar alla kombinationer av uttaksperioder (helår, inom `[minAr,maxAr]`) för Felipes 5 justerbara strömmar (id 5, 8, 12, 13, 14) och väljer den som minimerar hans totala progressiva inkomstskatt (`incomeTax()`) över en jämförelsehorisont. Vid i princip lika skatt väljs kortast möjliga period (tie-break) — ger t.ex. korta perioder åt konton med litet eller inget kapital, utan att kontostorlek hårdkodas i sökningen. Söker brute-force över `(maxAr-minAr+1)^5` kombinationer (≈161 000 vid spannet 5–15), vilket körs synkront på under en sekund i webbläsaren.
+
 ## Köra lokalt
 
 ```bash
 npm install
 npm run dev       # Vite dev-server
-npm test          # Vitest (90 enhetstester)
+npm test          # Vitest (95 enhetstester)
 npm run build     # Bygg till dist/
 npm run deploy    # Bygg + publicera till GitHub Pages
 ```

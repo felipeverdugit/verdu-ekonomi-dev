@@ -316,4 +316,34 @@ export const INFO: Record<string, PageInfo> = {
       },
     ],
   },
+
+  // ── Optimering (optimering.html) ─────────────────────────────────────────────
+  optimering: {
+    title: '🧮 Optimering',
+    sections: [
+      {
+        heading: 'Vad är det här?',
+        html: `<p>Felipe har 5 fristående pensionskonton där uttaksperioden går att välja fritt: Svensk TjP (AKAP/KR), Löneväxling, och de 3 "Tidigare"-kontona (PA 16 Avd 2, Tjänstepensionskonto, ITPK). Den här sidan testar alla kombinationer av perioder (inom den gräns du sätter) och föreslår den som ger lägst total inkomstskatt.</p>`,
+      },
+      {
+        heading: 'Hur fungerar sökningen?',
+        html: `<ul>
+          <li>Längre uttaksperiod → lägre månadsbelopp → lägre marginalskatt det året, men pengarna räcker längre.</li>
+          <li>Algoritmen testar alla kombinationer av hela år inom <strong>Min/Max-gränsen</strong> och summerar den progressiva inkomstskatten (<code>incomeTax()</code>, samma funktion som skatt.html) för varje kombination.</li>
+          <li>Vid i princip lika skatt väljs kortast möjliga period — små konton med liten skattepåverkan hamnar därför ofta kort, utan att det är hårdkodat.</li>
+        </ul>`,
+      },
+      {
+        heading: 'Begränsningar',
+        html: `<ul>
+          <li>Optimerar bara Felipes 5 justerbara konton — inte Ulrikas Svenska TjP eller ITP 2 (Alecta), som styrs manuellt sedan tidigare.</li>
+          <li>En förenklad modell — exakt skatt beror på fler faktorer (se skatt.html för antaganden).</li>
+        </ul>`,
+      },
+      {
+        heading: 'Vad behöver du göra?',
+        html: `<p>Klicka <strong>Optimera</strong>, jämför med dina nuvarande reglage, och klicka <strong>Använd förslag</strong> om du vill uppdatera fire.html-sliders direkt.</p>`,
+      },
+    ],
+  },
 };

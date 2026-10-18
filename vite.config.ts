@@ -21,6 +21,7 @@ export default defineConfig({
         kvartal:    resolve(import.meta.dirname, 'kvartal.html'),
         avkastning: resolve(import.meta.dirname, 'avkastning.html'),
         jobbyte:    resolve(import.meta.dirname, 'jobbyte.html'),
+        optimering: resolve(import.meta.dirname, 'optimering.html'),
       },
     },
   },

@@ -396,6 +396,169 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   };
 }
 
+// ── Optimering av uttaksperioder (Felipes tjänstepensioner) ────────────────────
+//
+// Felipe har 5 fristående kapitalpotter där uttaksperioden (5–30 år) går att
+// välja fritt: Svensk TjP (AKAP/KR), Löneväxling och de 3 "Tidigare"-kontona
+// (PA 16 Avd 2, Tjänstepensionskonto, ITPK). Längre period → lägre månadsbelopp
+// → lägre marginalskatt det året, men algoritmen begränsas till [minAr,maxAr]
+// så den inte föreslår orimligt utdragna perioder för små konton — var periodens
+// faktiska slutvärde hamnar inom det spannet är upp till algoritmen att avgöra,
+// inte hårdkodat per kontostorlek.
+
+export const OPTIMIZABLE_KEYS = [
+  'tjpArF', 'lonevxlArF', 'tidigarePa16ArF', 'tidigareTjpkontoArF', 'tidigareItpkArF',
+] as const;
+export type OptimizableKey = typeof OPTIMIZABLE_KEYS[number];
+
+export const OPTIMIZABLE_LABELS: Record<OptimizableKey, string> = {
+  tjpArF:              'Svensk TjP (AKAP/KR)',
+  lonevxlArF:          'Löneväxling',
+  tidigarePa16ArF:     'Tidigare — PA 16 Avd 2',
+  tidigareTjpkontoArF: 'Tidigare — Tjänstepensionskonto',
+  tidigareItpkArF:     'Tidigare — ITPK',
+};
+
+export interface OptimizerSuggestion {
+  key: OptimizableKey;
+  label: string;
+  cap: number;            // kapital vid uttaksstart (kr)
+  currentAr: number;      // nuvarande slider-värde
+  optimalAr: number;      // föreslaget värde
+  monthlyCurrent: number; // nettobelopp/mån vid nuvarande period (kr)
+  monthlyOptimal: number; // nettobelopp/mån vid föreslagen period (kr)
+}
+
+export interface OptimizerResult {
+  suggestions: OptimizerSuggestion[];
+  totalTaxCurrent: number;  // kr, summerat över jämförelsehorisonten
+  totalTaxOptimal: number;
+  savingKr: number;         // positivt = optimeringen sparar skatt
+  totalNetCurrent: number;  // kr, Felipes nettoinkomst (brutto − skatt) över samma period
+  totalNetOptimal: number;
+}
+
+/**
+ * Brute-force-sökning över alla kombinationer av uttaksperioder (minAr–maxAr,
+ * helår) för Felipes 5 justerbara strömmar, som minimerar hans totala
+ * inkomstskatt. Vid (nästan) lika skatt väljs den kombination med kortast
+ * total period — ger t.ex. korta perioder åt små konton där periodvalet
+ * knappt påverkar skatten, utan att det regeln hårdkodas.
+ */
+export function optimizePensionPeriods(ek: EkonomiData, s: FireSettings, minAr: number, maxAr: number): OptimizerResult {
+  const { felipe } = PEOPLE;
+  const avkPct       = s.avkPct;
+  const nowFrac      = BASE_YEAR + (BASE_MONTH - 1) / 12;
+  const antalArF     = s.fireYearF - nowFrac;
+  const antalArU     = s.fireYearU - nowFrac;
+  const antalAr      = Math.max(antalArF, antalArU);
+  const skattFaktor  = 1 - s.skattPct / 100;
+  const uttakAvkMon  = s.uttakAvkPct / 100 / 12;
+  const fireYear     = Math.max(s.fireYearF, s.fireYearU);
+  const f_tjp_start  = felipe.born + s.fTjpAge;
+  const f_tjp_extra  = Math.max(0, f_tjp_start - fireYear);
+  const growth       = Math.pow(1 + avkPct / 100, f_tjp_extra);
+
+  const tjp_f_fv   = accountFVGrowing(ek.tjp_f_pv,   ek.tjp_f_pmt_q,  'quarterly', avkPct, s.lonehojF, antalArF, antalAr);
+  const kapan_fv   = accountFV(ek.kapan_pv, 0, 'monthly', avkPct, antalArF, antalAr);
+  const lonevxl_fv = accountFVGrowing(ek.lonevxl_pv, ek.lonevxl_pmt, 'monthly', avkPct, s.lonehojF, antalArF, antalAr);
+  const pa16_fv     = accountFV(ek.tidigare_pa16_pv,     0, 'monthly', avkPct, antalArF, antalAr);
+  const tjpkonto_fv = accountFV(ek.tidigare_tjpkonto_pv, 0, 'monthly', avkPct, antalArF, antalAr);
+  const itpk_fv     = accountFV(ek.tidigare_itpk_pv,     0, 'monthly', avkPct, antalArF, antalAr);
+
+  const caps: Record<OptimizableKey, number> = {
+    tjpArF:              (tjp_f_fv + kapan_fv) * growth,
+    lonevxlArF:          lonevxl_fv * growth,
+    tidigarePa16ArF:     pa16_fv * growth,
+    tidigareTjpkontoArF: tjpkonto_fv * growth,
+    tidigareItpkArF:     itpk_fv * growth,
+  };
+
+  const monthlyFor = (key: OptimizableKey, years: number): number =>
+    Math.round(pmt(uttakAvkMon, years * 12, caps[key]) * skattFaktor);
+
+  // Fasta Felipe-strömmar (Norsk TjP, Fast TjP, Allmänpension SE, ITP 2 Alecta)
+  // — optimeras inte här, men räknas in i hans totala inkomst/skatt per år.
+  const VARIABLE_IDS = new Set([5, 8, 12, 13, 14]);
+  const fixedStreams = computeFire(ek, s).pensions.filter(p => p.who === 'f' && !VARIABLE_IDS.has(p.id));
+
+  function fixedIncomeAt(yr: number): number {
+    return fixedStreams.filter(p => yr >= p.fromYear && yr <= p.toYear).reduce((sum, p) => sum + p.monthly, 0);
+  }
+
+  function taxAndGrossForCombo(periods: Record<OptimizableKey, number>, horizon: number): { tax: number; gross: number } {
+    const monthly = OPTIMIZABLE_KEYS.map(k => monthlyFor(k, periods[k]));
+    let tax = 0, gross = 0;
+    for (let yr = f_tjp_start; yr <= f_tjp_start + horizon; yr++) {
+      let net = fixedIncomeAt(yr);
+      OPTIMIZABLE_KEYS.forEach((k, i) => { if (yr <= f_tjp_start + periods[k]) net += monthly[i]; });
+      const yrGross = skattFaktor > 0 ? net / skattFaktor : 0;
+      tax   += incomeTax(yrGross * 12, true);
+      gross += yrGross * 12;
+    }
+    return { tax, gross };
+  }
+
+  // Precompute: fast inkomst per årsoffset, och månadsbelopp per (ström, period) — undviker omräkning i hot loop
+  const fixedByOffset: number[] = [];
+  for (let off = 0; off <= maxAr; off++) fixedByOffset[off] = fixedIncomeAt(f_tjp_start + off);
+
+  const monthlyTable: Record<OptimizableKey, number[]> = {} as Record<OptimizableKey, number[]>;
+  OPTIMIZABLE_KEYS.forEach(k => {
+    monthlyTable[k] = [];
+    for (let n = minAr; n <= maxAr; n++) monthlyTable[k][n] = monthlyFor(k, n);
+  });
+
+  let bestTax = Infinity, bestSum = Infinity, bestCombo: number[] = OPTIMIZABLE_KEYS.map(() => minAr);
+  for (let n0 = minAr; n0 <= maxAr; n0++)
+  for (let n1 = minAr; n1 <= maxAr; n1++)
+  for (let n2 = minAr; n2 <= maxAr; n2++)
+  for (let n3 = minAr; n3 <= maxAr; n3++)
+  for (let n4 = minAr; n4 <= maxAr; n4++) {
+    const ns = [n0, n1, n2, n3, n4];
+    let tax = 0;
+    for (let off = 0; off <= maxAr; off++) {
+      let net = fixedByOffset[off];
+      for (let i = 0; i < 5; i++) if (off <= ns[i]) net += monthlyTable[OPTIMIZABLE_KEYS[i]][ns[i]];
+      const gross = skattFaktor > 0 ? net / skattFaktor : 0;
+      tax += incomeTax(gross * 12, true);
+    }
+    const sumN = n0 + n1 + n2 + n3 + n4;
+    if (tax < bestTax - 1 || (Math.abs(tax - bestTax) <= 1 && sumN < bestSum)) {
+      bestTax = tax; bestSum = sumN; bestCombo = ns;
+    }
+  }
+
+  const optimalPeriods = {} as Record<OptimizableKey, number>;
+  OPTIMIZABLE_KEYS.forEach((k, i) => { optimalPeriods[k] = bestCombo[i]; });
+
+  const currentPeriods: Record<OptimizableKey, number> = {
+    tjpArF: s.tjpArF, lonevxlArF: s.lonevxlArF,
+    tidigarePa16ArF: s.tidigarePa16ArF, tidigareTjpkontoArF: s.tidigareTjpkontoArF, tidigareItpkArF: s.tidigareItpkArF,
+  };
+  const displayHorizon = Math.max(maxAr, ...OPTIMIZABLE_KEYS.map(k => currentPeriods[k]));
+  const curr = taxAndGrossForCombo(currentPeriods, displayHorizon);
+  const opt  = taxAndGrossForCombo(optimalPeriods, displayHorizon);
+  const totalTaxCurrent = Math.round(curr.tax)  || 0;
+  const totalTaxOptimal = Math.round(opt.tax)   || 0;
+  const totalNetCurrent = Math.round(curr.gross - curr.tax) || 0;
+  const totalNetOptimal = Math.round(opt.gross  - opt.tax)  || 0;
+
+  const suggestions: OptimizerSuggestion[] = OPTIMIZABLE_KEYS.map(k => ({
+    key: k, label: OPTIMIZABLE_LABELS[k],
+    cap: Math.round(caps[k]) || 0, // || 0 normaliserar bort -0 (uppstår när kapital = 0)
+    currentAr: currentPeriods[k],
+    optimalAr: optimalPeriods[k],
+    monthlyCurrent: monthlyFor(k, currentPeriods[k]) || 0,
+    monthlyOptimal: monthlyFor(k, optimalPeriods[k]) || 0,
+  }));
+
+  return {
+    suggestions, totalTaxCurrent, totalTaxOptimal, savingKr: totalTaxCurrent - totalTaxOptimal,
+    totalNetCurrent, totalNetOptimal,
+  };
+}
+
 // ── Uttags-simulering ──────────────────────────────────────────────────────────
 export function simulateUttag(
   kapital: number,

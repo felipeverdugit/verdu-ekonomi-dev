@@ -9,6 +9,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   pmt, computeNV, computeFire, incomeTax, simulateUttag, STATLIG_GRANS, KOMMUNAL,
+  optimizePensionPeriods, OPTIMIZABLE_KEYS,
 } from '../calculations';
 import type { EkonomiData, FireSettings, PensionStream } from '../types';
 import { PEOPLE, ALLMAN_DEFAULTS, FAST_TJP_FELIPE, ITP2_ALECTA_FELIPE, NORSK_TJP_END_AGE } from '../constants';
@@ -606,5 +607,58 @@ describe('computeNV() — nettovärde', () => {
       800_000 + 200_000 + 400_000 +                // norge
       (5_300_000 - 3_569_946);                     // villa
     expect(nv).toBeCloseTo(expected, -2);
+  });
+});
+
+// ── optimizePensionPeriods() — automatisk periodoptimering ───────────────────
+
+describe('optimizePensionPeriods()', () => {
+  it('returnerar ett förslag per optimerbar ström, inom [minAr,maxAr]', () => {
+    const res = optimizePensionPeriods(REALISTIC_EK, BASE_FIRE, 5, 15);
+    expect(res.suggestions).toHaveLength(OPTIMIZABLE_KEYS.length);
+    res.suggestions.forEach(s => {
+      expect(OPTIMIZABLE_KEYS).toContain(s.key);
+      expect(s.optimalAr).toBeGreaterThanOrEqual(5);
+      expect(s.optimalAr).toBeLessThanOrEqual(15);
+    });
+  });
+
+  it('savingKr = totalTaxCurrent - totalTaxOptimal (konsistens)', () => {
+    const res = optimizePensionPeriods(REALISTIC_EK, BASE_FIRE, 5, 15);
+    expect(res.savingKr).toBe(res.totalTaxCurrent - res.totalTaxOptimal);
+  });
+
+  it('ett konto utan kapital (0 kr) får kortast period — inget hårdkodat, bara tie-break', () => {
+    const ek = { ...REALISTIC_EK, tidigare_itpk_pv: 0 };
+    const res = optimizePensionPeriods(ek, BASE_FIRE, 5, 15);
+    const itpk = res.suggestions.find(s => s.key === 'tidigareItpkArF')!;
+    expect(itpk.cap).toBe(0);
+    expect(itpk.optimalAr).toBe(5); // skatten är identisk (0 kr) oavsett period → tie-break väljer kortast
+    // -0 (negativt noll, uppstår i fv()-formeln när pv=0) ska normaliseras till +0 i visningen
+    expect(Object.is(itpk.cap, -0)).toBe(false);
+    expect(Object.is(itpk.monthlyOptimal, -0)).toBe(false);
+    expect(itpk.monthlyCurrent).toBe(0);
+    expect(itpk.monthlyOptimal).toBe(0);
+  });
+
+  it('totalNetCurrent/totalNetOptimal = brutto minus skatt (inte bara skatt)', () => {
+    const res = optimizePensionPeriods(REALISTIC_EK, BASE_FIRE, 5, 15);
+    expect(res.totalNetCurrent).toBeGreaterThan(0);
+    expect(res.totalNetOptimal).toBeGreaterThan(0);
+    // Nettot ska vara betydligt större än skatten för samma period (rimlighetskoll)
+    expect(res.totalNetCurrent).toBeGreaterThan(res.totalTaxCurrent);
+  });
+
+  it('det föreslagna kombinationen är oberoende av nuvarande reglage-värden (sökningen är densamma)', () => {
+    // Sökningen i [minAr,maxAr] beror bara på kapital/avkastning/skatt — inte på
+    // var sliders råkar stå idag. Olika "nuvarande" perioder ska ge samma förslag.
+    const res1 = optimizePensionPeriods(REALISTIC_EK, BASE_FIRE, 5, 15);
+    const s2: FireSettings = { ...BASE_FIRE, tjpArF: 8, lonevxlArF: 12, tidigarePa16ArF: 5, tidigareTjpkontoArF: 9, tidigareItpkArF: 15 };
+    const res2 = optimizePensionPeriods(REALISTIC_EK, s2, 5, 15);
+    OPTIMIZABLE_KEYS.forEach(k => {
+      const a = res1.suggestions.find(s => s.key === k)!.optimalAr;
+      const b = res2.suggestions.find(s => s.key === k)!.optimalAr;
+      expect(b).toBe(a);
+    });
   });
 });
