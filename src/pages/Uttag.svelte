@@ -51,10 +51,22 @@
     // Snabb-lookup: år → skattedata för detaljsimuleringen
     const taxByYear = new Map(optRows.map(o => [o.year, o]));
 
-    // Simulering
+    // Simulering — om ni slutar jobba olika år: starta redan när den första
+    // slutar, med den kvarvarande partnerns lön som extra inkomst fram till
+    // Brygga-start (samma modell som Brygga- och Jobbyte-sidans diagram).
     const uttag2   = ek.levnadskostnad2;
     const switchAr = ekStore.getField('exp_switch_ar');
-    const sim      = simulateUttag(r.kapital, s.uttakAvkPct, r.fireYear, uttag, pensions, uttag2, switchAr);
+    const startYear    = r.earlyRetiree ? r.earlyRetiree.year : r.fireYear;
+    const startKapital = r.earlyRetiree ? r.earlyKapital! : r.kapital;
+    const simPensions  = r.earlyRetiree
+      ? [...pensions, {
+          id: 99, label: 'Lön (kvarvarande arbete)',
+          who: r.earlyRetiree.who === 'f' ? 'u' as const : 'f' as const,
+          fromYear: r.earlyRetiree.year, toYear: r.fireYear - 1,
+          monthly: r.earlyRetiree.workingSalaryNet, livsvarig: false,
+        }]
+      : pensions;
+    const sim = simulateUttag(startKapital, s.uttakAvkPct, startYear, uttag, simPensions, uttag2, switchAr);
 
     // Rekommendationsbullets
     const bullets: string[] = [];
