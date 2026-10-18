@@ -33,11 +33,27 @@
     // Pension-tabell
     const pensions = r.pensions;
 
+    // Om ni slutar jobba olika år: räkna med den kvarvarande partnerns lön som
+    // extra inkomst fram till Brygga-start (samma modell som Brygga- och
+    // Jobbyte-sidans diagram) — gäller både skatteoptimeringen och simuleringen.
+    const uttag2       = ek.levnadskostnad2;
+    const switchAr     = ekStore.getField('exp_switch_ar');
+    const startYear    = r.earlyRetiree ? r.earlyRetiree.year : r.fireYear;
+    const startKapital = r.earlyRetiree ? r.earlyKapital! : r.kapital;
+    const simPensions  = r.earlyRetiree
+      ? [...pensions, {
+          id: 99, label: 'Lön (kvarvarande arbete)',
+          who: r.earlyRetiree.who === 'f' ? 'u' as const : 'f' as const,
+          fromYear: r.earlyRetiree.year, toYear: r.fireYear - 1,
+          monthly: r.earlyRetiree.workingSalaryNet, livsvarig: false,
+        }]
+      : pensions;
+
     // Skatteoptimering
     const optRows: OptRow[] = [];
-    for (let yr = r.fireYear; yr <= 2080; yr++) {
-      const fNet = pensions.filter(p => p.who === 'f' && yr >= p.fromYear && yr <= p.toYear).reduce((s, p) => s + p.monthly, 0);
-      const uNet = pensions.filter(p => p.who === 'u' && yr >= p.fromYear && yr <= p.toYear).reduce((s, p) => s + p.monthly, 0);
+    for (let yr = startYear; yr <= 2080; yr++) {
+      const fNet = simPensions.filter(p => p.who === 'f' && yr >= p.fromYear && yr <= p.toYear).reduce((s, p) => s + p.monthly, 0);
+      const uNet = simPensions.filter(p => p.who === 'u' && yr >= p.fromYear && yr <= p.toYear).reduce((s, p) => s + p.monthly, 0);
       const fGross  = skattFak > 0 ? fNet / skattFak : 0;
       const uGross  = skattFak > 0 ? uNet / skattFak : 0;
       const fAge    = yr - FELIPE;
@@ -51,21 +67,7 @@
     // Snabb-lookup: år → skattedata för detaljsimuleringen
     const taxByYear = new Map(optRows.map(o => [o.year, o]));
 
-    // Simulering — om ni slutar jobba olika år: starta redan när den första
-    // slutar, med den kvarvarande partnerns lön som extra inkomst fram till
-    // Brygga-start (samma modell som Brygga- och Jobbyte-sidans diagram).
-    const uttag2   = ek.levnadskostnad2;
-    const switchAr = ekStore.getField('exp_switch_ar');
-    const startYear    = r.earlyRetiree ? r.earlyRetiree.year : r.fireYear;
-    const startKapital = r.earlyRetiree ? r.earlyKapital! : r.kapital;
-    const simPensions  = r.earlyRetiree
-      ? [...pensions, {
-          id: 99, label: 'Lön (kvarvarande arbete)',
-          who: r.earlyRetiree.who === 'f' ? 'u' as const : 'f' as const,
-          fromYear: r.earlyRetiree.year, toYear: r.fireYear - 1,
-          monthly: r.earlyRetiree.workingSalaryNet, livsvarig: false,
-        }]
-      : pensions;
+    // Simulering
     const sim = simulateUttag(startKapital, s.uttakAvkPct, startYear, uttag, simPensions, uttag2, switchAr);
 
     // Rekommendationsbullets
@@ -107,11 +109,14 @@
     const { sim, uttag2, switchAr, r } = data;
     const switchYear2 = switchAr > 0 && uttag2 > 0 ? r.fireYear + switchAr : 9999;
     const labels: number[] = sim.rows.map(row => row.year);
+    const laonMon = (year: number) => r.earlyRetiree && year < r.fireYear ? r.earlyRetiree.workingSalaryNet : 0;
     const series: ChartSeries[] = [
       { key: 'kapital', label: 'Kapital (MSEK)', color: '#5db3dd', axis: 'left', area: true,
         data: sim.rows.map(row => row.capital / 1e6) },
       { key: 'pension', label: 'Pension/mån (kr)', color: '#6bbd85', axis: 'right',
-        data: sim.rows.map(row => row.pensionMon) },
+        data: sim.rows.map(row => row.pensionMon - laonMon(row.year)) },
+      ...(r.earlyRetiree ? [{ key: 'lon', label: 'Lön/mån (kvarvarande)', color: '#d7ab57', axis: 'right' as const, dashed: true,
+        data: sim.rows.map(row => laonMon(row.year)) }] : []),
       { key: 'levnad',  label: 'Levnadskostnad/mån (kr)', color: '#c98500', axis: 'right', dashed: true,
         data: sim.rows.map(row => row.year >= switchYear2 ? uttag2 : uttag) },
     ];
