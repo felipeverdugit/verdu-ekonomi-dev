@@ -52,7 +52,7 @@ export const SLIDER_DEFAULTS = {
   fTjpAge:       65,   // Felipe: Svensk TjP startålder
   fNorskTjpAge:  62,   // Felipe: Norsk TjP startålder
   uTjpAge:       65,   // Ulrika: Svensk TjP startålder
-  uNorskTjpAge:  62,   // Ulrika: Norsk TjP startålder
+  uNorskTjpAge:  67,   // Ulrika: Norsk TjP startålder (Storebrand+DNB: 7 apr 2037 → 24 mar 2047, dvs. 67→77 år)
   fAllmanAge:    67,   // Felipe: Allmänpension startålder
   uAllmanAge:    68,   // Ulrika: Allmänpension startålder
   iskPct:      1.25,   // ISK-schablonskatt %/år

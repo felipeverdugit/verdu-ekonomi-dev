@@ -158,7 +158,7 @@
     </div>
     <div>
       <p style="font-size:.8rem;color:var(--accent2);margin-bottom:10px">Ulrika</p>
-      <div class="form-row"><label>DNB Norge Ulrika — nuv. värde (kr)</label><input type="number" step="10000" value={v(ek.sb_u_pv)} oninput={e => handleEk('sb_u_pv', (e.target as HTMLInputElement).value)}></div>
+      <div class="form-row"><label>Storebrand Ulrika — nuv. värde (kr)</label><input type="number" step="10000" value={v(ek.sb_u_pv)} oninput={e => handleEk('sb_u_pv', (e.target as HTMLInputElement).value)}></div>
       <div class="form-row"><label>DNB Ulrika — nuv. värde (kr)</label><input type="number" step="10000" value={v(ek.dnb_u_pv)} oninput={e => handleEk('dnb_u_pv', (e.target as HTMLInputElement).value)}></div>
     </div>
   </div></div>
