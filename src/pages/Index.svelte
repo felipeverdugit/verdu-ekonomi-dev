@@ -63,7 +63,7 @@
     const isEmpty = ek.lysa_f_pv === 0 && ek.lysa_u_pv === 0 && ek.tjp_f_pv === 0 && ek.sparkonto_pv === 0 && ek.ap_f === 0;
 
     // Fritt kapital IDAG (samma formel som r.kapital, men dagens balanser — inte projicerat)
-    const aktierValIdag  = ek.norco_antal * ek.norco_kurs + ek.oncop_antal * ek.oncop_kurs;
+    const aktierValIdag  = ek.oncop_antal * ek.oncop_kurs;
     const frittKapitalIdag = ek.lysa_f_pv + ek.lysa_u_pv + ek.sparkonto_pv + (s.aktierIFire ? aktierValIdag : 0);
 
     // Portföljöversikt idag (aktuella balanser)
@@ -75,7 +75,7 @@
       { label: 'Allmänpension (AP)',      val: ek.ap_f + ek.ap_u,                                                          color: '#3f9e3f' },
       { label: 'NAV Norge',              val: (ek.nav_f_nok + ek.nav_u_nok) * ek.nok_sek,                      color: '#199e70' },
       { label: 'Premiepension (PP)',      val: ek.pp_f + ek.pp_u,                                                          color: '#e08a4f' },
-      { label: 'Aktier',                 val: ek.norco_antal * ek.norco_kurs + ek.oncop_antal * ek.oncop_kurs,            color: '#d7ab57' },
+      { label: 'Aktier',                 val: ek.oncop_antal * ek.oncop_kurs,            color: '#d7ab57' },
       { label: 'Sparkonto (Borgo)',       val: ek.sparkonto_pv,                                                             color: '#8fc8e8' },
       { label: 'Bostad (netto)',          val: Math.max(0, ek.villa_varde - ek.villa_lan) + Math.max(0, ek.lagenhet_varde - ek.lagenhet_lan), color: '#c98500' },
     ].filter(b => b.val > 0).map(b => ({ ...b, pct: pct(b.val) }));

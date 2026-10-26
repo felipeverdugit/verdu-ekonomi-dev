@@ -15,7 +15,7 @@ const EMPTY_EK: EkonomiData = {
   sparkonto_pv: 0, sparkonto_pmt: 0,
   ap_f: 0, ap_u: 0, nav_f_nok: 0, nav_u_nok: 0, nok_sek: 0.97,
   pp_f: 0, pp_u: 0,
-  norco_antal: 0, norco_kurs: 0, oncop_antal: 0, oncop_kurs: 0,
+  oncop_antal: 0, oncop_kurs: 0,
   brutto_f: 0, brutto_u: 0,
   allman_se_f: 0, allman_se_u: 0, norsk_f: 0, norsk_u: 0,
   villa_varde: 0, villa_lan: 0, villa_amor: 0,
@@ -93,7 +93,7 @@ describe('computeNV()', () => {
   });
 
   it('aktier: antal × kurs', () => {
-    const ek = { ...EMPTY_EK, norco_antal: 100, norco_kurs: 50 };
+    const ek = { ...EMPTY_EK, oncop_antal: 100, oncop_kurs: 50 };
     expect(computeNV(ek)).toBe(5_000);
   });
 

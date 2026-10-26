@@ -87,7 +87,7 @@ export function computeNV(ek: EkonomiData): number {
     ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pa16_pv + ek.tidigare_tjpkonto_pv + ek.tidigare_itpk_pv + ek.kapan_pv + ek.tjp_u_pv +
     ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv + ek.sb_u_pv + ek.dnb_u_pv +
     ek.pp_f + ek.pp_u +
-    ek.norco_antal * ek.norco_kurs + ek.oncop_antal * ek.oncop_kurs
+    ek.oncop_antal * ek.oncop_kurs
   );
 }
 
@@ -165,7 +165,7 @@ export function computeFire(ek: EkonomiData, s: FireSettings): FireResult {
   const nav_sek = (ek.nav_f_nok + ek.nav_u_nok) * ek.nok_sek;
 
   // Aktier
-  const aktierVal = (ek.norco_antal * ek.norco_kurs) + (ek.oncop_antal * ek.oncop_kurs);
+  const aktierVal = ek.oncop_antal * ek.oncop_kurs;
 
   // Engångsuttag-justering (minskar fonder om uttaget sker före FIRE)
   const engJust = (s.engBelopp > 0 && s.engAr > 0 && s.engAr < fireYear)

@@ -92,6 +92,7 @@
 
   // ── Hjälp för nollvärden (visa blankt istf "0") ───────────────────────────────
   const v = (n: number) => n !== 0 ? n : '';
+  const fmt = (n: number) => Math.round(n).toLocaleString('sv-SE') + ' kr';
 </script>
 
 <svelte:head><title>Ekonomi — Verdu Ekonomi</title></svelte:head>
@@ -201,12 +202,9 @@
   <h2>Aktier</h2>
   <div class="card"><div class="form-grid">
     <div>
-      <div class="form-row"><label>Norconsult (NOAB) — antal</label><input type="number" step="1" value={v(ek.norco_antal)} oninput={e => handleEk('norco_antal', (e.target as HTMLInputElement).value)}></div>
-      <div class="form-row"><label>Norconsult — kurs (kr)</label><input type="number" step="1" value={v(ek.norco_kurs)} oninput={e => handleEk('norco_kurs', (e.target as HTMLInputElement).value)}></div>
-    </div>
-    <div>
       <div class="form-row"><label>Oncopeptides — antal</label><input type="number" step="1" value={v(ek.oncop_antal)} oninput={e => handleEk('oncop_antal', (e.target as HTMLInputElement).value)}></div>
       <div class="form-row"><label>Oncopeptides — kurs (kr)</label><input type="number" step="0.01" value={v(ek.oncop_kurs)} oninput={e => handleEk('oncop_kurs', (e.target as HTMLInputElement).value)}></div>
+      <div class="form-row" style="font-weight:700"><label>Oncopeptides — totalt värde</label><span class="num">{fmt(ek.oncop_antal * ek.oncop_kurs)}</span></div>
     </div>
   </div></div>
 
@@ -255,7 +253,7 @@
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.9rem">
           <input type="checkbox" checked={fire.aktierIFire} style="width:16px;height:16px;accent-color:var(--accent1)"
                  onchange={e => handleAktierCheck((e.target as HTMLInputElement).checked)}>
-          Inkludera aktier (Norconsult + Oncopeptides) i fritt kapital
+          Inkludera aktier (Oncopeptides) i fritt kapital
         </label>
       </div>
     </div>

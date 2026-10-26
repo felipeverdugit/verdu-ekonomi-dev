@@ -55,8 +55,6 @@ export interface EkonomiData {
   pp_u:            number;
 
   // Aktier
-  norco_antal:     number;
-  norco_kurs:      number;
   oncop_antal:     number;
   oncop_kurs:      number;
 
@@ -173,7 +171,7 @@ export interface FireResult {
 
   // Portföljkomponenter vid FIRE
   fonder_fv:     number;
-  aktierVal:     number;   // Aktier (Norconsult + Onco) — nuvärde vid FIRE
+  aktierVal:     number;   // Aktier (Oncopeptides) — nuvärde vid FIRE
   aktierIFire:   boolean;  // Om aktier ingår i fritt kapital
   iskKapital:    number;   // Lysa-konton (ISK) vid FIRE
   iskPct:        number;   // Vidarebefordras från FireSettings
@@ -221,7 +219,7 @@ export interface Snapshot {
   tjp:     number;  // TjP Sverige + Löneväxling
   norge:   number;  // TjP Norge + DNB spara + DNB Norge
   allman:  number;  // IP + PP + NAV (SEK)
-  aktier:  number;  // NORCO + Oncopeptides
+  aktier:  number;  // Oncopeptides
   totalt:  number;
 }
 

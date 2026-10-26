@@ -112,8 +112,6 @@ export const SHEETS_MAP: Record<string, string> = {
   ek_bal_nok_sek:     'nok_sek',
   ek_bal_pp_f:        'pp_f',
   ek_bal_pp_u:        'pp_u',
-  ek_bal_norco_antal: 'norco_antal',
-  ek_bal_norco_kurs:  'norco_kurs',
   ek_bal_oncop_antal: 'oncop_antal',
   ek_bal_oncop_kurs:  'oncop_kurs',
   ek_brutto_f:        'brutto_f',

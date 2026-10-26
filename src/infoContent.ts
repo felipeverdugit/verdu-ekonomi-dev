@@ -178,7 +178,7 @@ export const INFO: Record<string, PageInfo> = {
           <li>🟢 <strong>Hink 1 — Likviditet</strong>: Sparkonto/buffert. Täcker 3–6 månaders utgifter. Noll marknadsrisk. Det är härifrån du betalar räkningar.</li>
           <li>🔵 <strong>Hink 2 — Trygghet</strong>: AP (inkomstpension), NAV (norsk pension), fastigheter (villa + lägenhet equity). Låg risk, ej likvida men stabila.</li>
           <li>🟣 <strong>Hink 3 — Tillväxt</strong>: Lysa-fonder, TjP Sverige, TjP Norge, PP. Hög förväntad avkastning på lång sikt — rörs inte vid kortsiktiga nedgångar.</li>
-          <li>🎲 <strong>Hink 4 — Lek</strong>: Enskilda aktier (NorCo, OncoP). Spekulativt — max 10 % av hink 3. Förlust av hela beloppet ska inte påverka planen.</li>
+          <li>🎲 <strong>Hink 4 — Lek</strong>: Enskilda aktier (OncoP). Spekulativt — max 10 % av hink 3. Förlust av hela beloppet ska inte påverka planen.</li>
         </ul>`,
       },
       {

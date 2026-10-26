@@ -13,7 +13,7 @@
     hink1: number; hink2: number; hink3: number; hink4: number;
     h1_borgo: number; h2_ip: number; h2_nav: number;
     h3_lysa: number; h3_tjpSve: number; h3_tjpNor: number; h3_pp: number;
-    h4_norco: number; h4_oncop: number;
+    h4_oncop: number;
     totalFin: number; totalAll: number;
     lekMax: number; lekPct: number; lekExcess: number;
     buffMin: number; buffMax: number;
@@ -32,12 +32,11 @@
     const h3_tjpSve   = ek.tjp_f_pv + ek.lonevxl_pv + ek.tidigare_pa16_pv + ek.tidigare_tjpkonto_pv + ek.tidigare_itpk_pv + ek.kapan_pv + ek.tjp_u_pv;
     const h3_tjpNor   = ek.norge_f_pv + ek.dnb_f_pv + ek.sb_f_pv + ek.sb_u_pv + ek.dnb_u_pv;
     const h3_pp       = ek.pp_f + ek.pp_u;
-    const h4_norco    = ek.norco_antal * ek.norco_kurs;
     const h4_oncop    = ek.oncop_antal * ek.oncop_kurs;
     const hink1  = h1_borgo;
     const hink2  = h2_ip + h2_nav + h2_villa + h2_lagenhet;
     const hink3  = h3_lysa + h3_tjpSve + h3_tjpNor + h3_pp;
-    const hink4  = h4_norco + h4_oncop;
+    const hink4  = h4_oncop;
     const totalFin  = hink1 + hink3 + hink4;
     const totalAll  = hink1 + hink2 + hink3 + hink4;
     const lekMax    = hink3 * 0.10;
@@ -53,7 +52,7 @@
       hink1, hink2, hink3, hink4,
       h1_borgo, h2_ip, h2_nav, h2_villa, h2_lagenhet, h2_amor,
       h3_lysa, h3_tjpSve, h3_tjpNor, h3_pp,
-      h4_norco, h4_oncop,
+      h4_oncop,
       totalFin, totalAll, lekMax, lekPct, lekExcess,
       buffMin, buffMax, h1_kredit, fireNum, maalPct, sparMon,
     };
@@ -321,7 +320,6 @@
   <div class="card" style="margin-bottom:24px;border-left:4px solid #d7ab57">
     <h3 style="margin-top:0">🎲 Hink 4 — Lek (spekulativt)</h3>
     <p style="font-size:.82rem;color:var(--muted);margin:0 0 12px">Enskilda aktier med högre risk — ok att hålla, men bör max vara 10 % av hink 3. Är andelen högre bör överskottet säljas och flyttas till hink 3 (breda fonder).</p>
-    <div class="form-row"><label>Norconsult</label><span class="num">{fmtK(h.h4_norco)}</span></div>
     <div class="form-row"><label>Oncopeptides</label><span class="num">{fmtK(h.h4_oncop)}</span></div>
     <div class="form-row"><label style="color:var(--muted)">Max (10 % av hink 3)</label><span class="num" style="color:var(--muted)">{fmt(h.lekMax)}</span></div>
     <div class="form-row" style="font-weight:700"><label>Hink 4 totalt</label><span class="num">{fmtK(h.hink4)}</span></div>

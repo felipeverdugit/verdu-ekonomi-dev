@@ -69,7 +69,6 @@ const EK_DEFAULTS: EkonomiData = {
   ap_f: 0, ap_u: 0,
   nav_f_nok: 0, nav_u_nok: 0, nok_sek: 1.02,
   pp_f: 0, pp_u: 0,
-  norco_antal: 0, norco_kurs: 0,
   oncop_antal: 0, oncop_kurs: 0,
   brutto_f: 67_300, brutto_u: 35_500,
   allman_se_f: ALLMAN_DEFAULTS.felipeSE,
