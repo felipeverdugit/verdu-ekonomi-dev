@@ -1,0 +1,1 @@
+import{I as e}from"./Topnav-CUOQIKey.js";import{t}from"./Budget-BaDA287s.js";e(t,{target:document.body,props:{variant:`budget-fire`}});
