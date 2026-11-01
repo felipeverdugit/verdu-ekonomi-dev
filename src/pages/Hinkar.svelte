@@ -75,7 +75,7 @@
   }
 
   // ── Rikedomstrappan ───────────────────────────────────────────────────────────
-  type LevelCheck = { lbl: string; ok: boolean };
+  type LevelCheck = { lbl: string; ok: boolean; cur: string };
   type Level = { n: number; icon: string; namn: string; desc: string; check: LevelCheck[] };
 
   let levels = $derived<Level[]>([
@@ -83,43 +83,43 @@
       n: 1, icon: '🛡', namn: 'Ekonomisk trygghet',
       desc: 'Inga dåliga skulder, börjat spara, grundskydd på plats.',
       check: [
-        { lbl: 'Har buffert (hink 1 > 0)',            ok: h.hink1 > 0 },
-        { lbl: 'Sparar regelbundet (>3 000/mån)',       ok: h.sparMon > 3000 },
-        { lbl: 'TjP/IP aktiva (hink 2 > 0)',            ok: h.hink2 > 0 },
+        { lbl: 'Har buffert (hink 1 > 0)',            ok: h.hink1 > 0,         cur: fmt(h.hink1) },
+        { lbl: 'Sparar regelbundet (>3 000/mån)',       ok: h.sparMon > 3000,    cur: fmt(h.sparMon) + '/mån' },
+        { lbl: 'TjP/IP aktiva (hink 2 > 0)',            ok: h.hink2 > 0,         cur: fmt(h.hink2) },
       ],
     },
     {
       n: 2, icon: '💰', namn: 'Ekonomisk stabilitet',
       desc: '3–6 mån buffert, kontroll på ekonomin.',
       check: [
-        { lbl: `3 mån buffert (≥ ${fmt(h.buffMin)})`, ok: h.hink1 >= h.buffMin },
-        { lbl: 'Aktivt fondspararande (>5 000/mån)',    ok: h.sparMon > 5000 },
-        { lbl: 'Hink 3 > 2 MSEK',                      ok: h.hink3 > 2_000_000 },
+        { lbl: `3 mån buffert (≥ ${fmt(h.buffMin)})`, ok: h.hink1 >= h.buffMin, cur: fmt(h.hink1) },
+        { lbl: 'Aktivt fondspararande (>5 000/mån)',    ok: h.sparMon > 5000,    cur: fmt(h.sparMon) + '/mån' },
+        { lbl: 'Hink 3 > 2 MSEK',                      ok: h.hink3 > 2_000_000, cur: fmtM(h.hink3) },
       ],
     },
     {
       n: 3, icon: '📈', namn: 'Ekonomisk frihet',
       desc: 'Passiv inkomst täcker grundbehov. Kan ta risker med jobbet.',
       check: [
-        { lbl: 'Hink 2 > 3 MSEK (pension + fastigheter)', ok: h.hink2 > 3_000_000 },
-        { lbl: 'Hink 3 > 5 MSEK (tillväxt)',               ok: h.hink3 > 5_000_000 },
+        { lbl: 'Hink 2 > 3 MSEK (pension + fastigheter)', ok: h.hink2 > 3_000_000, cur: fmtM(h.hink2) },
+        { lbl: 'Hink 3 > 5 MSEK (tillväxt)',               ok: h.hink3 > 5_000_000, cur: fmtM(h.hink3) },
       ],
     },
     {
       n: 4, icon: '🎯', namn: 'Ekonomiskt oberoende',
       desc: 'Kan leva på passiv avkastning. FIRE är möjligt.',
       check: [
-        { lbl: 'Måluppfyllnad ≥ 80 % av FIRE-tal',      ok: h.maalPct >= 80 },
-        { lbl: `Buffert OK (≥ ${fmt(h.buffMin)})`,       ok: h.hink1 >= h.buffMin },
-        { lbl: 'Lek ≤ 10 % av hink 3',                  ok: h.lekPct <= 10 },
+        { lbl: `Måluppfyllnad ≥ 80 % av FIRE-tal (${fmtM(h.fireNum * 0.8)})`, ok: h.maalPct >= 80, cur: pct(h.maalPct) },
+        { lbl: `Buffert OK (≥ ${fmt(h.buffMin)})`,       ok: h.hink1 >= h.buffMin, cur: fmt(h.hink1) },
+        { lbl: 'Lek ≤ 10 % av hink 3',                  ok: h.lekPct <= 10,      cur: pct(h.lekPct) },
       ],
     },
     {
       n: 5, icon: '🏆', namn: 'Ekonomiskt välstånd',
       desc: 'Mer än nog. Kan ge bort och investera utan oro.',
       check: [
-        { lbl: 'Måluppfyllnad ≥ 150 % av FIRE-tal', ok: h.maalPct >= 150 },
-        { lbl: 'Hink 3 > 10 MSEK',                  ok: h.hink3 > 10_000_000 },
+        { lbl: `Måluppfyllnad ≥ 150 % av FIRE-tal (${fmtM(h.fireNum * 1.5)})`, ok: h.maalPct >= 150, cur: pct(h.maalPct) },
+        { lbl: 'Hink 3 > 10 MSEK',                  ok: h.hink3 > 10_000_000, cur: fmtM(h.hink3) },
       ],
     },
   ]);
@@ -362,7 +362,10 @@
             {/if}
           </div>
           {#each level.check as c}
-            <div style="font-size:.78rem;color:{c.ok ? 'var(--green)' : 'var(--red)'};margin-top:3px">{c.ok ? '✓' : '✗'} {c.lbl}</div>
+            <div style="font-size:.78rem;color:{c.ok ? 'var(--green)' : 'var(--red)'};margin-top:3px">
+              {c.ok ? '✓' : '✗'} {c.lbl}
+              <span style="color:var(--muted)">— nu: {c.cur}</span>
+            </div>
           {/each}
         </div>
       </div>
