@@ -106,7 +106,7 @@ export interface BudgetData {
   csn: number; hjarnfonden: number; friskis: number;
   // Sparande
   lysa_f_mon: number; lysa_u_mon: number; lysa_buffert_mon: number;
-  lysa_n_mon: number; borgo_bank_mon: number; resor_mon: number;
+  lysa_n_mon: number; borgo_bank_mon: number;
   lonevxl_mon: number;
   // Övriga utgifter
   mc_felipe: number; mc_ulrika: number;

@@ -77,7 +77,6 @@
       { id: 'lysa_u_mon',       label: 'Lysa Ulrika' },
       { id: 'lysa_n_mon',       label: 'Lysa N', skipTotal: true },
       { id: 'borgo_bank_mon',   label: 'Borgo Bank' },
-      { id: 'resor_mon',        label: 'Resor (månadsspar)' },
       { id: 'lonevxl_mon',      label: 'Löneväxling Felipe', skipTotal: true },
     ]},
     { id: 'ovriga', label: 'Övriga utgifter', icon: '💳', fields: [
