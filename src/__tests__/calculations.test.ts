@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fv, pmt, computeNV, computeFire, incomeTax, simulateUttag, STATLIG_GRANS } from '../calculations';
+import { fv, pmt, computeNV, computeFire, computeFirePlan, incomeTax, simulateUttag, STATLIG_GRANS } from '../calculations';
 import type { PensionStream } from '../types';
 import type { EkonomiData, FireSettings } from '../types';
 
@@ -223,5 +223,41 @@ describe('computeFire()', () => {
     const low  = computeFire(ek, { ...FIRE_S, avkPct: 4 });
     const high = computeFire(ek, { ...FIRE_S, avkPct: 10 });
     expect(high.kapital).toBeGreaterThan(low.kapital);
+  });
+});
+
+describe('computeFirePlan', () => {
+  const today = new Date(TEST_YEAR, 0, 1);
+
+  it('buffert = 4/3 × kvartalsbehov och nödfond = månader × levnadskostnad', () => {
+    const ek = { ...EMPTY_EK, levnadskostnad: 60_000 };
+    const p  = computeFirePlan(ek, FIRE_S, { nodfondManader: 3, ovrigtLikvid: 0, today });
+    expect(p.steps[0].kvartalsbehov).toBe(60_000 * 3);
+    expect(p.steps[0].buffertMal).toBe(240_000);
+    expect(p.nodfond).toBe(180_000);
+    expect(p.totalMal).toBe(420_000);
+  });
+
+  it('gap och extra månadssparande räknas mot likvida medel', () => {
+    const ek = { ...EMPTY_EK, levnadskostnad: 60_000, sparkonto_pv: 0, sparkonto_pmt: 0 };
+    const p  = computeFirePlan(ek, FIRE_S, { nodfondManader: 3, ovrigtLikvid: 100_000, today });
+    expect(p.likvidVidFire).toBeGreaterThanOrEqual(100_000);
+    expect(p.gap).toBeCloseTo(p.totalMal - p.likvidVidFire, 0);
+    expect(p.monthsToFire).toBe(120);
+    expect(p.extraMonthly).toBeGreaterThan(0);
+  });
+
+  it('överskott ger gap < 0 och inget extra sparande', () => {
+    const ek = { ...EMPTY_EK, levnadskostnad: 10_000 };
+    const p  = computeFirePlan(ek, FIRE_S, { nodfondManader: 1, ovrigtLikvid: 5_000_000, today });
+    expect(p.gap).toBeLessThan(0);
+    expect(p.extraMonthly).toBe(0);
+  });
+
+  it('buffertmålet sjunker när pensionsströmmar startar efter FIRE', () => {
+    const ek = { ...EMPTY_EK, levnadskostnad: 60_000, allman_se_f: 20_000 };
+    const p  = computeFirePlan(ek, FIRE_S, { nodfondManader: 3, ovrigtLikvid: 0, today });
+    expect(p.steps.length).toBeGreaterThan(1);
+    expect(p.steps[p.steps.length - 1].buffertMal).toBeLessThan(p.steps[0].buffertMal);
   });
 });

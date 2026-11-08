@@ -19,10 +19,11 @@ Personligt ekonomi- och FIRE-planeringsverktyg för familjen Verdu. Simulerar br
 | 🎯 Avkastning | Faktisk avkastning vs. Lysa-index |
 | 💼 Jobbyte | Jämför nuvarande AKAP-KR-jobb med nytt jobb (ITP 1/ITP 2) — lön, skatt, pensionskapital, uttakssimulator, samt full Brygga-simulator med ITP 1 |
 | 🧮 Optimering | Brute-force-sökning efter de uttaksperioder (Felipes 5 justerbara tjänstepensionskonton) som ger lägst total inkomstskatt |
+| 🗓️ FIRE-plan | Hur mycket likvida medel (buffert + nödfond) som ska finnas vid FIRE-start, buffertmål över tid och kvartalsreglerna |
 
 ## Tech stack
 
-- **Vite** — MPA-byggverktyg (13 HTML-ingångspunkter)
+- **Vite** — MPA-byggverktyg (14 HTML-ingångspunkter)
 - **Svelte 5** — reaktiva komponenter (runes-läge: `$state`, `$derived`, `$effect`)
 - **TypeScript** — strikt typad källkod
 - **Chart.js** — diagram
@@ -100,12 +101,16 @@ Belopp beräknas av `computeFire()` och används direkt av alla sidor utan mella
 
 `optimizePensionPeriods(ek, s, minAr, maxAr)` i `calculations.ts` testar alla kombinationer av uttaksperioder (helår, inom `[minAr,maxAr]`) för Felipes 5 justerbara strömmar (id 5, 8, 12, 13, 14) och väljer den som minimerar hans totala progressiva inkomstskatt (`incomeTax()`) över en jämförelsehorisont. Vid i princip lika skatt väljs kortast möjliga period (tie-break) — ger t.ex. korta perioder åt konton med litet eller inget kapital, utan att kontostorlek hårdkodas i sökningen. Söker brute-force över `(maxAr-minAr+1)^5` kombinationer (≈161 000 vid spannet 5–15), vilket körs synkront på under en sekund i webbläsaren.
 
+### FIRE-plan (fireplan.html)
+
+`computeFirePlan(ek, s, { nodfondManader, ovrigtLikvid })` i `calculations.ts` räknar kvartalsbehov = (levnadskostnad − aktiva pensioner) × 3, buffertmål = 4/3 × kvartalsbehov (taket i kvartalsstrategin) och nödfond = månader × levnadskostnad. Buffertmålet beräknas för FIRE-året och för varje år då en ny pensionsström startar. Prognosen för likvida medel vid FIRE använder `sparkonto_fv` från `computeFire()` plus övriga konton, och visar gap samt extra månadssparande (förenklat, utan ränta). Inställningarna (nödfondsmånader, övriga konton) sparas i `vek_fireplan_*`.
+
 ## Köra lokalt
 
 ```bash
 npm install
 npm run dev       # Vite dev-server
-npm test          # Vitest (95 enhetstester)
+npm test          # Vitest (99 enhetstester)
 npm run build     # Bygg till dist/
 npm run deploy    # Bygg + publicera till GitHub Pages
 ```

@@ -22,6 +22,7 @@ export default defineConfig({
         avkastning: resolve(import.meta.dirname, 'avkastning.html'),
         jobbyte:    resolve(import.meta.dirname, 'jobbyte.html'),
         optimering: resolve(import.meta.dirname, 'optimering.html'),
+        fireplan:   resolve(import.meta.dirname, 'fireplan.html'),
       },
     },
   },

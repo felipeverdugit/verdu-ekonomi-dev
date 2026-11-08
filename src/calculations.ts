@@ -645,3 +645,76 @@ export function incomeTax(annualGross: number, isPensioner: boolean): number {
   const taxable = Math.max(0, annualGross - avdrag);
   return Math.round(taxable * KOMMUNAL + Math.max(0, annualGross - STATLIG_GRANS) * STATLIG_RATE);
 }
+
+// ── FIRE-plan: likviditet och buffert ──────────────────────────────────────────
+
+export interface LiquidityStep {
+  year:          number;
+  label:         string;
+  levnadskostnad: number;  // kr/mån detta år
+  pensionMon:    number;   // aktiva pensioner kr/mån (efter skatt)
+  gapMon:        number;   // levnadskostnad − pension, aldrig < 0
+  kvartalsbehov: number;
+  buffertMal:    number;   // 4/3 × kvartalsbehov
+}
+
+export interface FirePlan {
+  fireYear:       number;
+  monthsToFire:   number;
+  steps:          LiquidityStep[];
+  nodfond:        number;
+  totalMal:       number;   // buffert + nödfond vid FIRE-start
+  likvidIdag:     number;
+  likvidVidFire:  number;   // prognos med nuvarande sparande
+  gap:            number;   // totalMal − likvidVidFire (negativ = överskott)
+  extraMonthly:   number;   // extra kr/mån som krävs för att nå målet (förenklat, utan ränta)
+}
+
+/**
+ * Hur mycket likvida medel (bankkonto/buffert) som bör finnas vid FIRE-start.
+ * Buffert = 4/3 × kvartalsbehov (Jespers tak), nödfond = nodfondManader × levnadskostnad.
+ * Kvartalsbehov sjunker i takt med att pensionsströmmarna startar.
+ */
+export function computeFirePlan(
+  ek: EkonomiData, s: FireSettings,
+  opts: { nodfondManader: number; ovrigtLikvid: number; today?: Date },
+): FirePlan {
+  const today = opts.today ?? new Date();
+  const res   = computeFire(ek, s);
+  const fireYear = res.fireYear;
+
+  const levAt = (y: number) =>
+    ek.levnadskostnad2 > 0 && ek.exp_switch_ar > 0 && y - fireYear >= ek.exp_switch_ar
+      ? ek.levnadskostnad2 : ek.levnadskostnad;
+  const pensionAt = (y: number) =>
+    res.pensions.filter(p => p.fromYear <= y && p.toYear >= y).reduce((sum, p) => sum + p.monthly, 0);
+
+  const years = [...new Set([fireYear, ...res.pensions.map(p => p.fromYear).filter(y => y > fireYear && y < 9999)])]
+    .sort((a, b) => a - b);
+
+  const steps: LiquidityStep[] = years.map(y => {
+    const lev = levAt(y);
+    const pensionMon = pensionAt(y);
+    const gapMon = Math.max(0, lev - pensionMon);
+    return {
+      year: y,
+      label: y === fireYear ? 'FIRE-start' : 'Ny pension startar',
+      levnadskostnad: lev, pensionMon, gapMon,
+      kvartalsbehov: gapMon * 3,
+      buffertMal: Math.round((gapMon * 3 * 4) / 3),
+    };
+  });
+
+  const nodfond  = Math.round(opts.nodfondManader * ek.levnadskostnad);
+  const totalMal = steps[0].buffertMal + nodfond;
+  const likvidIdag    = ek.sparkonto_pv + opts.ovrigtLikvid;
+  const likvidVidFire = res.sparkonto_fv + opts.ovrigtLikvid;
+  const monthsToFire  = Math.max(1, (fireYear - today.getFullYear()) * 12 - today.getMonth());
+  const gap = totalMal - likvidVidFire;
+
+  return {
+    fireYear, monthsToFire, steps, nodfond, totalMal,
+    likvidIdag, likvidVidFire, gap,
+    extraMonthly: gap > 0 ? Math.round(gap / monthsToFire) : 0,
+  };
+}

@@ -346,4 +346,28 @@ export const INFO: Record<string, PageInfo> = {
       },
     ],
   },
+
+  // ── FIRE-plan (fireplan.html) ────────────────────────────────────────────────
+  fireplan: {
+    title: '🗓️ FIRE-plan',
+    sections: [
+      {
+        heading: 'Vad är det här?',
+        html: `<p>Visar hur mycket likvida pengar (bankkonto/buffert) som bör finnas när FIRE-året startar, och hur målet sjunker när pensionerna börjar betalas ut.</p>`,
+      },
+      {
+        heading: 'Hur räknas det?',
+        html: `<ul>
+          <li><strong>Kvartalsbehov</strong> = (levnadskostnad − aktiva pensioner) × 3.</li>
+          <li><strong>Buffert</strong> = 4/3 × kvartalsbehov (taket i kvartalsstrategin).</li>
+          <li><strong>Nödfond</strong> = valt antal månader × levnadskostnad, separat från bufferten.</li>
+          <li>Prognosen vid FIRE bygger på sparkontot och dess månadsinsättning från ekonomi.html.</li>
+        </ul>`,
+      },
+      {
+        heading: 'Vad behöver du göra?',
+        html: `<p>Välj nödfond och lägg till övriga bankkonton. Om det saknas pengar visas hur mycket extra du behöver spara per månad.</p>`,
+      },
+    ],
+  },
 };

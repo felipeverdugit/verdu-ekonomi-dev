@@ -24,12 +24,14 @@
   };
   type GroupDef = { id: string; label: string; icon: string; isIncome?: boolean; fields: FieldDef[] };
 
-  const GROUPS: GroupDef[] = [
+  const isFire = variant === 'budget-fire';
+
+  const ALL_GROUPS: GroupDef[] = [
     { id: 'ink', label: 'Inkomster', icon: '💼', isIncome: true, fields: [
       { id: 'brutto_f',       label: 'Felipe brutto',    skipTotal: true, isInfo: true },
-      { id: 'netto_f',        label: 'Felipe netto' },
+      { id: 'netto_f',        label: isFire ? 'Felipe lön' : 'Felipe netto' },
       { id: 'brutto_u',       label: 'Ulrika brutto',    skipTotal: true, isInfo: true },
-      { id: 'netto_u',        label: 'Ulrika netto' },
+      { id: 'netto_u',        label: isFire ? 'Ulrika lön' : 'Ulrika netto' },
       { id: 'vardnadsbidrag', label: 'Vårdnadsbidrag' },
       { id: 'barnbidrag',     label: 'Barnbidrag' },
       { id: 'hyra_lag_ink',   label: 'Hyra lägenhet' },
@@ -91,6 +93,12 @@
     ]},
   ];
 
+  // Budget-fire visar bara lön (ingen brutto) och ingen löneväxling
+  const FIRE_HIDDEN: (keyof BudgetData)[] = ['brutto_f', 'brutto_u', 'lonevxl_mon'];
+  const GROUPS: GroupDef[] = isFire
+    ? ALL_GROUPS.map(g => ({ ...g, fields: g.fields.filter(f => !FIRE_HIDDEN.includes(f.id)) }))
+    : ALL_GROUPS;
+
   // ── State ─────────────────────────────────────────────────────────────────────
 
   let bd = $state<BudgetData>((() => {
@@ -112,7 +120,7 @@
     const totalInk  = groupTotal(inkGroup);
     const totalSpar = groupTotal(sparGroup);
     const totalUt   = GROUPS.filter(g => !g.isIncome).reduce((s, g) => s + groupTotal(g), 0);
-    const lonevxl   = bd.lonevxl_mon ?? 0;
+    const lonevxl   = isFire ? 0 : (bd.lonevxl_mon ?? 0);
     const saldo     = totalInk - totalUt;   // löneväxling är löneavdrag, inte utgift
     const exclInk   = inkGroup.fields.filter(f => f.exclSparkvot).reduce((s, f) => s + (bd[f.id] as number ?? 0), 0);
     const adjInk    = totalInk + lonevxl - exclInk;
