@@ -19,11 +19,12 @@ Personligt ekonomi- och FIRE-planeringsverktyg för familjen Verdu. Simulerar br
 | 🎯 Avkastning | Faktisk avkastning vs. Lysa-index |
 | 💼 Jobbyte | Jämför nuvarande AKAP-KR-jobb med nytt jobb (ITP 1/ITP 2) — lön, skatt, pensionskapital, uttakssimulator, samt full Brygga-simulator med ITP 1 |
 | 🧮 Optimering | Brute-force-sökning efter de uttaksperioder (Felipes 5 justerbara tjänstepensionskonton) som ger lägst total inkomstskatt |
+| 💱 Löneväxling | Regler 2026/2027 och kalkyl på egna siffror (nettoeffekt, tjänstepension, inkomsttak) |
 | 🗓️ FIRE-plan | Hur mycket likvida medel (buffert + nödfond) som ska finnas vid FIRE-start, buffertmål över tid och kvartalsreglerna |
 
 ## Tech stack
 
-- **Vite** — MPA-byggverktyg (14 HTML-ingångspunkter)
+- **Vite** — MPA-byggverktyg (15 HTML-ingångspunkter)
 - **Svelte 5** — reaktiva komponenter (runes-läge: `$state`, `$derived`, `$effect`)
 - **TypeScript** — strikt typad källkod
 - **Chart.js** — diagram
@@ -105,12 +106,16 @@ Belopp beräknas av `computeFire()` och används direkt av alla sidor utan mella
 
 `computeFirePlan(ek, s, { nodfondManader, ovrigtLikvid })` i `calculations.ts` räknar kvartalsbehov = (levnadskostnad − aktiva pensioner) × 3, buffertmål = 4/3 × kvartalsbehov (taket i kvartalsstrategin) och nödfond = månader × levnadskostnad. Buffertmålet beräknas för FIRE-året och för varje år då en ny pensionsström startar. Prognosen för likvida medel vid FIRE använder `sparkonto_fv` från `computeFire()` plus övriga konton, och visar gap samt extra månadssparande (förenklat, utan ränta). Inställningarna (nödfondsmånader, övriga konton) sparas i `vek_fireplan_*`.
 
+### Löneväxling (lonevaxling.html)
+
+`LONEVAXLING_RULES` i `calculations.ts` håller årsvisa regler för 2026 och 2027 (prisbasbelopp, inkomstbasbelopp, brytpunkt statlig skatt, särskild löneskatt 24,26 %, arbetsgivaravgift 31,42 %; 2027 är markerat preliminärt). `computeLonevaxling(rules, lonForeMon, vaxlatMon, paslagPct, semesterDagar)` räknar på årslön (månadslön × 12 + semesterdagstillägg = 0,605 % × månadslön × uttagna dagar, på lönen före växling; standard 32 dagar): sparad skatt, minskad nettolön, inbetald tjänstepension, uppskattad förlorad allmän pensionsrätt när lönen hamnar under inkomsttaket (8,07 × IBB) och arbetsgivarens kostnadsskillnad. `incomeTax()` tar nu en valfri `statligGrans` för årsspecifik brytpunkt. Siffrorna är hämtade från sekundärkällor (källor listas på sidan) och ska kontrolleras mot Skatteverket. `requiredLonForVaxling()` ger lägsta månadslön för att behålla ett visst växlat belopp. `maxVaxlingUnderTak()` föreslår högsta löneväxling per månad (avrundat nedåt till 100 kr) som håller årslönen efter växling på eller över inkomsttaket; 2027 har eget belopp. Inställningar sparas i `vek_lonevaxling_*`.
+
 ## Köra lokalt
 
 ```bash
 npm install
 npm run dev       # Vite dev-server
-npm test          # Vitest (99 enhetstester)
+npm test          # Vitest (111 enhetstester)
 npm run build     # Bygg till dist/
 npm run deploy    # Bygg + publicera till GitHub Pages
 ```

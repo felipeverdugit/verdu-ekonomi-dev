@@ -347,6 +347,25 @@ export const INFO: Record<string, PageInfo> = {
     ],
   },
 
+  // ── Löneväxling (lonevaxling.html) ───────────────────────────────────────────
+  lonevaxling: {
+    title: '💱 Löneväxling',
+    sections: [
+      {
+        heading: 'Vad är det här?',
+        html: `<p>Regler för löneväxling 2026 och 2027 sida vid sida, plus en kalkyl på dina egna siffror: vad som händer med nettolönen, vad som går in i tjänstepensionen och om du hamnar under inkomsttaket för allmän pension.</p>`,
+      },
+      {
+        heading: 'Viktigt att veta',
+        html: `<ul>
+          <li>2027 är preliminärt: prisbasbeloppet är fastställt, men inkomstbasbeloppet bygger på en preliminär beräkning, och särskild löneskatt och arbetsgivaravgift antas vara oförändrade.</li>
+          <li>Arbetsgivarens påslag avgör hur bra löneväxlingen är. Fyll i vad ditt avtal ger.</li>
+          <li>Kalkylen är förenklad och ersätter inte ett pensionsbesked.</li>
+        </ul>`,
+      },
+    ],
+  },
+
   // ── FIRE-plan (fireplan.html) ────────────────────────────────────────────────
   fireplan: {
     title: '🗓️ FIRE-plan',

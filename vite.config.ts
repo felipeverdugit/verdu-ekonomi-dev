@@ -23,6 +23,7 @@ export default defineConfig({
         jobbyte:    resolve(import.meta.dirname, 'jobbyte.html'),
         optimering: resolve(import.meta.dirname, 'optimering.html'),
         fireplan:   resolve(import.meta.dirname, 'fireplan.html'),
+        lonevaxling: resolve(import.meta.dirname, 'lonevaxling.html'),
       },
     },
   },

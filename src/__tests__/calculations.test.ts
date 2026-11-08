@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fv, pmt, computeNV, computeFire, computeFirePlan, incomeTax, simulateUttag, STATLIG_GRANS } from '../calculations';
+import { fv, pmt, computeNV, computeFire, computeFirePlan, computeLonevaxling, LONEVAXLING_RULES, pensionTak, breakEvenPaslag, maxVaxlingUnderTak, requiredLonForVaxling, incomeTax, simulateUttag, STATLIG_GRANS } from '../calculations';
 import type { PensionStream } from '../types';
 import type { EkonomiData, FireSettings } from '../types';
 
@@ -259,5 +259,89 @@ describe('computeFirePlan', () => {
     const p  = computeFirePlan(ek, FIRE_S, { nodfondManader: 3, ovrigtLikvid: 0, today });
     expect(p.steps.length).toBeGreaterThan(1);
     expect(p.steps[p.steps.length - 1].buffertMal).toBeLessThan(p.steps[0].buffertMal);
+  });
+});
+
+describe('löneväxling', () => {
+  const r26 = LONEVAXLING_RULES[2026];
+  const r27 = LONEVAXLING_RULES[2027];
+
+  it('pensionstak 2026 ≈ 56 100 kr/mån och 2027 ≈ 58 200 kr/mån', () => {
+    expect(pensionTak(r26) / 12).toBeCloseTo(56_087, -1);
+    expect(pensionTak(r27) / 12).toBeCloseTo(58_239, -1);
+  });
+
+  it('break-even-påslag ≈ 5,8 %', () => {
+    expect(breakEvenPaslag(r26)).toBeCloseTo(0.0576, 3);
+  });
+
+  it('växlat belopp ger lägre nettominskning än bruttobeloppet över statlig skatt', () => {
+    const res = computeLonevaxling(r26, 80_000, 10_000, 0);
+    expect(res.nettoMinskningAr).toBeLessThan(10_000 * 12);
+    expect(res.skattSparadAr).toBeGreaterThan(0);
+    expect(res.nettoPerKrNetto).toBeGreaterThan(1);
+  });
+
+  it('lön under taket efter växling ger förlorad allmän pension, över taket inte', () => {
+    expect(computeLonevaxling(r26, 60_000, 10_000, 0).forlorGrundPensionAr).toBeGreaterThan(0);
+    expect(computeLonevaxling(r26, 80_000, 10_000, 0).forlorGrundPensionAr).toBe(0);
+  });
+
+  it('växlat belopp klampas till lönen och påslag räknas på inbetalningen', () => {
+    const res = computeLonevaxling(r26, 30_000, 50_000, 5.8);
+    expect(res.lonEfterMon).toBe(0);
+    expect(res.tjpInsattAr).toBeCloseTo(30_000 * 12 * 1.058, 0);
+  });
+});
+
+describe('löneväxling med semesterersättning', () => {
+  const r26 = LONEVAXLING_RULES[2026];
+
+  it('årslön = månadslön × 12 + 0,605 % × månadslön × semesterdagar, på lönen före växling', () => {
+    const res = computeLonevaxling(r26, 50_000, 5_000, 0, 25);
+    const tillagg = 50_000 * 0.00605 * 25;
+    expect(res.lonForeAr).toBeCloseTo(50_000 * 12 + tillagg, 0);
+    expect(res.lonEfterAr).toBeCloseTo(45_000 * 12 + tillagg, 0);
+  });
+
+  it('semesterdagstillägg kan flytta lönen över inkomsttaket', () => {
+    // Tak 2026 = 673 038 kr/år; (56 100 − 20) × 12 = 672 960 → under utan tillägg, över med 25 dagars tillägg
+    expect(computeLonevaxling(r26, 56_100, 20, 0, 0).underTaket).toBe(true);
+    expect(computeLonevaxling(r26, 56_100, 20, 0, 25).underTaket).toBe(false);
+  });
+});
+
+describe('maxVaxlingUnderTak', () => {
+  const r27 = LONEVAXLING_RULES[2027];
+
+  it('föreslaget belopp håller årslönen på eller över taket', () => {
+    const v = maxVaxlingUnderTak(r27, 67_300, 32);
+    expect(v).toBeGreaterThan(0);
+    expect(v % 100).toBe(0);
+    expect(computeLonevaxling(r27, 67_300, v, 5.8, 32).underTaket).toBe(false);
+    expect(computeLonevaxling(r27, 67_300, v + 100, 5.8, 32).underTaket).toBe(true);
+  });
+
+  it('ger 0 när lönen redan ligger under taket', () => {
+    expect(maxVaxlingUnderTak(r27, 40_000, 32)).toBe(0);
+  });
+});
+
+describe('requiredLonForVaxling', () => {
+  const r27 = LONEVAXLING_RULES[2027];
+
+  it('ger 68 200 kr för 11 000 kr växlat med 32 semesterdagar', () => {
+    expect(requiredLonForVaxling(r27, 11_000, 32)).toBe(68_200);
+  });
+
+  it('lönen som krävs håller växlingen under taket, 100 kr lägre gör det inte', () => {
+    const lon = requiredLonForVaxling(r27, 11_000, 32);
+    expect(computeLonevaxling(r27, lon, 11_000, 5.8, 32).underTaket).toBe(false);
+    expect(computeLonevaxling(r27, lon - 100, 11_000, 5.8, 32).underTaket).toBe(true);
+  });
+
+  it('är konsistent med maxVaxlingUnderTak', () => {
+    const v = maxVaxlingUnderTak(r27, 67_300, 32);
+    expect(requiredLonForVaxling(r27, v, 32)).toBeLessThanOrEqual(67_300);
   });
 });

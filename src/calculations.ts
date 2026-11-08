@@ -639,11 +639,11 @@ function grundavdrag(annual: number): number {
 }
 
 /** Progressiv inkomstskatt. isPensioner = 65+ (förhöjt grundavdrag). */
-export function incomeTax(annualGross: number, isPensioner: boolean): number {
+export function incomeTax(annualGross: number, isPensioner: boolean, statligGrans: number = STATLIG_GRANS): number {
   if (annualGross <= 0) return 0;
   const avdrag  = isPensioner ? fga65(annualGross) : grundavdrag(annualGross);
   const taxable = Math.max(0, annualGross - avdrag);
-  return Math.round(taxable * KOMMUNAL + Math.max(0, annualGross - STATLIG_GRANS) * STATLIG_RATE);
+  return Math.round(taxable * KOMMUNAL + Math.max(0, annualGross - statligGrans) * STATLIG_RATE);
 }
 
 // ── FIRE-plan: likviditet och buffert ──────────────────────────────────────────
@@ -717,4 +717,101 @@ export function computeFirePlan(
     likvidIdag, likvidVidFire, gap,
     extraMonthly: gap > 0 ? Math.round(gap / monthsToFire) : 0,
   };
+}
+
+// ── Löneväxling: årsvisa regler och kalkyl ─────────────────────────────────────
+
+export interface LonevaxlingRules {
+  year:             number;
+  prisbasbelopp:    number;
+  inkomstbasbelopp: number;
+  statligGrans:     number;   // brytpunkt statlig skatt, kr/år (under 66 år)
+  sarskildLoneskatt: number;  // andel, t.ex. 0.2426
+  arbetsgivaravgift: number;  // andel, t.ex. 0.3142
+  preliminar:       boolean;  // true om siffrorna inte är slutgiltigt fastställda
+}
+
+/** Siffror hämtade nov 2026 (se källor på löneväxling.html). 2027: särskild löneskatt/arbetsgivaravgift antas oförändrade. */
+export const LONEVAXLING_RULES: Record<2026 | 2027, LonevaxlingRules> = {
+  2026: { year: 2026, prisbasbelopp: 59_200, inkomstbasbelopp: 83_400, statligGrans: 660_400,
+          sarskildLoneskatt: 0.2426, arbetsgivaravgift: 0.3142, preliminar: false },
+  2027: { year: 2027, prisbasbelopp: 59_600, inkomstbasbelopp: 86_600, statligGrans: 56_483 * 12,
+          sarskildLoneskatt: 0.2426, arbetsgivaravgift: 0.3142, preliminar: true },
+};
+
+/** Semesterdagstillägg per uttagen semesterdag, andel av månadslönen (0,605 %). */
+export const SEMESTERDAGSTILLAGG = 0.00605;
+
+/** Inkomsttak för allmän pension: 8,07 × inkomstbasbelopp, kr/år. */
+export const pensionTak = (r: LonevaxlingRules) => 8.07 * r.inkomstbasbelopp;
+
+/** Arbetsgivarens påslag (andel) som gör löneväxlingen kostnadsneutral för arbetsgivaren. */
+export const breakEvenPaslag = (r: LonevaxlingRules) =>
+  (1 + r.arbetsgivaravgift) / (1 + r.sarskildLoneskatt) - 1;
+
+export interface LonevaxlingResult {
+  rules:            LonevaxlingRules;
+  lonEfterMon:      number;   // bruttolön/mån efter löneväxling
+  lonForeAr:        number;   // årslön före växling (månadslön × 12 + semesterersättning)
+  lonEfterAr:       number;   // årslön efter växling
+  pensionTakMon:    number;   // inkomsttak allmän pension, kr/mån
+  underTaket:       boolean;  // lön efter växling < taket → förlorad allmän pension
+  skattSparadAr:    number;
+  nettoMinskningAr: number;   // minskad nettolön per år
+  tjpInsattAr:      number;   // inbetalt till tjänstepension per år (inkl. påslag)
+  forlorGrundPensionAr: number; // uppskattad förlorad allmän pensionsrätt (kapital) per år
+  nettoPerKrNetto:  number;   // kr i tjänstepension per förlorad nettokrona
+  arbetsgivareKostnadSkillnadAr: number; // arbetsgivarens kostnad jämfört med ingen växling (negativ = sparar)
+}
+
+/** Kalkyl för ett år. pensionstak-delen är en approximation (18,5 % × 0,93 ≈ 17,2 % av lön under taket). */
+export function computeLonevaxling(
+  rules: LonevaxlingRules, lonForeMon: number, vaxlatMon: number, paslagPct: number, semesterDagar: number = 0,
+): LonevaxlingResult {
+  const vaxlat   = Math.min(Math.max(0, vaxlatMon), lonForeMon);
+  const lonEfter = lonForeMon - vaxlat;
+  // Årslön = månadslön × 12 + semesterdagstillägg. Tillägget = 0,605 % × månadslön × uttagna
+  // semesterdagar (arbetsgivarens regel), räknat på lönen FÖRE växling.
+  const semesterAr = lonForeMon * SEMESTERDAGSTILLAGG * semesterDagar;
+  const lonForeAr  = lonForeMon * 12 + semesterAr;
+  const lonEfterAr = lonEfter   * 12 + semesterAr;
+  const taxFore  = incomeTax(lonForeAr,  false, rules.statligGrans);
+  const taxEfter = incomeTax(lonEfterAr, false, rules.statligGrans);
+  const skattSparadAr    = taxFore - taxEfter;
+  const nettoMinskningAr = (lonForeAr - lonEfterAr) - skattSparadAr;
+  const tjpInsattAr      = vaxlat * 12 * (1 + paslagPct / 100);
+  const takAr  = pensionTak(rules);
+  const forlorGrundPensionAr = (Math.min(lonForeAr, takAr) - Math.min(lonEfterAr, takAr)) * 0.185 * 0.93;
+  const arbetsgivareKostnadSkillnadAr =
+    tjpInsattAr * (1 + rules.sarskildLoneskatt) - vaxlat * 12 * (1 + rules.arbetsgivaravgift);
+  return {
+    rules, lonEfterMon: lonEfter, lonForeAr, lonEfterAr, pensionTakMon: takAr / 12, underTaket: lonEfterAr < takAr,
+    skattSparadAr, nettoMinskningAr, tjpInsattAr, forlorGrundPensionAr,
+    nettoPerKrNetto: nettoMinskningAr > 0 ? tjpInsattAr / nettoMinskningAr : 0,
+    arbetsgivareKostnadSkillnadAr,
+  };
+}
+
+/**
+ * Största löneväxling per månad (avrundad nedåt till närmaste 100 kr) som håller årslönen efter växling
+ * på eller över inkomsttaket, så att ingen allmän pension går förlorad.
+ * Semesterdagstillägget räknas på lönen före växling och påverkas inte av beloppet.
+ */
+export function maxVaxlingUnderTak(
+  rules: LonevaxlingRules, lonForeMon: number, semesterDagar: number, step: number = 100,
+): number {
+  const lonForeAr = lonForeMon * 12 + lonForeMon * SEMESTERDAGSTILLAGG * semesterDagar;
+  const utrymme   = (lonForeAr - pensionTak(rules)) / 12;
+  return Math.max(0, Math.floor(utrymme / step) * step);
+}
+
+/**
+ * Lägsta månadslön före växling (avrundad uppåt till närmaste 100 kr) som krävs för att kunna växla
+ * vaxlatMon kr/mån utan att årslönen efter växling hamnar under inkomsttaket.
+ */
+export function requiredLonForVaxling(
+  rules: LonevaxlingRules, vaxlatMon: number, semesterDagar: number, step: number = 100,
+): number {
+  const faktor = 12 + SEMESTERDAGSTILLAGG * semesterDagar;
+  return Math.ceil((pensionTak(rules) + vaxlatMon * 12) / faktor / step) * step;
 }

@@ -154,4 +154,5 @@ export const NAV_LINKS = [
   { href: 'jobbyte.html',    label: 'Jobbyte',    icon: '💼' },
   { href: 'optimering.html', label: 'Optimering', icon: '🧮' },
   { href: 'fireplan.html',   label: 'FIRE-plan',  icon: '🗓️' },
+  { href: 'lonevaxling.html', label: 'Löneväxling', icon: '💱' },
 ] as const;
