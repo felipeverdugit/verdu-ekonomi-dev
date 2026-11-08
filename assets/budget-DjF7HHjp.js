@@ -1,0 +1,1 @@
+import{I as e}from"./Topnav-CDBwCt4c.js";import{t}from"./Budget-CktR2sUG.js";e(t,{target:document.body});
